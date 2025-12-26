@@ -1,5 +1,4 @@
 import nx from '@nx/eslint-plugin';
-import stylistic from '@stylistic/eslint-plugin';
 import perfectionist from 'eslint-plugin-perfectionist';
 
 export default [
@@ -7,7 +6,13 @@ export default [
 	...nx.configs['flat/typescript'],
 	...nx.configs['flat/javascript'],
 	{
-		ignores: ['**/dist', '**/out-tsc', '**/test-output', '**/vite.config.*.timestamp*'],
+		ignores: [
+			'**/dist',
+			'**/out-tsc',
+			'**/test-output',
+			'**/vite.config.*.timestamp*',
+			'**/.next',
+		],
 	},
 	{
 		files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'],
@@ -27,13 +32,6 @@ export default [
 			],
 		},
 	},
-	stylistic.configs.customize({
-		// the following options are the default values
-		indent: 'tab',
-		jsx: true,
-		quotes: 'single',
-		semi: true,
-	}),
 	perfectionist.configs['recommended-natural'],
 	{
 		files: [
