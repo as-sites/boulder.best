@@ -1,18 +1,18 @@
 const nextJest = require('next/jest.js');
 
 const createJestConfig = nextJest({
-  dir: './',
+	dir: './',
 });
 
 const config = {
-  displayName: 'clim.bz',
-  preset: '../../jest.preset.js',
-  transform: {
-    '^(?!.*\\.(js|jsx|ts|tsx|css|json)$)': '@nx/react/plugins/jest',
-  },
-  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
-  coverageDirectory: '../../coverage/apps/clim.bz',
-  testEnvironment: 'jsdom',
+	coverageDirectory: '../../coverage/apps/clim.bz',
+	displayName: 'clim.bz',
+	moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
+	preset: '../../jest.preset.js',
+	testEnvironment: 'jsdom',
+	transform: {
+		'^(?!.*\\.(js|jsx|ts|tsx|css|json)$)': '@nx/react/plugins/jest',
+	},
 };
 
 module.exports = createJestConfig(config);
