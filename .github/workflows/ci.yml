@@ -24,11 +24,10 @@ jobs:
       # Learn more at https://nx.dev/ci/reference/nx-cloud-cli#npx-nxcloud-startcirun
       - run: npx nx start-ci-run --distribute-on="3 linux-medium-js" --stop-agents-after="e2e-ci"
 
-      # Cache node_modules
-      - uses: actions/setup-node@v4
+      # Install tools from mise.toml
+      - uses: jdx/mise-action@v3
         with:
-          node-version: 20
-          cache: 'npm'
+          cache: true
 
       - run: npm ci
 
