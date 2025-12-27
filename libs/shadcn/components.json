@@ -1,0 +1,20 @@
+{
+	"$schema": "https://ui.shadcn.com/schema.json",
+	"style": "new-york",
+	"rsc": true,
+	"tsx": true,
+	"tailwind": {
+		"config": "../../apps/boulder.best/tailwind.config.js",
+		"css": "../../apps/boulder.best/src/app/global.css",
+		"baseColor": "neutral",
+		"cssVariables": true
+	},
+	"iconLibrary": "lucide",
+	"aliases": {
+		"components": "@boulder.best/shadcn/components",
+		"hooks": "@boulder.best/shadcn/hooks",
+		"lib": "@boulder.best/shadcn/lib",
+		"utils": "@boulder.best/shadcn/lib/utils",
+		"ui": "@boulder.best/shadcn/components/ui"
+	}
+}

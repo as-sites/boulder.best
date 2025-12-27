@@ -1,5 +1,6 @@
 {
 	"compilerOptions": {
+		"baseUrl": ".",
 		"composite": true,
 		"declarationMap": true,
 		"emitDeclarationOnly": true,
@@ -16,6 +17,16 @@
 		"skipLibCheck": true,
 		"strict": true,
 		"target": "es2022",
-		"paths": {}
+		"paths": {
+			"@boulder.best/shadcn": ["libs/shadcn/src/index.ts"],
+			"@boulder.best/shadcn/components": ["libs/shadcn/src/components/index.ts"],
+			"@boulder.best/shadcn/components/*": ["libs/shadcn/src/components/*"],
+			"@boulder.best/shadcn/components/ui": ["libs/shadcn/src/components/ui/index.ts"],
+			"@boulder.best/shadcn/components/ui/*": ["libs/shadcn/src/components/ui/*"],
+			"@boulder.best/shadcn/hooks": ["libs/shadcn/src/hooks/index.ts"],
+			"@boulder.best/shadcn/hooks/*": ["libs/shadcn/src/hooks/*"],
+			"@boulder.best/shadcn/lib": ["libs/shadcn/src/lib/index.ts"],
+			"@boulder.best/shadcn/lib/*": ["libs/shadcn/src/lib/*"]
+		}
 	}
 }

@@ -4,7 +4,10 @@
 	"files": [],
 	"references": [
 		{
-			"path": "./apps/clim.bz"
+			"path": "./apps/boulder.best"
+		},
+		{
+			"path": "./libs/shadcn"
 		}
 	]
 }
