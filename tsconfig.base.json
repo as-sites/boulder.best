@@ -5,6 +5,7 @@
 		"declarationMap": true,
 		"emitDeclarationOnly": true,
 		"importHelpers": true,
+		"verbatimModuleSyntax": true,
 		"isolatedModules": true,
 		"lib": ["es2022"],
 		"module": "nodenext",

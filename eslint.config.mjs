@@ -1,4 +1,3 @@
-import perfectionist from 'eslint-plugin-perfectionist';
 import { defineConfig } from 'eslint/config';
 
 import baseConfig from './eslint.base.config.mjs';
@@ -30,29 +29,6 @@ export default defineConfig([
 					enforceBuildableLibDependency: true,
 				},
 			],
-		},
-	},
-	perfectionist.configs['recommended-natural'],
-	{
-		files: [
-			'**/*.ts',
-			'**/*.tsx',
-			'**/*.cts',
-			'**/*.mts',
-			'**/*.js',
-			'**/*.jsx',
-			'**/*.cjs',
-			'**/*.mjs',
-		],
-		// Override or add rules here
-		rules: {},
-	},
-	{
-		files: ['**/*.ts', '**/*.tsx', '**/*.cts', '**/*.mts'],
-		languageOptions: {
-			parserOptions: {
-				projectService: true,
-			},
 		},
 	},
 ]);

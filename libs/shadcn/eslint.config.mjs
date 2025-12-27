@@ -1,5 +1,6 @@
 import nx from '@nx/eslint-plugin';
-import baseConfig from '../../eslint.base.config.mjs';
+
+import baseConfig, { react } from '../../eslint.base.config.mjs';
 
 export default [
 	...baseConfig,
@@ -20,4 +21,5 @@ export default [
 	{
 		ignores: ['**/out-tsc'],
 	},
+	...react,
 ];

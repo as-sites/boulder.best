@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import './global.css';
 
 export const metadata = {
@@ -5,7 +6,7 @@ export const metadata = {
 	title: 'Welcome to clim.bz',
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({ children }: { children: ReactNode }) {
 	return (
 		<html lang="en">
 			<body>{children}</body>
