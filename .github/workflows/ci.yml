@@ -34,5 +34,5 @@ jobs:
         env:
           CI: true
 
-      - run: nx format:check
       - run: nx run-many -t lint test build typecheck e2e-ci
+      - run: nx format:check
