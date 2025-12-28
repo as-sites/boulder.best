@@ -28,7 +28,7 @@ jobs:
         with:
           cache: 'npm'
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - run: npx nx format:check --base="remotes/origin/main"
       - run: npx nx run-many -t lint test build typecheck e2e-ci

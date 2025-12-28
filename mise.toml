@@ -1,7 +1,6 @@
 [tools]
 node = '24.8.0'
 npm = '11.7.0'
-"npm:shadcn" = "latest"
 
 [env]
 _.path = ['node_modules/.bin']
