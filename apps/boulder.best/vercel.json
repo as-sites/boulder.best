@@ -1,5 +1,6 @@
 {
 	"$schema": "https://openapi.vercel.sh/vercel.json",
 	"buildCommand": "cd ../.. && npx nx build boulder.best --prod",
-	"framework": "nextjs"
+	"framework": "nextjs",
+	"ignoreCommand": "cd ../.. && npx nx-ignore boulder.best"
 }
