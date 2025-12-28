@@ -14,7 +14,7 @@
 		"@nx/eslint": "22.3.3",
 		"@nx/jest": "22.3.3",
 		"@nx/js": "22.3.3",
-		"@nx/next": "^22.3.3",
+		"@nx/next": "22.3.3",
 		"@nx/playwright": "22.3.3",
 		"@nx/react": "^22.3.3",
 		"@nx/vite": "22.3.3",
@@ -79,6 +79,9 @@
 		"tailwind-merge": "^3.4.0",
 		"tailwindcss-animate": "^1.0.7",
 		"zod": "^4.2.1"
+	},
+	"overrides": {
+		"nx": "22.3.3"
 	},
 	"nx": {
 		"includedScripts": [],
