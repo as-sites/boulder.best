@@ -16,9 +16,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          filter: tree:0
-          fetch-depth: 0
-
+          # We must fetch at least the immediate parents so that if this is
+          # a pull request then we can checkout the head.
+          fetch-depth: 2
       # Install tools from mise.toml
       - uses: jdx/mise-action@v3
         with:
