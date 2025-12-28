@@ -83,6 +83,10 @@
 	"overrides": {
 		"nx": "22.3.3"
 	},
+	"optionalDependencies": {
+		"@nx/nx-linux-arm64-gnu": "22.3.3",
+		"@nx/nx-linux-x64-gnu": "22.3.3"
+	},
 	"nx": {
 		"includedScripts": [],
 		"targets": {
