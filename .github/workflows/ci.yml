@@ -34,5 +34,5 @@ jobs:
         env:
           CI: true
 
-      - run: npx nx format:check --base=origin/main
+      - run: npx nx format:check
       - run: npx nx run-many -t lint test build typecheck e2e-ci
