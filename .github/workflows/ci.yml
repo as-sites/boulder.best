@@ -24,7 +24,11 @@ jobs:
         with:
           cache: true
 
-      - run: npm ci
+      - uses: actions/setup-node@v6
+        with:
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm install
 
       - run: npx nx format:check --base="remotes/origin/main"
       - run: npx nx run-many -t lint test build typecheck e2e-ci
