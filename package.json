@@ -88,6 +88,7 @@
 		"@nx/nx-linux-x64-gnu": "22.3.3",
 		"@swc/core-linux-x64-gnu": "1.15.7",
 		"@rspack/binding-linux-x64-gnu": "1.6.8",
+		"@tailwindcss/oxide-linux-x64-gnu": "4.1.18",
 		"lightningcss-linux-x64-gnu": "1.30.2"
 	},
 	"nx": {
