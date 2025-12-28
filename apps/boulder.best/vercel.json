@@ -1,8 +1,4 @@
 {
 	"$schema": "https://openapi.vercel.sh/vercel.json",
-	"buildCommand": "cd ../.. && npx nx build boulder.best --prod",
-	"installCommand": "cd ../.. && npm ci --include=optional",
-	"framework": null,
-	"outputDirectory": ".next",
-	"ignoreCommand": "cd ../.. && npx nx-ignore boulder.best"
+	"framework": "nextjs"
 }
