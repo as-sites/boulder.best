@@ -49,3 +49,5 @@ out
 test-output
 
 vite.config.*.timestamp*
+.vercel
+.env*.local

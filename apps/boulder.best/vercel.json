@@ -1,4 +1,5 @@
 {
+	"$schema": "https://openapi.vercel.sh/vercel.json",
 	"buildCommand": "npx nx build boulder.best --prod",
 	"installCommand": "npm ci --include=optional",
 	"framework": null,
