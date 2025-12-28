@@ -3,6 +3,5 @@
 	"buildCommand": "cd ../.. && npx nx build boulder.best --prod",
 	"installCommand": "cd ../.. && npm ci --include=optional",
 	"framework": "nextjs",
-	"outputDirectory": "apps/boulder.best/.next",
-	"ignoreCommand": "cd ../.. && npx nx-ignore boulder.best"
+	"outputDirectory": ".next"
 }
