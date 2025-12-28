@@ -4,5 +4,5 @@
 	"installCommand": "npm ci --include=optional",
 	"framework": null,
 	"outputDirectory": "apps/boulder.best/.next",
-	"ignoreCommand": "npx nx-ignore boulder.best"
+	"ignoreCommand": "cd ../.. &&npx nx-ignore boulder.best"
 }
