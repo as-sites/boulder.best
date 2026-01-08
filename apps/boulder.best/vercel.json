@@ -1,6 +1,6 @@
 {
 	"$schema": "https://openapi.vercel.sh/vercel.json",
-	"buildCommand": "cd ../.. && npx nx build boulder.best --prod",
+	"buildCommand": "cd ../.. && pnpm exec nx build boulder.best --prod",
 	"installCommand": "cd ../.. && pnpm install --frozen-lockfile",
 	"framework": "nextjs",
 	"outputDirectory": ".next"
