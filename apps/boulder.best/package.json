@@ -34,10 +34,13 @@
 		}
 	},
 	"dependencies": {
+		"@hookform/resolvers": "catalog:",
+		"zod": "catalog:",
 		"next": "catalog:next",
 		"react": "catalog:react",
 		"react-dom": "catalog:react",
-		"@boulder.best/shadcn": "workspace:^"
+		"@boulder.best/shadcn": "workspace:^",
+		"react-hook-form": "catalog:"
 	},
 	"devDependencies": {
 		"favicons": "^7.2.0"

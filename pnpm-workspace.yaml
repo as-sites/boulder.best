@@ -8,7 +8,8 @@ catalog:
   lucide-react: ^0.562.0
   next-themes: ^0.4.6
   react-hook-form: ^7.69.0
-  zod: ^4.2.1
+  '@hookform/resolvers': ^5.2.2
+  zod: 4.3.5
 
 catalogs:
   nx:

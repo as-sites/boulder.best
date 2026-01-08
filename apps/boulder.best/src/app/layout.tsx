@@ -1,6 +1,20 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 
+import { Geist, Geist_Mono } from 'next/font/google';
+
+import { Providers } from '../components/providers';
+
+const fontSans = Geist({
+	subsets: ['latin'],
+	variable: '--font-sans',
+});
+
+const fontMono = Geist_Mono({
+	subsets: ['latin'],
+	variable: '--font-mono',
+});
+
 import '@boulder.best/shadcn/globals.css';
 
 export const metadata: Metadata = {
@@ -30,8 +44,16 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
 	return (
-		<html lang="en">
-			<body>{children}</body>
+		<html lang="en" suppressHydrationWarning>
+			<body className={`${fontSans.variable} ${fontMono.variable} font-sans antialiased `}>
+				<Providers>
+					<div className="flex items-center justify-center min-h-svh">
+						<div className="flex flex-col items-center justify-center gap-4">
+							{children}
+						</div>
+					</div>
+				</Providers>
+			</body>
 		</html>
 	);
 }

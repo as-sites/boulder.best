@@ -71,12 +71,7 @@
 		"vite-plugin-dts": "~4.5.4",
 		"vitest": "catalog:vitest"
 	},
-	"workspaces": [
-		"packages/*",
-		"apps/*",
-		"libs/*",
-		"packages/@boulder.best/*"
-	],
+	"workspaces": ["packages/*", "apps/*", "libs/*", "packages/@boulder.best/*"],
 	"dependencies": {
 		"class-variance-authority": "catalog:",
 		"clsx": "^2.1.1",
@@ -85,7 +80,6 @@
 		"next-themes": "catalog:",
 		"react": "catalog:react",
 		"react-dom": "catalog:react",
-		"react-hook-form": "catalog:",
 		"tailwind-merge": "^3.4.0",
 		"tailwindcss-animate": "^1.0.7",
 		"zod": "catalog:"
@@ -121,10 +115,7 @@
 					"command": "eslint ."
 				},
 				"cache": true,
-				"inputs": [
-					"default",
-					"{workspaceRoot}/eslint.config.mjs"
-				]
+				"inputs": ["default", "{workspaceRoot}/eslint.config.mjs"]
 			}
 		}
 	}

@@ -13,6 +13,9 @@ catalogs:
       specifier: ^7.14.5
       version: 7.28.5
   default:
+    '@hookform/resolvers':
+      specifier: ^5.2.2
+      version: 5.2.2
     class-variance-authority:
       specifier: ^0.7.1
       version: 0.7.1
@@ -26,7 +29,7 @@ catalogs:
       specifier: ^7.69.0
       version: 7.70.0
     zod:
-      specifier: ^4.2.1
+      specifier: 4.3.5
       version: 4.3.5
   eslint:
     '@eslint/js':
@@ -170,9 +173,6 @@ importers:
       react-dom:
         specifier: catalog:react
         version: 19.2.3(react@19.2.3)
-      react-hook-form:
-        specifier: 'catalog:'
-        version: 7.70.0(react@19.2.3)
       tailwind-merge:
         specifier: ^3.4.0
         version: 3.4.0
@@ -391,6 +391,9 @@ importers:
       '@boulder.best/shadcn':
         specifier: workspace:^
         version: link:../../libs/shadcn
+      '@hookform/resolvers':
+        specifier: 'catalog:'
+        version: 5.2.2(react-hook-form@7.70.0(react@19.2.3))
       next:
         specifier: catalog:next
         version: 16.1.1(@babel/core@7.28.5)(@playwright/test@1.57.0)(babel-plugin-macros@3.1.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(sass@1.97.2)
@@ -400,6 +403,12 @@ importers:
       react-dom:
         specifier: catalog:react
         version: 19.2.3(react@19.2.3)
+      react-hook-form:
+        specifier: 'catalog:'
+        version: 7.70.0(react@19.2.3)
+      zod:
+        specifier: 'catalog:'
+        version: 4.3.5
     devDependencies:
       favicons:
         specifier: ^7.2.0
