@@ -8,7 +8,7 @@
 	"engines": {
 		"node": "24.x"
 	},
-	"packageManager": "npm@11.7.0",
+	"packageManager": "pnpm@10.27.0",
 	"type": "module",
 	"nx": {
 		"name": "boulder.best",
@@ -34,9 +34,10 @@
 		}
 	},
 	"dependencies": {
-		"next": "~16.1.1",
-		"react": "^19.2.3",
-		"react-dom": "^19.2.3"
+		"next": "catalog:next",
+		"react": "catalog:react",
+		"react-dom": "catalog:react",
+		"@boulder.best/shadcn": "workspace:^"
 	},
 	"devDependencies": {
 		"favicons": "^7.2.0"

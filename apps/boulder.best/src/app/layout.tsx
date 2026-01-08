@@ -7,9 +7,9 @@ export const metadata: Metadata = {
 	appleWebApp: {
 		capable: true,
 		statusBarStyle: 'black-translucent',
-		title: 'Boulder Best',
+		title: 'boulder.best',
 	},
-	applicationName: 'Boulder Best',
+	applicationName: 'boulder.best',
 	description: 'Best boulder tracking and climbing app',
 	icons: {
 		apple: [{ sizes: '180x180', type: 'image/png', url: '/manifest/apple-touch-icon.png' }],
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
 		'msapplication-config': '/manifest/browserconfig.xml',
 		'msapplication-TileColor': '#FF4FD8',
 	},
-	title: 'Boulder Best - Track Your Climbing Progress',
+	title: 'boulder.best - Track Your Climbing Progress',
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

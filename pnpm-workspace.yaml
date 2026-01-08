@@ -1,0 +1,60 @@
+packages:
+  - 'apps/*'
+  - 'libs/*'
+  - 'packages/*'
+
+catalog:
+  class-variance-authority: ^0.7.1
+  lucide-react: ^0.562.0
+  next-themes: ^0.4.6
+  react-hook-form: ^7.69.0
+  zod: ^4.2.1
+
+catalogs:
+  nx:
+    nx: &nx_version 22.3.3
+    '@nx/devkit': *nx_version
+    '@nx/eslint': *nx_version
+    '@nx/eslint-plugin': *nx_version
+    '@nx/jest': *nx_version
+    '@nx/js': *nx_version
+    '@nx/next': *nx_version
+    '@nx/playwright': *nx_version
+    '@nx/react': *nx_version
+    '@nx/vite': *nx_version
+    '@nx/web': *nx_version
+    '@nx/nx-linux-arm64-gnu': *nx_version
+    '@nx/nx-linux-x64-gnu': *nx_version
+  vitest:
+    'vitest': &vitest_version ^4.0.16
+    '@vitest/ui': *vitest_version
+  next:
+    next: &next_version ~16.1.1
+    '@next/eslint-plugin-next': *next_version
+    eslint-config-next: *next_version
+  react:
+    react: &react_version 19.2.3
+    react-dom: *react_version
+    '@types/react': 19.2.7
+    '@types/react-dom': 19.2.3
+  eslint:
+    eslint: &eslint_version ^9.39.2
+    '@eslint/js': *eslint_version
+  babel:
+    '@babel/core': &babel_version ^7.14.5
+    '@babel/preset-react': *babel_version
+  jest:
+    jest: &jest_version ^30.2.0
+    'babel-jest': *jest_version
+    'jest-environment-jsdom': *jest_version
+    'jest-util': *jest_version
+  tailwind:
+    tailwindcss: &tailwindcss_version ^4.1.18
+    '@tailwindcss/postcss': *tailwindcss_version
+    '@tailwindcss/oxide-linux-x64-gnu': *tailwindcss_version
+  swc:
+    '@swc/cli': ~0.7.9
+    '@swc/core': &swc_version ~1.15.7
+    '@swc/helpers': ~0.5.18
+    '@swc-node/register': ~1.11.1
+    '@swc/core-linux-x64-gnu': *swc_version
