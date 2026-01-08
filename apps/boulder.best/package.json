@@ -2,15 +2,33 @@
 	"name": "@boulder.best/track",
 	"version": "0.0.1",
 	"private": true,
+	"scripts": {
+		"generate-favicon": "node scripts/generate-favicon.js"
+	},
+	"engines": {
+		"node": "24.x"
+	},
+	"packageManager": "npm@11.7.0",
+	"type": "module",
 	"nx": {
 		"name": "boulder.best",
 		"targets": {
+			"build": {
+				"dependsOn": ["generate-favicon", "^build"]
+			},
 			"typecheck": {
 				"executor": "@nx/js:tsc",
 				"options": {
 					"main": "./src/app/page.tsx",
 					"outputPath": "./out-tsc",
 					"tsConfig": "./tsconfig.json"
+				}
+			},
+			"generate-favicon": {
+				"executor": "nx:run-commands",
+				"options": {
+					"command": "node scripts/generate-favicon.js",
+					"cwd": "apps/boulder.best"
 				}
 			}
 		}
@@ -19,5 +37,8 @@
 		"next": "~16.1.1",
 		"react": "^19.2.3",
 		"react-dom": "^19.2.3"
+	},
+	"devDependencies": {
+		"favicons": "^7.2.0"
 	}
 }

@@ -51,3 +51,10 @@ test-output
 vite.config.*.timestamp*
 .vercel
 .env*.local
+
+.cursor/rules
+
+# Generated manifest and icons (regenerated from logo.svg on build)
+apps/boulder.best/public/manifest/
+apps/boulder.best/public/favicon.ico
+apps/boulder.best/src/app/favicon-meta.txt

@@ -5,7 +5,7 @@
 		"dbaeumer.vscode-eslint",
 		"ms-playwright.playwright",
 		"firsttris.vscode-jest-runner",
-        "hverlin.mise-vscode",
-        "tamasfe.even-better-toml"
+		"hverlin.mise-vscode",
+		"tamasfe.even-better-toml"
 	]
 }
