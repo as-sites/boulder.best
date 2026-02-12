@@ -1,122 +1,33 @@
 {
-	"name": "@boulder.best/root",
-	"version": "0.0.0",
-	"license": "MIT",
-	"scripts": {},
-	"private": true,
-	"engines": {
-		"node": "24.x"
-	},
-	"packageManager": "pnpm@10.27.0",
-	"devDependencies": {
-		"@babel/core": "catalog:babel",
-		"@babel/preset-react": "catalog:babel",
-		"@eslint/js": "catalog:eslint",
-		"@next/eslint-plugin-next": "catalog:next",
-		"@nx/devkit": "catalog:nx",
-		"@nx/eslint": "catalog:nx",
-		"@nx/eslint-plugin": "catalog:nx",
-		"@nx/jest": "catalog:nx",
-		"@nx/js": "catalog:nx",
-		"@nx/next": "catalog:nx",
-		"@nx/playwright": "catalog:nx",
-		"@nx/react": "catalog:nx",
-		"@nx/vite": "catalog:nx",
-		"@nx/web": "catalog:nx",
-		"@playwright/test": "^1.57.0",
-		"@stylistic/eslint-plugin": "^5.6.1",
-		"@swc-node/register": "catalog:swc",
-		"@swc/cli": "catalog:swc",
-		"@swc/core": "catalog:swc",
-		"@swc/helpers": "catalog:swc",
-		"@tailwindcss/postcss": "catalog:tailwind",
-		"@testing-library/dom": "10.4.1",
-		"@testing-library/react": "16.3.1",
-		"@types/jest": "^30.0.0",
-		"@types/node": "^24.10.4",
-		"@types/react": "catalog:react",
-		"@types/react-dom": "catalog:react",
-		"@vitejs/plugin-react-swc": "^3.5.0",
-		"@vitest/ui": "catalog:vitest",
-		"ajv": "^8.17.1",
-		"autoprefixer": "10.4.23",
-		"babel-jest": "catalog:jest",
-		"eslint": "catalog:eslint",
-		"eslint-config-next": "catalog:next",
-		"eslint-config-prettier": "^10.1.8",
-		"eslint-plugin-import": "2.32.0",
-		"eslint-plugin-jsx-a11y": "6.10.2",
-		"eslint-plugin-perfectionist": "^5.1.0",
-		"eslint-plugin-playwright": "^2.4.0",
-		"eslint-plugin-react": "7.37.5",
-		"eslint-plugin-react-hooks": "7.0.1",
-		"jest": "catalog:jest",
-		"jest-environment-jsdom": "catalog:jest",
-		"jest-util": "catalog:jest",
-		"jiti": "2.6.1",
-		"jsdom": "~22.1.0",
-		"nx": "catalog:nx",
-		"postcss": "8.5.6",
-		"prettier": "^3.7.4",
-		"tailwindcss": "catalog:tailwind",
-		"ts-jest": "^29.4.6",
-		"ts-node": "10.9.2",
-		"tslib": "^2.8.1",
-		"tw-animate-css": "^1.4.0",
-		"typescript": "~5.9.3",
-		"typescript-eslint": "^8.50.1",
-		"vercel": "^50.1.3",
-		"verdaccio": "^6.2.4",
-		"vite": "^7.3.0",
-		"vite-plugin-dts": "~4.5.4",
-		"vitest": "catalog:vitest"
-	},
-	"workspaces": ["packages/*", "apps/*", "libs/*", "packages/@boulder.best/*"],
-	"dependencies": {
-		"class-variance-authority": "catalog:",
-		"clsx": "^2.1.1",
-		"lucide-react": "catalog:",
-		"next": "catalog:next",
-		"next-themes": "catalog:",
-		"react": "catalog:react",
-		"react-dom": "catalog:react",
-		"tailwind-merge": "^3.4.0",
-		"tailwindcss-animate": "^1.0.7",
-		"zod": "catalog:"
-	},
-	"overrides": {
-		"nx": "catalog:nx"
-	},
-	"optionalDependencies": {
-		"@nx/nx-linux-arm64-gnu": "catalog:nx",
-		"@nx/nx-linux-x64-gnu": "catalog:nx",
-		"@rspack/binding-linux-x64-gnu": "1.7.1",
-		"@swc/core-linux-x64-gnu": "catalog:swc",
-		"@tailwindcss/oxide-linux-x64-gnu": "catalog:tailwind",
-		"lightningcss-linux-x64-gnu": "1.30.2"
-	},
-	"pnpm": {
-		"neverBuiltDependencies": []
-	},
-	"nx": {
-		"includedScripts": [],
-		"targets": {
-			"local-registry": {
-				"executor": "@nx/js:verdaccio",
-				"options": {
-					"port": 4873,
-					"config": ".verdaccio/config.yml",
-					"storage": "tmp/local-registry/storage"
-				}
-			},
-			"lint": {
-				"executor": "nx:run-commands",
-				"options": {
-					"command": "eslint ."
-				},
-				"cache": true,
-				"inputs": ["default", "{workspaceRoot}/eslint.config.mjs"]
-			}
-		}
-	}
+  "name": "boulder.best",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@base-ui/react": "^1.1.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.563.0",
+    "next": "16.1.6",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "shadcn": "^3.8.4",
+    "tailwind-merge": "^3.4.0",
+    "tw-animate-css": "^1.4.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.1.6",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
 }

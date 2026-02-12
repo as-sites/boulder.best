@@ -1,7 +1,0 @@
-[tools]
-node = '24.8.0'
-pnpm = "10.27.0"
-
-[env]
-_.path = ['node_modules/.bin']
-NEXT_IGNORE_INCORRECT_LOCKFILE=true 
