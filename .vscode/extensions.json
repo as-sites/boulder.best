@@ -1,0 +1,11 @@
+{
+	"recommendations": [
+		"nrwl.angular-console",
+		"esbenp.prettier-vscode",
+		"dbaeumer.vscode-eslint",
+		"ms-playwright.playwright",
+		"hverlin.mise-vscode",
+		"tamasfe.even-better-toml",
+		"vitest.explorer"
+	]
+}
