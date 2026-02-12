@@ -1,17 +1,149 @@
-import nextVitals from 'eslint-config-next/core-web-vitals';
-import nextTs from 'eslint-config-next/typescript';
+import { fixupPluginRules } from '@eslint/compat';
+import next from '@next/eslint-plugin-next';
+import importPlugin from 'eslint-plugin-import';
+import jsxA11yPlugin from 'eslint-plugin-jsx-a11y';
 import perfectionist from 'eslint-plugin-perfectionist';
 import react from 'eslint-plugin-react';
+import reactHooks from 'eslint-plugin-react-hooks';
 import { defineConfig, globalIgnores } from 'eslint/config';
+import globals from 'globals';
 import tseslint from 'typescript-eslint';
+import tsEslint from 'typescript-eslint';
 
 export default defineConfig([
 	// ──────────────────────────────────────────────────────────────────
 	// Next.js (includes eslint:recommended, @typescript-eslint/recommended,
 	// react, react-hooks, jsx-a11y, import, and next rules)
 	// ──────────────────────────────────────────────────────────────────
-	...nextVitals,
-	...nextTs,
+
+	{
+		// Default files, users can overwrite this.
+		files: ['**/*.ts', '**/*.tsx', '**/*.cts', '**/*.mts'],
+		languageOptions: {
+			globals: {
+				...globals.browser,
+				...globals.node,
+			},
+			parser: tseslint.parser,
+			parserOptions: {
+				allowImportExportEverywhere: true,
+				// TODO: Is this needed?
+				babelOptions: {
+					caller: {
+						// Eslint supports top level await when a parser for it is included. We enable the parser by default for Babel.
+						supportsTopLevelAwait: true,
+					},
+					presets: ['next/babel'],
+				},
+				requireConfigFile: false,
+				sourceType: 'module',
+			},
+		},
+		name: 'next',
+		plugins: {
+			'@next/next': next,
+			import: importPlugin,
+			'jsx-a11y': jsxA11yPlugin,
+			react: fixupPluginRules(react),
+			'react-hooks': reactHooks,
+		},
+		rules: {
+			...react.configs.recommended.rules,
+			...reactHooks.configs.recommended.rules,
+			...next.configs.recommended.rules,
+			'import/no-anonymous-default-export': 'warn',
+			'jsx-a11y/alt-text': [
+				'warn',
+				{
+					elements: ['img'],
+					img: ['Image'],
+				},
+			],
+			'jsx-a11y/aria-props': 'warn',
+			'jsx-a11y/aria-proptypes': 'warn',
+			'jsx-a11y/aria-unsupported-elements': 'warn',
+			'jsx-a11y/role-has-required-aria-props': 'warn',
+			'jsx-a11y/role-supports-aria-props': 'warn',
+			'no-restricted-imports': [
+				'error',
+				{
+					paths: [
+						{
+							importNames: ['default'],
+							message: 'Use named imports instead: import { useState } from "react";',
+							name: 'react',
+						},
+					],
+					patterns: [
+						{
+							group: ['react'],
+							importNamePattern: '^\\*$',
+							message:
+								'Use named imports instead of namespace imports: import { useState } from "react";',
+						},
+					],
+				},
+			],
+			'react/forward-ref-uses-ref': 'error',
+			'react/function-component-definition': [
+				'error',
+				{
+					namedComponents: 'arrow-function',
+					unnamedComponents: 'arrow-function',
+				},
+			],
+			'react/hook-use-state': 'error',
+			'react/jsx-fragments': ['error', 'syntax'],
+			'react/jsx-handler-names': 'error',
+			'react/jsx-no-target-blank': 'off',
+			'react/jsx-no-useless-fragment': 'error',
+			'react/jsx-pascal-case': 'error',
+			'react/no-unknown-property': 'off',
+			'react/prop-types': 'off',
+			'react/react-in-jsx-scope': 'off',
+		},
+		settings: {
+			'import/parsers': {
+				'@typescript-eslint/parser': ['.ts', '.mts', '.cts', '.tsx', '.d.ts'],
+			},
+			'import/resolver': {
+				node: {
+					extensions: ['.js', '.jsx', '.ts', '.tsx'],
+				},
+				typescript: {
+					alwaysTryTypes: true,
+				},
+			},
+			react: {
+				version: 'detect',
+			},
+		},
+	},
+	{
+		// Default files, users can overwrite this.
+		files: ['**/*.ts', '**/*.tsx'],
+		languageOptions: {
+			parser: tsEslint.parser,
+			parserOptions: {
+				sourceType: 'module',
+			},
+		},
+		name: 'next/typescript',
+		plugins: {
+			'@typescript-eslint': tsEslint.plugin,
+		},
+	},
+	// Global ignores, users can add more `ignores` or overwrite this by `!<ignore>`.
+	{
+		ignores: [
+			// node_modules/ and .git/ are ignored by default.
+			// https://eslint.org/docs/latest/use/configure/configuration-files#globally-ignoring-files-with-ignores
+			'.next/**',
+			'out/**',
+			'build/**',
+			'next-env.d.ts',
+		],
+	},
 
 	// Override default ignores of eslint-config-next
 	globalIgnores(['.next/**', 'out/**', 'build/**', 'next-env.d.ts']),
@@ -143,8 +275,8 @@ export default defineConfig([
 	// ──────────────────────────────────────────────────────────────────
 	// Perfectionist (import/object/type sorting)
 	// ──────────────────────────────────────────────────────────────────
-	perfectionist.configs['recommended-natural'],
 	{
+		extends: [perfectionist.configs['recommended-natural']],
 		rules: {
 			'perfectionist/sort-imports': [
 				'error',
@@ -188,56 +320,6 @@ export default defineConfig([
 		rules: {
 			'arrow-body-style': ['error', 'as-needed'],
 			'object-shorthand': ['error', 'always'],
-		},
-	},
-
-	// ──────────────────────────────────────────────────────────────────
-	// React-specific rules
-	// ──────────────────────────────────────────────────────────────────
-	{
-		files: ['**/*.ts', '**/*.tsx', '**/*.cts', '**/*.mts'],
-		plugins: {
-			react,
-		},
-		rules: {
-			'no-restricted-imports': [
-				'error',
-				{
-					paths: [
-						{
-							importNames: ['default'],
-							message: 'Use named imports instead: import { useState } from "react";',
-							name: 'react',
-						},
-					],
-					patterns: [
-						{
-							group: ['react'],
-							importNamePattern: '^\\*$',
-							message:
-								'Use named imports instead of namespace imports: import { useState } from "react";',
-						},
-					],
-				},
-			],
-			'react/forward-ref-uses-ref': 'error',
-			'react/function-component-definition': [
-				'error',
-				{
-					namedComponents: 'arrow-function',
-					unnamedComponents: 'arrow-function',
-				},
-			],
-			'react/hook-use-state': 'error',
-			'react/jsx-fragments': ['error', 'syntax'],
-			'react/jsx-handler-names': 'error',
-			'react/jsx-no-useless-fragment': 'error',
-			'react/jsx-pascal-case': 'error',
-		},
-		settings: {
-			react: {
-				version: 'detect',
-			},
 		},
 	},
 
