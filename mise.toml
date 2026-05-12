@@ -1,0 +1,117 @@
+experimental_monorepo_root = true
+min_version = "2026.5.0"
+
+[settings]
+experimental = true
+task_output = "quiet"
+
+[tools]
+node = "24.15.0"
+pnpm = "11.1.1"
+# this is needed for tab completions of mise tasks and some other binaries
+usage = "3.3.0"
+hk = "1.45.0"
+pkl = "0.31.1"
+
+[monorepo]
+config_roots = ["apps/*", "packages/*"]
+
+# this doesn't use the builtin pnpm provider because it doesn't allow overriding `sources`
+[deps.pnpm-custom]
+auto = true
+sources = [
+  "package.json",
+  "apps/*/package.json",
+  "packages/*/package.json",
+  "pnpm-lock.yaml",
+  "pnpm-workspace.yaml",
+]
+outputs = ["node_modules/"]
+description = "Install dependencies with pnpm"
+run = 'pnpm install'
+
+
+[env]
+HK_MISE = "1"
+HK_HIDE_WHEN_DONE = "true"
+MISE_EXPERIMENTAL = "1"
+_.file = ".env"
+_.path = ["{{config_root}}/node_modules/.bin"]
+
+[hooks]
+postinstall = ["hk install --mise", "mise deps install"]
+
+[shell_alias]
+mr = 'mise tasks run '
+mi = 'mise install '
+
+[tasks.lint]
+quiet = true
+alias = "lint"
+description = "Lint the entire repo"
+usage = '''
+arg "[paths]" var=#true help="The paths to lint" default="."
+
+flag "-f --fix" help="Apply safe fixes"
+flag "--fix-suggestions" help="Apply auto-fixable suggestions. May change program behaviour"
+flag "--fix-dangerously" help="Apply dangerous fixes and suggestions"
+flag "-q --quiet" help="Run in quiet mode, which only outputs errors"
+flag "--format <FORMAT>" help="The format to output the results in" default="default" {
+  choices "checkstyle" "default" "github" "gitlab" "json" "junit" "stylish" "unix"
+}
+'''
+
+# in oxlint, the `--allow all` means to suppress the lint for all rules,
+# and the `--deny <rule>` means to emit an error for that rule
+run = '''
+oxlint \
+  --format={{usage.format}} \
+  {% if usage.fix %}--fix {% endif %} \
+  {% if usage.fix_suggestions %}--fix-suggestions {% endif %} \
+  {% if usage.fix_dangerously %}--fix-dangerously {% endif %} \
+  {% if usage.quiet %}--quiet {% endif %} \
+  {% for path in usage.paths %}{{path}} {% endfor %}
+'''
+
+[tasks.format]
+description = "Format the entire repo"
+usage = '''
+arg "[paths]" var=#true help="The paths to lint" default="."
+
+flag "-c --check" help="Check if the files are formatted"
+flag "-l --list-different" help="List files that are different from the expected format"
+'''
+alias = ["fmt", "format"]
+run = '''
+oxfmt \
+  {% if usage.check %}--check {% endif %} \
+  {% if usage.list_different %}--list-different {% endif %} \
+  {% for path in usage.paths %}{{path}} {% endfor %}
+'''
+
+[tasks.unit]
+alias = ["test:unit", "test"]
+description = "Run Vitest for this workspace"
+usage = '''
+arg "[filters]" var=#true help="Test file filters"
+
+flag "-w --watch" negate="--no-watch" help="Re-run tests when files change" default="false"
+flag "--coverage" negate="--no-coverage" help="Collect coverage" default="false"
+flag "-p --project <name>" help="Vitest project to run" default="*"
+flag "-u --update" help="Update snapshots"
+flag "--ui" help="Enable Vitest UI"
+flag "--open" help="Open Vitest UI automatically"
+'''
+
+run = '''
+vitest run \
+  --root="." \
+  --config="vitest.config.ts" \
+  --project="{{usage.project}}" \
+  --coverage="{{usage.coverage}}" \
+  --watch="{{usage.watch}}" \
+  {% if usage.update %}--update {% endif %}\
+  {% if usage.ui %}--ui {% endif %}\
+  {% if usage.open %}--open {% endif %}\
+  {% for f in usage.filters %}{{f}} {% endfor %}
+'''

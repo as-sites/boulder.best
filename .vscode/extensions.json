@@ -1,0 +1,11 @@
+{
+  "recommendations": [
+    "mikestead.dotenv",
+    "hverlin.mise-vscode",
+    "bradlc.vscode-tailwindcss",
+    "vitest.explorer",
+    "redhat.vscode-yaml",
+    "tamasfe.even-better-toml",
+    "oxc.oxc-vscode"
+  ]
+}

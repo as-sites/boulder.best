@@ -1,0 +1,29 @@
+packages:
+  - 'apps/*'
+  - 'packages/*'
+
+catalog:
+  react: 19.2.6
+  react-dom: 19.2.6
+  '@types/react': 19.2.14
+  '@types/react-dom': 19.2.3
+  '@types/node': 24.12.3
+  zod: 4.4.3
+
+catalogs:
+  vitest:
+    vitest: &vitest_version 4.1.5
+    '@vitest/ui': *vitest_version
+    '@vitest/coverage-v8': *vitest_version
+
+autoInstallPeers: false
+peerDependencyRules:
+  ignoreMissing:
+    - react
+    - react-dom
+    - react-native
+
+saveExact: true
+
+sideEffectsCache: false
+blockExoticSubdeps: true

@@ -1,0 +1,14 @@
+{
+  "name": "boulder.best",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "oxlint": "1.64.0",
+    "oxfmt": "0.49.0",
+    "oxlint-tsgolint": "0.22.1"
+  },
+  "type": "module"
+}

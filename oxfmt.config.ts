@@ -1,0 +1,80 @@
+import { defineConfig } from 'oxfmt';
+
+export default defineConfig({
+  quoteProps: 'as-needed',
+  jsdoc: {
+    preferCodeFences: true,
+    capitalizeDescriptions: false,
+  },
+  arrowParens: 'always',
+  bracketSpacing: true,
+  bracketSameLine: false,
+  singleQuote: true,
+  endOfLine: 'lf',
+  jsxSingleQuote: false,
+  sortPackageJson: false,
+  objectWrap: 'preserve',
+  printWidth: 80,
+  insertFinalNewline: true,
+  tabWidth: 2,
+  useTabs: false,
+  semi: true,
+  sortImports: {
+    groups: [
+      'builtin',
+      'testing',
+      'next',
+      'react',
+      'external',
+      'lawy',
+      'internal',
+      ['parent', 'sibling', 'index'],
+      'unknown',
+    ],
+    internalPattern: ['~/', '@/', '#'],
+    customGroups: [
+      {
+        groupName: 'testing',
+        elementNamePattern: ['@playwright/**', 'vitest', 'vitest/**'],
+      },
+      {
+        groupName: 'next',
+        elementNamePattern: ['next', 'next/**'],
+      },
+      {
+        groupName: 'react',
+        elementNamePattern: ['react', 'react-dom', 'react/**', 'react-dom/**'],
+      },
+      {
+        groupName: 'lawy',
+        elementNamePattern: ['@lawy/**/*'],
+      },
+    ],
+    newlinesBetween: false,
+    order: 'asc',
+    ignoreCase: true,
+  },
+  ignorePatterns: [
+    '**/.vercel',
+    '**/.next',
+    '.agents',
+    '**/test-report',
+    '**/test-results',
+    '**/dist',
+    '**/database/seed/data.ts',
+    '**/node_modules',
+    '**/(public-report)/**/*250805_*.ts',
+    '**/packages/database/seed/example_dataset.json',
+    '**/lib/analytics/migration/events',
+    '**/lib/analytics/migration/logs',
+  ],
+  proseWrap: 'preserve',
+  overrides: [
+    {
+      files: ['**/*.{json,jsonc}'],
+      options: {
+        trailingComma: 'none',
+      },
+    },
+  ],
+});
