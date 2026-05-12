@@ -10,6 +10,6 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "wrangler": "latest"
+    "wrangler": "4.90.1"
   }
 }
