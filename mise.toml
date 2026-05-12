@@ -39,7 +39,7 @@ _.file = ".env"
 _.path = ["{{config_root}}/node_modules/.bin"]
 
 [hooks]
-postinstall = ["hk install --mise", "mise deps install"]
+postinstall = ["hk install --mise"]
 
 [shell_alias]
 mr = 'mise tasks run '
