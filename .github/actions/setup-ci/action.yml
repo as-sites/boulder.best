@@ -22,3 +22,7 @@ runs:
       if: inputs.install-dependencies == 'true'
       with:
         cache: 'pnpm'
+    - name: Install dependencies
+      shell: bash
+      if: inputs.install-dependencies == 'true'
+      run: pnpm install --frozen-lockfile
