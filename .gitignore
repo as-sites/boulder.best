@@ -1,2 +1,13 @@
 .vscode/settings.json
-node_modules
+
+node_modules/
+
+dist/
+**/dist/
+*.tsbuildinfo
+**/*.tsbuildinfo
+
+.vite/
+**/.vite/
+.wrangler/
+**/.wrangler/

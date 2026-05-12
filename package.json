@@ -2,18 +2,12 @@
   "name": "boulder.best",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "devDependencies": {
-    "oxlint": "1.64.0",
     "oxfmt": "0.49.0",
+    "oxlint": "1.64.0",
     "oxlint-tsgolint": "0.22.1",
-    "wrangler": "4.4.0"
-  },
-  "dependencies": {
-    "drizzle-orm": "0.45.2",
-    "dexie": "4.4.2",
-    "dexie-react-hooks": "4.4.0",
-    "@hono/zod-openapi": "1.4.0",
-    "hono": "4.12.18"
-  },
-  "type": "module"
+    "typescript": "latest",
+    "wrangler": "latest"
+  }
 }

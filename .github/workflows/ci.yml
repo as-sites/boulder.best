@@ -1,0 +1,129 @@
+name: CI
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  lint-fmt:
+    name: Lint & Format
+    runs-on: blacksmith-2vcpu-ubuntu-2404
+    timeout-minutes: 15
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Setup CI
+        uses: ./.github/actions/setup-ci
+
+      - name: Oxfmt (Format & Sort)
+        run: mise run format --list-different
+        id: oxfmt-check
+        continue-on-error: true
+
+      - name: Oxlint (Junit)
+        id: oxlint-junit
+        run: mise run lint --format=junit > /tmp/oxlint-junit.xml
+        continue-on-error: true
+
+      - name: Oxlint (Stylish)
+        id: oxlint-stylish
+        run: mise run lint --format=stylish
+        continue-on-error: true
+
+      - name: Oxlint (GitHub)
+        id: oxlint-github
+        run: mise run lint --format=github
+        continue-on-error: true
+
+      - name: Upload Oxlint JUnit report
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: oxlint-junit--attempt-${{ github.run_attempt }}
+          path: /tmp/oxlint-junit.xml
+          retention-days: 7
+          if-no-files-found: ignore
+
+      - name: Fail if lint/formatting errors
+        if: ${{ always() }}
+        run: |
+          failed=0
+
+          if [[ "${{ steps.oxlint-junit.outcome }}" == "failure" || \
+                "${{ steps.oxlint-stylish.outcome }}" == "failure" || \
+                "${{ steps.oxlint-github.outcome }}" == "failure" ]]; then
+            echo "::error::Oxlint found lint errors"
+            failed=1
+          fi
+
+          if [[ "${{ steps.oxfmt-check.outcome }}" == "failure" ]]; then
+            echo "::error::Oxfmt found formatting errors"
+            failed=1
+          fi
+
+          exit $failed
+
+  typecheck:
+    name: Typecheck
+    runs-on: blacksmith-2vcpu-ubuntu-2404
+    timeout-minutes: 15
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Setup CI
+        uses: ./.github/actions/setup-ci
+
+      - name: Typecheck
+        run: mise run typecheck
+
+  unit-test:
+    name: Unit Test
+    runs-on: blacksmith-2vcpu-ubuntu-2404
+    timeout-minutes: 15
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Setup CI
+        uses: ./.github/actions/setup-ci
+
+      - name: Run unit tests
+        run: mise run unit --coverage
+
+      - name: Upload coverage report
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: coverage-report--attempt-${{ github.run_attempt }}
+          path: coverage
+          retention-days: 7
+          if-no-files-found: ignore
+
+      - name: Upload Vitest JUnit report
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: vitest-junit--attempt-${{ github.run_attempt }}
+          path: test-results/vitest-junit.xml
+          retention-days: 7
+          if-no-files-found: ignore
+
+  build:
+    name: Build
+    runs-on: blacksmith-4vcpu-ubuntu-2404
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Setup CI
+        uses: ./.github/actions/setup-ci
+
+      - name: Build
+        run: mise run build

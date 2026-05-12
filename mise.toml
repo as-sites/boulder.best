@@ -63,15 +63,7 @@ flag "--format <FORMAT>" help="The format to output the results in" default="def
 
 # in oxlint, the `--allow all` means to suppress the lint for all rules,
 # and the `--deny <rule>` means to emit an error for that rule
-run = '''
-oxlint \
-  --format={{usage.format}} \
-  {% if usage.fix %}--fix {% endif %} \
-  {% if usage.fix_suggestions %}--fix-suggestions {% endif %} \
-  {% if usage.fix_dangerously %}--fix-dangerously {% endif %} \
-  {% if usage.quiet %}--quiet {% endif %} \
-  {% for path in usage.paths %}{{path}} {% endfor %}
-'''
+run = 'oxlint --config=./oxlint.config.ts --format={{usage.format}} {% if usage.fix %}--fix {% endif %}{% if usage.fix_suggestions %}--fix-suggestions {% endif %}{% if usage.fix_dangerously %}--fix-dangerously {% endif %}{% if usage.quiet %}--quiet {% endif %}{% for path in usage.paths %}{{path}} {% endfor %}'
 
 [tasks.format]
 description = "Format the entire repo"
@@ -82,12 +74,7 @@ flag "-c --check" help="Check if the files are formatted"
 flag "-l --list-different" help="List files that are different from the expected format"
 '''
 alias = ["fmt", "format"]
-run = '''
-oxfmt \
-  {% if usage.check %}--check {% endif %} \
-  {% if usage.list_different %}--list-different {% endif %} \
-  {% for path in usage.paths %}{{path}} {% endfor %}
-'''
+run = 'oxfmt {% if usage.check %}--check {% endif %}{% if usage.list_different %}--list-different {% endif %}{% for path in usage.paths %}{{path}} {% endfor %}'
 
 [tasks.unit]
 alias = ["test:unit", "test"]
@@ -115,3 +102,37 @@ vitest run \
   {% if usage.open %}--open {% endif %}\
   {% for f in usage.filters %}{{f}} {% endfor %}
 '''
+
+[tasks.typecheck]
+description = "Typecheck all workspace projects"
+run = "tsc -b"
+
+[tasks."frontend:dev"]
+description = "Start the frontend Vite dev server"
+dir = "apps/frontend"
+run = "vite"
+
+[tasks."frontend:build"]
+description = "Build the frontend Worker static assets app"
+dir = "apps/frontend"
+run = "vite build"
+
+[tasks."frontend:preview"]
+description = "Preview the built frontend Worker locally"
+dir = "apps/frontend"
+run = "vite preview"
+
+[tasks."frontend:deploy"]
+description = "Deploy the frontend Worker static assets app"
+dir = "apps/frontend"
+run = "wrangler deploy"
+
+[tasks."api:dev"]
+description = "Start the API Worker dev server"
+dir = "apps/api"
+run = "wrangler dev"
+
+[tasks."api:deploy"]
+description = "Deploy the API Worker"
+dir = "apps/api"
+run = "wrangler deploy"

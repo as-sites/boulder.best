@@ -7,6 +7,13 @@ export default defineConfig({
   env: {
     builtin: true,
   },
+  ignorePatterns: [
+    '**/dist/**',
+    '**/*.tsbuildinfo',
+    '**/.vite/**',
+    '**/.wrangler/**',
+    '**/coverage/**',
+  ],
   options: {
     reportUnusedDisableDirectives: 'error',
     typeAware: true,
@@ -42,6 +49,7 @@ export default defineConfig({
         '**/tailwind.config.js',
         'oxlint.config.ts',
         'oxfmt.config.ts',
+        'vite.config.ts',
         'vitest.config.ts',
       ],
       rules: {

@@ -5,8 +5,6 @@
     "source.format.oxc": "always",
     "source.fixAll.oxc": "always"
   },
-  "typescript.tsdk": "node_modules/typescript/lib",
-  "typescript.enablePromptUseWorkspaceTsdk": true,
   "files.watcherExclude": {
     "**/routeTree.gen.ts": true
   },
@@ -15,5 +13,6 @@
   },
   "files.readonlyInclude": {
     "**/routeTree.gen.ts": true
-  }
+  },
+  "js/ts.tsdk.path": "node_modules/typescript/lib"
 }

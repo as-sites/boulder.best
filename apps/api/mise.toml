@@ -1,0 +1,11 @@
+[tasks.dev]
+description = "Start the API Worker dev server"
+run = "wrangler dev"
+
+[tasks.deploy]
+description = "Deploy the API Worker"
+run = "wrangler deploy"
+
+[tasks.typecheck]
+description = "Typecheck the API Worker"
+run = "tsc -b ."
