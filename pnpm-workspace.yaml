@@ -27,3 +27,7 @@ saveExact: true
 
 sideEffectsCache: false
 blockExoticSubdeps: true
+allowBuilds:
+  esbuild: true
+  sharp: true
+  workerd: true
