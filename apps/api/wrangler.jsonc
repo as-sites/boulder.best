@@ -2,5 +2,12 @@
   "$schema": "../../node_modules/wrangler/config-schema.json",
   "name": "boulder-api",
   "main": "src/index.ts",
-  "compatibility_date": "2026-05-13"
+  "compatibility_date": "2026-05-13",
+  "compatibility_flags": ["nodejs_compat"],
+  // Non-secret vars — override in .dev.vars for local dev
+  "vars": {
+    "BETTER_AUTH_URL": "https://api.boulder.best",
+    "FRONTEND_URL": "https://boulder.best",
+    "PASSKEY_RP_ID": "boulder.best"
+  }
 }

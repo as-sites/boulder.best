@@ -1,11 +1,43 @@
 [tasks.dev]
+alias = ["api:dev"]
 description = "Start the API Worker dev server"
 run = "wrangler dev"
 
+[tasks.build]
+alias = ["api:build"]
+description = "Bundle the API Worker without deploying"
+run = "wrangler build"
+
 [tasks.deploy]
+alias = ["api:deploy"]
 description = "Deploy the API Worker"
 run = "wrangler deploy"
 
 [tasks.typecheck]
 description = "Typecheck the API Worker"
 run = "tsc -b ."
+
+[tasks."db:generate"]
+alias = ["api:db:generate"]
+description = "Generate SQL migration files from schema changes"
+run = "drizzle-kit generate"
+
+[tasks."db:migrate"]
+alias = ["api:db:migrate"]
+description = "Apply pending migrations to the database"
+run = "drizzle-kit migrate"
+
+[tasks."db:push"]
+alias = ["api:db:push"]
+description = "Push schema directly to DB without migration files (dev only)"
+run = "drizzle-kit push"
+
+[tasks."db:studio"]
+alias = ["api:db:studio"]
+description = "Open Drizzle Studio to browse the database"
+run = "drizzle-kit studio"
+
+[tasks."auth:generate-schema"]
+alias = ["api:auth:generate-schema"]
+description = "Regenerate better-auth Drizzle schema (re-run after adding plugins)"
+run = "pnpm dlx @better-auth/cli generate --output ../../packages/auth/src/schema.ts"

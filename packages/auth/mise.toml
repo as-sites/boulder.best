@@ -1,0 +1,3 @@
+[tasks.typecheck]
+description = "Typecheck the auth package"
+run = "tsc -b ."

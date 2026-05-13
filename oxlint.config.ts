@@ -41,6 +41,8 @@ export default defineConfig({
       files: ['**/*.d.ts'],
       rules: {
         'import/unambiguous': 'off',
+        'typescript/consistent-type-imports': 'off',
+        'unicorn/require-module-specifiers': 'off',
       },
     },
     {

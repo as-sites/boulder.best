@@ -1,7 +1,3 @@
-[tasks.build]
-description = "Build API contract declarations"
-run = "tsc -b ."
-
 [tasks.typecheck]
 description = "Typecheck the API contract package"
 run = "tsc -b ."

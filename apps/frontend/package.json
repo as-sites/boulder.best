@@ -9,11 +9,13 @@
     "@mantine/hooks": "9.2.0",
     "@tanstack/react-query": "5.100.10",
     "@tanstack/react-router": "1.169.2",
+    "better-auth": "1.6.11",
     "hono": "4.12.18",
     "react": "catalog:",
     "react-dom": "catalog:"
   },
   "devDependencies": {
+    "@better-auth/core": "catalog:better-auth",
     "@cloudflare/vite-plugin": "1.36.4",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",

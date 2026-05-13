@@ -1,0 +1,5 @@
+{
+  "permissions": {
+    "allow": ["mcp__better-auth__search_docs", "mcp__better-auth__get_doc"]
+  }
+}

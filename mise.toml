@@ -109,35 +109,11 @@ vitest run \
 '''
 
 [tasks.typecheck]
+alias = 'tsc'
 description = "Typecheck all workspace projects"
 run = "tsc -b"
 
-[tasks."frontend:dev"]
-description = "Start the frontend Vite dev server"
-dir = "apps/frontend"
-run = "vite"
-
-[tasks."frontend:build"]
-description = "Build the frontend Worker static assets app"
-dir = "apps/frontend"
-run = "vite build"
-
-[tasks."frontend:preview"]
-description = "Preview the built frontend Worker locally"
-dir = "apps/frontend"
-run = "vite preview"
-
-[tasks."frontend:deploy"]
-description = "Deploy the frontend Worker static assets app"
-dir = "apps/frontend"
-run = "wrangler deploy"
-
-[tasks."api:dev"]
-description = "Start the API Worker dev server"
-dir = "apps/api"
-run = "wrangler dev"
-
-[tasks."api:deploy"]
-description = "Deploy the API Worker"
-dir = "apps/api"
-run = "wrangler deploy"
+[tasks.build]
+alias = 'build'
+description = "Build all workspace projects"
+depends = ["//...:build"]
