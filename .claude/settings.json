@@ -1,0 +1,5 @@
+{
+  "enabledPlugins": {
+    "auth-skills@better-auth-agent-skills": true
+  }
+}

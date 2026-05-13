@@ -11,3 +11,6 @@ dist/
 **/.vite/
 .wrangler/
 **/.wrangler/
+
+.agents/skills
+.claude/skills
