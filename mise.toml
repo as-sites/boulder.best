@@ -36,7 +36,11 @@ HK_MISE = "1"
 HK_HIDE_WHEN_DONE = "true"
 MISE_EXPERIMENTAL = "1"
 _.file = ".env"
-_.path = ["{{config_root}}/node_modules/.bin"]
+_.path = [
+  "{{config_root}}/node_modules/.bin",
+  "{{config_root}}/apps/frontend/node_modules/.bin",
+  "{{config_root}}/apps/api/node_modules/.bin",
+]
 
 [hooks]
 postinstall = ["hk install --mise"]
