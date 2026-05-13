@@ -12,6 +12,6 @@ if command -v mise >/dev/null 2>&1; then
 fi
 
 mise trust --yes
-mise self-update --yes || echo "mise self-update skipped; continuing with installed mise"
+sudo apt update && sudo apt install --only-upgrade mise
 mise install --yes
 pnpm install --frozen-lockfile
