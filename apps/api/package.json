@@ -5,11 +5,15 @@
   "type": "module",
   "dependencies": {
     "@boulder/api-contract": "workspace:*",
+    "@boulder/auth": "workspace:*",
     "@hono/zod-openapi": "1.4.0",
+    "@neondatabase/serverless": "^1.1.0",
+    "drizzle-orm": "^0.45.2",
     "hono": "4.12.18",
     "zod": "catalog:"
   },
   "devDependencies": {
+    "drizzle-kit": "0.31.10",
     "wrangler": "4.90.1"
   }
 }

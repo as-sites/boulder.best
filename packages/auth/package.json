@@ -1,0 +1,17 @@
+{
+  "name": "@boulder/auth",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./schema": "./src/schema.ts"
+  },
+  "dependencies": {
+    "@better-auth/passkey": "catalog:better-auth",
+    "@neondatabase/serverless": "^1.1.0",
+    "better-auth": "catalog:better-auth",
+    "drizzle-orm": "^0.45.2",
+    "resend": "^6.12.3"
+  }
+}

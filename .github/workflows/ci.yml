@@ -116,16 +116,16 @@ jobs:
           retention-days: 7
           if-no-files-found: ignore
 
-  # build:
-  #   name: Build
-  #   runs-on: blacksmith-4vcpu-ubuntu-2404
-  #   timeout-minutes: 10
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+  build:
+    name: Build
+    runs-on: blacksmith-2vcpu-ubuntu-2404
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
-  #     - name: Setup CI
-  #       uses: ./.github/actions/setup-ci
+      - name: Setup CI
+        uses: ./.github/actions/setup-ci
 
-  #     - name: Build
-  #       run: mise run build
+      - name: Build
+        run: mise run build

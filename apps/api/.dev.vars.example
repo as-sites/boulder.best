@@ -1,0 +1,22 @@
+# Copy to .dev.vars (gitignored) and fill in values for local development.
+# Secrets set here override the vars in wrangler.jsonc.
+
+# Generate with: openssl rand -base64 32
+BETTER_AUTH_SECRET=
+
+# Local dev overrides (already set in wrangler.jsonc vars for prod)
+BETTER_AUTH_URL=http://localhost:8787
+FRONTEND_URL=http://localhost:5173
+PASSKEY_RP_ID=localhost
+
+# Neon connection string
+DATABASE_URL=
+
+# OAuth — create apps at console.developers.google.com and discord.com/developers
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+DISCORD_CLIENT_ID=
+DISCORD_CLIENT_SECRET=
+
+# https://resend.com/api-keys
+RESEND_API_KEY=

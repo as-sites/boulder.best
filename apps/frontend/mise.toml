@@ -1,19 +1,24 @@
 [tasks.dev]
+alias = ["frontend:dev"]
 description = "Start the frontend Vite dev server"
 run = "vite"
 
 [tasks.build]
+alias = ["frontend:build"]
 description = "Build the frontend Worker static assets app"
 run = "vite build"
 
 [tasks.preview]
+alias = ["frontend:preview"]
 description = "Preview the built frontend app locally"
 run = "vite preview"
 
 [tasks.deploy]
+alias = ["frontend:deploy"]
 description = "Deploy the frontend Worker static assets app"
 run = "wrangler deploy"
 
 [tasks.typecheck]
+alias = ["frontend:typecheck"]
 description = "Typecheck the frontend app"
 run = "tsc -b ."
