@@ -55,8 +55,6 @@ export default defineConfig({
     ignoreCase: true,
   },
   ignorePatterns: [
-    '**/.vercel',
-    '**/.next',
     '**/.vite',
     '**/.wrangler',
     '.agents',
@@ -65,12 +63,7 @@ export default defineConfig({
     '**/test-results',
     '**/dist',
     '**/*.tsbuildinfo',
-    '**/database/seed/data.ts',
     '**/node_modules',
-    '**/(public-report)/**/*250805_*.ts',
-    '**/packages/database/seed/example_dataset.json',
-    '**/lib/analytics/migration/events',
-    '**/lib/analytics/migration/logs',
   ],
   proseWrap: 'preserve',
   overrides: [
