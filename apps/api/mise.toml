@@ -32,6 +32,11 @@ alias = ["api:db:push"]
 description = "Push schema directly to DB without migration files (dev only)"
 run = "drizzle-kit push"
 
+[tasks."db:check"]
+alias = ["api:db:check"]
+description = "Check migration files are consistent with the schema"
+run = "drizzle-kit check"
+
 [tasks."db:studio"]
 alias = ["api:db:studio"]
 description = "Open Drizzle Studio to browse the database"
