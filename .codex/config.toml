@@ -1,2 +1,5 @@
 [mcp_servers.better-auth]
 url = "https://mcp.better-auth.com/mcp"
+
+[mcp_servers.linear]
+url = "https://mcp.linear.app/mcp"
