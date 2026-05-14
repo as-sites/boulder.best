@@ -12,5 +12,7 @@ dist/
 .wrangler/
 **/.wrangler/
 
-.agents/skills
-.claude/skills
+.agents/skills/
+.claude/skills/
+!.agents/skills/linear-ticket-planning/
+!.agents/skills/linear-ticket-planning/SKILL.md
