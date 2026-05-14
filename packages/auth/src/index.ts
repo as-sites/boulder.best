@@ -7,16 +7,18 @@ import { Resend } from 'resend';
 import * as authSchema from './schema.js';
 
 export interface AuthEnvBindings {
+  // Core — required at all times
   BETTER_AUTH_SECRET: string;
   BETTER_AUTH_URL: string;
   FRONTEND_URL: string;
   DATABASE_URL: string;
-  GOOGLE_CLIENT_ID: string;
-  GOOGLE_CLIENT_SECRET: string;
-  DISCORD_CLIENT_ID: string;
-  DISCORD_CLIENT_SECRET: string;
-  RESEND_API_KEY: string;
-  PASSKEY_RP_ID: string;
+  // Optional — set in Worker secrets / .dev.vars when the feature is enabled
+  RESEND_API_KEY?: string;
+  GOOGLE_CLIENT_ID?: string;
+  GOOGLE_CLIENT_SECRET?: string;
+  DISCORD_CLIENT_ID?: string;
+  DISCORD_CLIENT_SECRET?: string;
+  PASSKEY_RP_ID?: string;
 }
 
 // Minimal surface exposed to apps — only what the Hono handler needs.
@@ -40,32 +42,39 @@ function buildAuth(env: AuthEnvBindings): AuthServer {
     }),
     emailAndPassword: {
       enabled: true,
-      sendResetPassword: async ({ user, url }) => {
-        const resend = new Resend(env.RESEND_API_KEY);
-        await resend.emails.send({
-          from: 'Boulder.best <noreply@boulder.best>',
-          to: user.email,
-          subject: 'Reset your password',
-          html: `<p><a href="${url}">Click here</a> to reset your password. This link expires in 1 hour.</p>`,
-        });
-      },
+      // Only wire up reset emails when the Resend key is present.
+      // ctx.waitUntil should be used here once ExecutionContext is threaded
+      // through the Hono handler so email I/O doesn't block the response.
+      ...(env.RESEND_API_KEY && {
+        sendResetPassword: async ({ user, url }) => {
+          await new Resend(env.RESEND_API_KEY).emails.send({
+            from: 'Boulder.best <noreply@boulder.best>',
+            to: user.email,
+            subject: 'Reset your password',
+            html: `<p><a href="${url}">Click here</a> to reset your password. This link expires in 1 hour.</p>`,
+          });
+        },
+      }),
     },
     socialProviders: {
-      google: {
-        clientId: env.GOOGLE_CLIENT_ID,
-        clientSecret: env.GOOGLE_CLIENT_SECRET,
-      },
-      discord: {
-        clientId: env.DISCORD_CLIENT_ID,
-        clientSecret: env.DISCORD_CLIENT_SECRET,
-      },
+      ...(env.GOOGLE_CLIENT_ID &&
+        env.GOOGLE_CLIENT_SECRET && {
+          google: {
+            clientId: env.GOOGLE_CLIENT_ID,
+            clientSecret: env.GOOGLE_CLIENT_SECRET,
+          },
+        }),
+      ...(env.DISCORD_CLIENT_ID &&
+        env.DISCORD_CLIENT_SECRET && {
+          discord: {
+            clientId: env.DISCORD_CLIENT_ID,
+            clientSecret: env.DISCORD_CLIENT_SECRET,
+          },
+        }),
     },
-    plugins: [
-      passkey({
-        rpID: env.PASSKEY_RP_ID,
-        rpName: 'Boulder.best',
-      }),
-    ],
+    plugins: env.PASSKEY_RP_ID
+      ? [passkey({ rpID: env.PASSKEY_RP_ID, rpName: 'Boulder.best' })]
+      : [],
     account: {
       accountLinking: {
         enabled: true,

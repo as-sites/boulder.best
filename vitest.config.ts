@@ -57,6 +57,13 @@ export default defineConfig({
           environment: 'node',
         },
       },
+      {
+        test: {
+          name: 'packages/auth',
+          include: ['packages/auth/tests/**/*.test.{ts,tsx}'],
+          environment: 'node',
+        },
+      },
     ],
   },
 });
