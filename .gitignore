@@ -18,3 +18,4 @@ dist/
 !.agents/skills/linear-ticket-planning/SKILL.md
 
 coverage
+.env

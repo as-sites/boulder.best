@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  createAuth,
   createAuthProviderConfig,
   type AuthEnvBindings,
   type AuthServer,
@@ -136,6 +137,17 @@ describe('auth provider config', () => {
 });
 
 describe('auth server interface', () => {
+  it('reports missing required env bindings before creating database clients', () => {
+    expect(() =>
+      createAuth({
+        BETTER_AUTH_SECRET: 'x'.repeat(32),
+        BETTER_AUTH_URL: 'http://localhost:8787',
+        FRONTEND_URL: 'http://localhost:5173',
+        DATABASE_URL: '',
+      }),
+    ).toThrow('Missing required auth environment binding(s): DATABASE_URL');
+  });
+
   it('exposes a handler method accepting a Request', () => {
     // Type-level assertion: a handler conforming to the interface must compile.
     type HandlerFn = AuthServer['handler'];
