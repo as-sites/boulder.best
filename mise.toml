@@ -78,12 +78,7 @@ flag "-c --check" help="Check if the files are formatted"
 flag "-l --list-different" help="List files that are different from the expected format"
 '''
 alias = ["fmt", "format"]
-run = '''
-oxfmt \
-  {% if usage.check %}--check {% endif %} \
-  {% if usage.list_different %}--list-different {% endif %} \
-  {% for path in usage.paths %}{{path}} {% endfor %}
-'''
+run = 'oxfmt {% if usage.check %}--check {% endif %} {% if usage.list_different %}--list-different {% endif %} {% for path in usage.paths %}{{path}} {% endfor %}'
 
 [tasks.unit]
 alias = ["test:unit", "test"]
@@ -99,18 +94,7 @@ flag "--ui" help="Enable Vitest UI"
 flag "--open" help="Open Vitest UI automatically"
 '''
 
-run = '''
-vitest run \
-  --root="." \
-  --config="vitest.config.ts" \
-  --project="{{usage.project}}" \
-  --coverage="{{usage.coverage}}" \
-  --watch="{{usage.watch}}" \
-  {% if usage.update %}--update {% endif %}\
-  {% if usage.ui %}--ui {% endif %}\
-  {% if usage.open %}--open {% endif %}\
-  {% for f in usage.filters %}{{f}} {% endfor %}
-'''
+run = 'vitest run --root="." --config="vitest.config.ts" --project="{{usage.project}}" --coverage="{{usage.coverage}}" --watch="{{usage.watch}}" {% if usage.update %}--update {% endif %}{% if usage.ui %}--ui {% endif %}{% if usage.open %}--open {% endif %}{% for f in usage.filters %}{{f}} {% endfor %}'
 
 [tasks.typecheck]
 alias = 'tsc'
