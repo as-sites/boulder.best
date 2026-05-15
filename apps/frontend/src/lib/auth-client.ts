@@ -13,14 +13,21 @@ export type OAuthProvider = 'google' | 'discord';
 // The explicit interface covers everything components actually use.
 export interface AuthClient {
   signIn: ReturnType<typeof createAuthClient>['signIn'] & {
+    email(options: { email: string; password: string }): AuthActionResult;
     passkey(options: { autoFill?: boolean }): AuthActionResult;
     social(options: {
       provider: OAuthProvider;
       callbackURL?: string;
     }): AuthActionResult;
   };
-  signUp: ReturnType<typeof createAuthClient>['signUp'];
-  signOut: ReturnType<typeof createAuthClient>['signOut'];
+  signUp: ReturnType<typeof createAuthClient>['signUp'] & {
+    email(options: {
+      email: string;
+      password: string;
+      name: string;
+    }): AuthActionResult;
+  };
+  signOut(): AuthActionResult;
   useSession: ReturnType<typeof createAuthClient>['useSession'];
   getSession: ReturnType<typeof createAuthClient>['getSession'];
   passkey: {

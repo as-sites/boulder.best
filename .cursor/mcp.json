@@ -3,6 +3,10 @@
     "better-auth": {
       "url": "https://mcp.better-auth.com/mcp",
       "headers": {}
+    },
+    "mise": {
+      "command": "mise",
+      "args": ["mcp"]
     }
   }
 }
