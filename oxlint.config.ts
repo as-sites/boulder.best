@@ -58,6 +58,12 @@ export default defineConfig({
         'import/no-default-export': 'off',
       },
     },
+    {
+      files: ['**/*.test.{ts,tsx}'],
+      rules: {
+        'typescript/require-await': 'off',
+      },
+    },
   ],
   plugins: [
     'eslint',

@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { MantineProvider } from '@mantine/core';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { AuthActions } from '../src/app.js';
+import { AuthActions } from '../src/components/auth-actions.js';
 import type { authClient } from '../src/lib/auth-client.js';
 
 const authMocks = vi.hoisted(() => ({
@@ -29,6 +29,7 @@ vi.mock(import('../src/lib/auth-client.js'), () => ({
       addPasskey: authMocks.addPasskey,
     },
     useSession: authMocks.useSession,
+    getSession: vi.fn(),
   },
 }));
 
@@ -50,7 +51,19 @@ describe(AuthActions, () => {
     authMocks.addPasskey.mockResolvedValue({ data: {}, error: null });
     authMocks.useSession.mockReturnValue({
       data: null,
+      isPending: false,
     } as ReturnType<typeof authClient.useSession>);
+  });
+
+  it('shows session restoration while account state is pending', () => {
+    authMocks.useSession.mockReturnValue({
+      data: null,
+      isPending: true,
+    } as ReturnType<typeof authClient.useSession>);
+
+    renderAuthActions();
+
+    expect(screen.getByText('Restoring session...')).toBeInTheDocument();
   });
 
   it('signs in with email and password', async () => {
