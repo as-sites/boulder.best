@@ -22,11 +22,21 @@ export interface AuthEnvBindings {
   PASSKEY_ORIGIN?: string;
 }
 
-// Minimal surface exposed to apps — only what the Hono handler needs.
+// Minimal surface exposed to apps — only what the API auth boundary needs.
 // Hiding the full betterAuth return type keeps declaration emit free of
 // non-portable pnpm store paths (zod internals, @simplewebauthn, etc.).
 export interface AuthServer {
   handler(request: Request): Response | Promise<Response>;
+  api: {
+    getSession(options: { headers: Headers }): Promise<AuthSession | null>;
+  };
+}
+
+export interface AuthSession {
+  user: {
+    id: string;
+  };
+  session: unknown;
 }
 
 export interface OAuthProviderConfig {
