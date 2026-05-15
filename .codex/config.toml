@@ -4,6 +4,9 @@ url = "https://mcp.better-auth.com/mcp"
 [mcp_servers.linear]
 url = "https://mcp.linear.app/mcp"
 
+[mcp_servers.linear.tools.save_comment]
+approval_mode = "approve"
+
 [mcp_servers.mise]
 command = "mise"
 args = ["mcp"]
