@@ -3,3 +3,10 @@ url = "https://mcp.better-auth.com/mcp"
 
 [mcp_servers.linear]
 url = "https://mcp.linear.app/mcp"
+
+[mcp_servers.mise]
+command = "mise"
+args = ["mcp"]
+
+[mcp_servers.mise.tools.run_task]
+approval_mode = "approve"
