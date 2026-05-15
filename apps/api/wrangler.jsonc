@@ -4,17 +4,52 @@
   "main": "src/index.ts",
   "compatibility_date": "2026-05-13",
   "compatibility_flags": ["nodejs_compat"],
-  "routes": [
-    {
-      "pattern": "boulder.best/api/*",
-      "zone_name": "boulder.best"
+  "env": {
+    "dev": {
+      "name": "boulder-api-dev",
+      "vars": {
+        "BETTER_AUTH_URL": "http://localhost:5173",
+        "FRONTEND_URL": "http://localhost:5173",
+        "PASSKEY_RP_ID": "localhost",
+        "PASSKEY_ORIGIN": "http://localhost:5173"
+      },
+      "secrets": {
+        "required": [
+          "DATABASE_URL",
+          "BETTER_AUTH_SECRET",
+          "GOOGLE_CLIENT_ID",
+          "GOOGLE_CLIENT_SECRET",
+          "RESEND_API_KEY",
+          "DISCORD_CLIENT_ID",
+          "DISCORD_CLIENT_SECRET"
+        ]
+      }
+    },
+    "production": {
+      "name": "boulder-api",
+      "routes": [
+        {
+          "pattern": "boulder.best/api/*",
+          "zone_name": "boulder.best"
+        }
+      ],
+      "vars": {
+        "BETTER_AUTH_URL": "https://boulder.best",
+        "FRONTEND_URL": "https://boulder.best",
+        "PASSKEY_RP_ID": "boulder.best",
+        "PASSKEY_ORIGIN": "https://boulder.best"
+      },
+      "secrets": {
+        "required": [
+          "DATABASE_URL",
+          "BETTER_AUTH_SECRET",
+          "GOOGLE_CLIENT_ID",
+          "GOOGLE_CLIENT_SECRET",
+          "RESEND_API_KEY",
+          "DISCORD_CLIENT_ID",
+          "DISCORD_CLIENT_SECRET"
+        ]
+      }
     }
-  ],
-  // Non-secret vars — override in .dev.vars for local dev
-  "vars": {
-    "BETTER_AUTH_URL": "https://boulder.best",
-    "FRONTEND_URL": "https://boulder.best",
-    "PASSKEY_RP_ID": "boulder.best",
-    "PASSKEY_ORIGIN": "https://boulder.best"
   }
 }

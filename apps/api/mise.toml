@@ -1,17 +1,17 @@
 [tasks.dev]
 alias = ["api:dev"]
 description = "Start the API Worker dev server"
-run = "wrangler dev"
+run = "wrangler dev --env dev"
 
 [tasks.build]
 alias = ["api:build"]
 description = "Bundle the API Worker without deploying"
-run = "wrangler build"
+run = "wrangler build --env production"
 
 [tasks.deploy]
 alias = ["api:deploy"]
 description = "Deploy the API Worker"
-run = "wrangler deploy"
+run = "wrangler deploy --env production"
 
 [tasks.typecheck]
 description = "Typecheck the API Worker"

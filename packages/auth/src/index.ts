@@ -12,7 +12,7 @@ export interface AuthEnvBindings {
   BETTER_AUTH_URL: string;
   FRONTEND_URL: string;
   DATABASE_URL: string;
-  // Optional — set in Worker secrets / .dev.vars when the feature is enabled
+  // Optional — set in Worker secrets or local .env when the feature is enabled
   RESEND_API_KEY?: string;
   GOOGLE_CLIENT_ID?: string;
   GOOGLE_CLIENT_SECRET?: string;
@@ -48,8 +48,27 @@ export interface AuthProviderConfig {
   passkey?: PasskeyProviderConfig;
 }
 
+const requiredAuthEnvKeys = [
+  'BETTER_AUTH_SECRET',
+  'BETTER_AUTH_URL',
+  'FRONTEND_URL',
+  'DATABASE_URL',
+] as const satisfies ReadonlyArray<keyof AuthEnvBindings>;
+
 function hasValue(value: string | undefined): value is string {
   return value !== undefined && value.length > 0;
+}
+
+function assertAuthEnv(env: AuthEnvBindings): void {
+  const missing = requiredAuthEnvKeys.filter((key) => !hasValue(env[key]));
+
+  if (missing.length > 0) {
+    throw new Error(
+      `Missing required auth environment binding(s): ${missing.join(
+        ', ',
+      )}. Declare required secret names in the API Wrangler config and provide local values in .env or Cloudflare Worker secrets.`,
+    );
+  }
 }
 
 function providerPair(
@@ -188,6 +207,7 @@ let _auth: AuthServer | null = null;
 let _cacheKey: string | null = null;
 
 export function createAuth(env: AuthEnvBindings): AuthServer {
+  assertAuthEnv(env);
   const cacheKey = createAuthCacheKey(env);
 
   if (_auth !== null && _cacheKey === cacheKey) {
