@@ -12,7 +12,9 @@
       "Bash(git add *)",
       "Bash(git commit -m *)",
       "Bash(git push *)",
-      "Bash(gh pr create *)"
+      "Bash(gh pr create *)",
+      "Bash(Get-ChildItem -Path \"P:\\\\boulder.best\" -Directory)",
+      "Bash(Select-Object Name)"
     ]
   },
   "enableAllProjectMcpServers": true,

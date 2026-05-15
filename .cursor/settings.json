@@ -1,0 +1,13 @@
+{
+  "plugins": {
+    "linear": {
+      "enabled": true
+    },
+    "cloudflare": {
+      "enabled": true
+    },
+    "neon-postgres": {
+      "enabled": true
+    }
+  }
+}

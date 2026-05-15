@@ -136,7 +136,7 @@ export function AuthActions() {
       <Paper withBorder p="md" radius="sm">
         <Stack gap="sm">
           <Title order={2}>Account</Title>
-          <Text size="sm">Signed in as {session.data.user.email}</Text>
+          <Text size="sm">Signed in as {session.data?.user.email}</Text>
           <Group gap="sm">
             <Button
               disabled={isSubmitting}
