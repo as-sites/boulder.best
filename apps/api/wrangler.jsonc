@@ -4,10 +4,17 @@
   "main": "src/index.ts",
   "compatibility_date": "2026-05-13",
   "compatibility_flags": ["nodejs_compat"],
+  "routes": [
+    {
+      "pattern": "boulder.best/api/*",
+      "zone_name": "boulder.best"
+    }
+  ],
   // Non-secret vars — override in .dev.vars for local dev
   "vars": {
-    "BETTER_AUTH_URL": "https://api.boulder.best",
+    "BETTER_AUTH_URL": "https://boulder.best",
     "FRONTEND_URL": "https://boulder.best",
-    "PASSKEY_RP_ID": "boulder.best"
+    "PASSKEY_RP_ID": "boulder.best",
+    "PASSKEY_ORIGIN": "https://boulder.best"
   }
 }

@@ -19,6 +19,7 @@ export interface AuthEnvBindings {
   DISCORD_CLIENT_ID?: string;
   DISCORD_CLIENT_SECRET?: string;
   PASSKEY_RP_ID?: string;
+  PASSKEY_ORIGIN?: string;
 }
 
 // Minimal surface exposed to apps — only what the Hono handler needs.
@@ -28,9 +29,125 @@ export interface AuthServer {
   handler(request: Request): Response | Promise<Response>;
 }
 
+export interface OAuthProviderConfig {
+  clientId: string;
+  clientSecret: string;
+}
+
+export interface PasskeyProviderConfig {
+  rpID: string;
+  rpName: string;
+  origin: string;
+}
+
+export interface AuthProviderConfig {
+  socialProviders: {
+    google?: OAuthProviderConfig;
+    discord?: OAuthProviderConfig;
+  };
+  passkey?: PasskeyProviderConfig;
+}
+
+function hasValue(value: string | undefined): value is string {
+  return value !== undefined && value.length > 0;
+}
+
+function providerPair(
+  provider: 'Google' | 'Discord',
+  clientId: string | undefined,
+  clientSecret: string | undefined,
+): OAuthProviderConfig | undefined {
+  const hasClientId = hasValue(clientId);
+  const hasClientSecret = hasValue(clientSecret);
+
+  if (hasClientId !== hasClientSecret) {
+    throw new Error(
+      `${provider} OAuth requires both client ID and client secret when enabled.`,
+    );
+  }
+
+  return hasClientId && hasClientSecret
+    ? { clientId, clientSecret }
+    : undefined;
+}
+
+function assertOrigin(value: string, name: string): string {
+  let parsed: URL;
+
+  try {
+    parsed = new URL(value);
+  } catch {
+    throw new Error(`${name} must be a valid URL origin.`);
+  }
+
+  if (parsed.origin !== value || value.endsWith('/')) {
+    throw new Error(`${name} must be an origin URL without a trailing slash.`);
+  }
+
+  return value;
+}
+
+function assertRpId(value: string): string {
+  if (value.includes('://') || value.includes('/') || value.endsWith('.')) {
+    throw new Error('PASSKEY_RP_ID must be a domain-style RP ID, not a URL.');
+  }
+
+  return value;
+}
+
+export function createAuthProviderConfig(
+  env: AuthEnvBindings,
+): AuthProviderConfig {
+  const google = providerPair(
+    'Google',
+    env.GOOGLE_CLIENT_ID,
+    env.GOOGLE_CLIENT_SECRET,
+  );
+  const discord = providerPair(
+    'Discord',
+    env.DISCORD_CLIENT_ID,
+    env.DISCORD_CLIENT_SECRET,
+  );
+  const passkeyOptions = hasValue(env.PASSKEY_RP_ID)
+    ? {
+        rpID: assertRpId(env.PASSKEY_RP_ID),
+        rpName: 'Boulder.best',
+        origin: assertOrigin(
+          env.PASSKEY_ORIGIN ?? env.BETTER_AUTH_URL,
+          env.PASSKEY_ORIGIN ? 'PASSKEY_ORIGIN' : 'BETTER_AUTH_URL',
+        ),
+      }
+    : undefined;
+
+  return {
+    socialProviders: {
+      ...(google && { google }),
+      ...(discord && { discord }),
+    },
+    ...(passkeyOptions && { passkey: passkeyOptions }),
+  };
+}
+
+function createAuthCacheKey(env: AuthEnvBindings): string {
+  return JSON.stringify({
+    secret: env.BETTER_AUTH_SECRET,
+    url: env.BETTER_AUTH_URL,
+    frontendUrl: env.FRONTEND_URL,
+    databaseUrl: env.DATABASE_URL,
+    resendApiKey: env.RESEND_API_KEY,
+    googleClientId: env.GOOGLE_CLIENT_ID,
+    googleClientSecret: env.GOOGLE_CLIENT_SECRET,
+    discordClientId: env.DISCORD_CLIENT_ID,
+    discordClientSecret: env.DISCORD_CLIENT_SECRET,
+    passkeyRpId: env.PASSKEY_RP_ID,
+    passkeyOrigin: env.PASSKEY_ORIGIN,
+  });
+}
+
 function buildAuth(env: AuthEnvBindings): AuthServer {
   const sql = neon(env.DATABASE_URL);
   const db = drizzle({ client: sql, schema: authSchema });
+  const providerConfig = createAuthProviderConfig(env);
 
   return betterAuth({
     baseURL: env.BETTER_AUTH_URL,
@@ -56,25 +173,8 @@ function buildAuth(env: AuthEnvBindings): AuthServer {
         },
       }),
     },
-    socialProviders: {
-      ...(env.GOOGLE_CLIENT_ID &&
-        env.GOOGLE_CLIENT_SECRET && {
-          google: {
-            clientId: env.GOOGLE_CLIENT_ID,
-            clientSecret: env.GOOGLE_CLIENT_SECRET,
-          },
-        }),
-      ...(env.DISCORD_CLIENT_ID &&
-        env.DISCORD_CLIENT_SECRET && {
-          discord: {
-            clientId: env.DISCORD_CLIENT_ID,
-            clientSecret: env.DISCORD_CLIENT_SECRET,
-          },
-        }),
-    },
-    plugins: env.PASSKEY_RP_ID
-      ? [passkey({ rpID: env.PASSKEY_RP_ID, rpName: 'Boulder.best' })]
-      : [],
+    socialProviders: providerConfig.socialProviders,
+    plugins: providerConfig.passkey ? [passkey(providerConfig.passkey)] : [],
     account: {
       accountLinking: {
         enabled: true,
@@ -88,11 +188,13 @@ let _auth: AuthServer | null = null;
 let _cacheKey: string | null = null;
 
 export function createAuth(env: AuthEnvBindings): AuthServer {
-  if (_auth !== null && _cacheKey === env.BETTER_AUTH_SECRET) {
+  const cacheKey = createAuthCacheKey(env);
+
+  if (_auth !== null && _cacheKey === cacheKey) {
     return _auth;
   }
   _auth = buildAuth(env);
-  _cacheKey = env.BETTER_AUTH_SECRET;
+  _cacheKey = cacheKey;
   return _auth;
 }
 

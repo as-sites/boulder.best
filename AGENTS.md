@@ -7,6 +7,7 @@ Before generating any code or suggesting architectural changes, you MUST read an
 ## **1\. Tooling & Monorepo Rules (CRITICAL)**
 
 - **Use mise tasks:** This monorepo uses mise for task management. **ALWAYS** use mise run \<task\> or mise \<task\> instead of raw npm, yarn, or pnpm run commands.
+- **Mise MCP Server Preference:** Agents should prefer using the mise MCP server for task execution if available, and only resort to the CLI if the MCP server is not accessible.
 - **Package Manager:** We use pnpm workspaces for package linking under the hood, but mise acts as the primary orchestrator. Do not suggest Nx or Turborepo.
 - **Linting & Formatting:** Use oxlint and oxfmt exclusively. Do not install ESLint or Prettier unless specifically requested for a fallback edge-case.
 
@@ -52,9 +53,5 @@ Before generating any code or suggesting architectural changes, you MUST read an
 
 See additional info in the `plans` directory:
 
-- plans/dexie-schema.ts
-- plans/drizzle-schema.ts
 - plans/features.md
-- plans/hono-endpoints.ts
-- plans/hono-schemas.ts
 - plans/Project Blueprint.md

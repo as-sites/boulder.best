@@ -13,7 +13,7 @@ export interface AuthClient {
 
 const _client = createAuthClient({
   // Empty in dev — Vite proxy forwards /api to localhost:8787.
-  // Set VITE_API_BASE_URL to the production API URL (e.g. https://api.boulder.best) in prod.
+  // Leave empty in production when the API Worker is routed at /api on the same origin.
   baseURL: import.meta.env.VITE_API_BASE_URL ?? '',
 });
 

@@ -7,6 +7,11 @@
     "linear-server": {
       "type": "http",
       "url": "https://mcp.linear.app/mcp"
+    },
+    "mise": {
+      "type": "command",
+      "command": "mise",
+      "args": ["mcp"]
     }
   }
 }
