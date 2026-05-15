@@ -11,10 +11,10 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  lint-fmt:
-    name: Lint & Format
+  ci:
+    name: CI
     runs-on: blacksmith-2vcpu-ubuntu-2404
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -51,52 +51,15 @@ jobs:
           retention-days: 7
           if-no-files-found: ignore
 
-      - name: Fail if lint/formatting errors
-        if: ${{ always() }}
-        run: |
-          failed=0
-
-          if [[ "${{ steps.oxlint-junit.outcome }}" == "failure" || \
-                "${{ steps.oxlint-stylish.outcome }}" == "failure" || \
-                "${{ steps.oxlint-github.outcome }}" == "failure" ]]; then
-            echo "::error::Oxlint found lint errors"
-            failed=1
-          fi
-
-          if [[ "${{ steps.oxfmt-check.outcome }}" == "failure" ]]; then
-            echo "::error::Oxfmt found formatting errors"
-            failed=1
-          fi
-
-          exit $failed
-
-  typecheck:
-    name: Typecheck
-    runs-on: blacksmith-2vcpu-ubuntu-2404
-    timeout-minutes: 15
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
-      - name: Setup CI
-        uses: ./.github/actions/setup-ci
-
       - name: Typecheck
+        id: typecheck
         run: mise run typecheck
-
-  unit-test:
-    name: Unit Test
-    runs-on: blacksmith-2vcpu-ubuntu-2404
-    timeout-minutes: 15
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
-      - name: Setup CI
-        uses: ./.github/actions/setup-ci
+        continue-on-error: true
 
       - name: Run unit tests
+        id: unit-test
         run: mise run unit --coverage
+        continue-on-error: true
 
       - name: Upload coverage report
         if: ${{ always() }}
@@ -116,16 +79,41 @@ jobs:
           retention-days: 7
           if-no-files-found: ignore
 
-  build:
-    name: Build
-    runs-on: blacksmith-2vcpu-ubuntu-2404
-    timeout-minutes: 10
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
-      - name: Setup CI
-        uses: ./.github/actions/setup-ci
-
       - name: Build
+        id: build
         run: mise run build
+        continue-on-error: true
+
+      - name: Fail if any check failed
+        if: ${{ always() }}
+        run: |
+          failed=0
+
+          if [[ "${{ steps.oxlint-junit.outcome }}" == "failure" || \
+                "${{ steps.oxlint-stylish.outcome }}" == "failure" || \
+                "${{ steps.oxlint-github.outcome }}" == "failure" ]]; then
+            echo "::error::Oxlint found lint errors"
+            failed=1
+          fi
+
+          if [[ "${{ steps.oxfmt-check.outcome }}" == "failure" ]]; then
+            echo "::error::Oxfmt found formatting errors"
+            failed=1
+          fi
+
+          if [[ "${{ steps.typecheck.outcome }}" == "failure" ]]; then
+            echo "::error::Typecheck failed"
+            failed=1
+          fi
+
+          if [[ "${{ steps.unit-test.outcome }}" == "failure" ]]; then
+            echo "::error::Unit tests failed"
+            failed=1
+          fi
+
+          if [[ "${{ steps.build.outcome }}" == "failure" ]]; then
+            echo "::error::Build failed"
+            failed=1
+          fi
+
+          exit $failed
