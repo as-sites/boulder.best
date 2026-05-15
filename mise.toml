@@ -88,13 +88,18 @@ arg "[filters]" var=#true help="Test file filters"
 
 flag "-w --watch" negate="--no-watch" help="Re-run tests when files change" default="false"
 flag "--coverage" negate="--no-coverage" help="Collect coverage" default="false"
-flag "-p --project <name>" help="Vitest project to run" default="*"
+flag "-p --project <name>" help="Vitest project to run"
 flag "-u --update" help="Update snapshots"
 flag "--ui" help="Enable Vitest UI"
 flag "--open" help="Open Vitest UI automatically"
 '''
 
-run = 'vitest run --root="." --config="vitest.config.ts" --project="{{usage.project}}" --coverage="{{usage.coverage}}" --watch="{{usage.watch}}" {% if usage.update %}--update {% endif %}{% if usage.ui %}--ui {% endif %}{% if usage.open %}--open {% endif %}{% for f in usage.filters %}{{f}} {% endfor %}'
+run = 'vitest run --root="." --config="vitest.config.ts" {% if usage.project %} --project="{{usage.project}}" {% endif %} {% if usage.coverage %} --coverage {% endif %} {% if usage.watch %} --watch {% endif %} {% if usage.update %}--update {% endif %} {% if usage.ui %}--ui {% endif %} {% if usage.open %}--open {% endif %} {% for f in usage.filters %}{{f}} {% endfor %}'
+
+[tasks.dev]
+alias = 'dev'
+description = "Start the frontend and API dev servers"
+depends = ["//apps/api:dev", "//apps/frontend:dev"]
 
 [tasks.typecheck]
 alias = 'tsc'

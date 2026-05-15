@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
+    "@better-auth/passkey": "catalog:better-auth",
     "@boulder/api-contract": "workspace:*",
     "@mantine/core": "9.2.0",
     "@mantine/hooks": "9.2.0",
