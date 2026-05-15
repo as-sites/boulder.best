@@ -6,7 +6,10 @@ import type { authClient } from '../src/lib/auth-client.js';
 
 const authMocks = vi.hoisted(() => ({
   addPasskey: vi.fn(),
+  emailSignIn: vi.fn(),
+  emailSignUp: vi.fn(),
   passkeySignIn: vi.fn(),
+  signOut: vi.fn(),
   socialSignIn: vi.fn(),
   useSession: vi.fn(),
 }));
@@ -14,9 +17,14 @@ const authMocks = vi.hoisted(() => ({
 vi.mock(import('../src/lib/auth-client.js'), () => ({
   authClient: {
     signIn: {
+      email: authMocks.emailSignIn,
       social: authMocks.socialSignIn,
       passkey: authMocks.passkeySignIn,
     },
+    signUp: {
+      email: authMocks.emailSignUp,
+    },
+    signOut: authMocks.signOut,
     passkey: {
       addPasskey: authMocks.addPasskey,
     },
@@ -34,21 +42,95 @@ function renderAuthActions() {
 
 describe(AuthActions, () => {
   beforeEach(() => {
-    authMocks.socialSignIn.mockResolvedValue({
-      data: {},
-      error: null,
-    });
-    authMocks.passkeySignIn.mockResolvedValue({
-      data: {},
-      error: null,
-    });
-    authMocks.addPasskey.mockResolvedValue({
-      data: {},
-      error: null,
-    });
+    authMocks.emailSignIn.mockResolvedValue({ data: {}, error: null });
+    authMocks.emailSignUp.mockResolvedValue({ data: {}, error: null });
+    authMocks.signOut.mockResolvedValue({ data: {}, error: null });
+    authMocks.socialSignIn.mockResolvedValue({ data: {}, error: null });
+    authMocks.passkeySignIn.mockResolvedValue({ data: {}, error: null });
+    authMocks.addPasskey.mockResolvedValue({ data: {}, error: null });
     authMocks.useSession.mockReturnValue({
       data: null,
     } as ReturnType<typeof authClient.useSession>);
+  });
+
+  it('signs in with email and password', async () => {
+    renderAuthActions();
+
+    fireEvent.change(screen.getByLabelText('Email'), {
+      target: { value: 'ally@example.com' },
+    });
+    fireEvent.change(screen.getByLabelText('Password'), {
+      target: { value: 'secret123' },
+    });
+    fireEvent.click(screen.getByTestId('auth-submit'));
+
+    await waitFor(() =>
+      expect(authMocks.emailSignIn.mock.calls.length).toBeGreaterThan(0),
+    );
+    expect(authMocks.emailSignIn).toHaveBeenCalledWith({
+      email: 'ally@example.com',
+      password: 'secret123',
+    });
+  });
+
+  it('signs up with name, email, and password', async () => {
+    renderAuthActions();
+
+    fireEvent.click(screen.getByRole('button', { name: /^sign up$/i }));
+
+    fireEvent.change(screen.getByLabelText('Name'), {
+      target: { value: 'Ally' },
+    });
+    fireEvent.change(screen.getByLabelText('Email'), {
+      target: { value: 'ally@example.com' },
+    });
+    fireEvent.change(screen.getByLabelText('Password'), {
+      target: { value: 'secret123' },
+    });
+    fireEvent.click(screen.getByTestId('auth-submit'));
+
+    await waitFor(() =>
+      expect(authMocks.emailSignUp.mock.calls.length).toBeGreaterThan(0),
+    );
+    expect(authMocks.emailSignUp).toHaveBeenCalledWith({
+      email: 'ally@example.com',
+      password: 'secret123',
+      name: 'Ally',
+    });
+  });
+
+  it('shows error message when sign-in fails', async () => {
+    authMocks.emailSignIn.mockResolvedValue({
+      data: null,
+      error: { message: 'Invalid credentials' },
+    });
+    renderAuthActions();
+
+    fireEvent.change(screen.getByLabelText('Email'), {
+      target: { value: 'ally@example.com' },
+    });
+    fireEvent.change(screen.getByLabelText('Password'), {
+      target: { value: 'wrong' },
+    });
+    fireEvent.click(screen.getByTestId('auth-submit'));
+
+    await waitFor(() => screen.getByText('Invalid credentials'));
+    expect(screen.getByText('Invalid credentials')).toBeDefined();
+  });
+
+  it('signs out authenticated user', async () => {
+    authMocks.useSession.mockReturnValue({
+      data: { user: { email: 'ally@example.com' } },
+    } as ReturnType<typeof authClient.useSession>);
+
+    renderAuthActions();
+
+    fireEvent.click(screen.getByRole('button', { name: /sign out/i }));
+
+    await waitFor(() =>
+      expect(authMocks.signOut.mock.calls.length).toBeGreaterThan(0),
+    );
+    expect(authMocks.signOut).toHaveBeenCalled();
   });
 
   it('starts Google sign-in', async () => {
