@@ -60,7 +60,7 @@ flag "-f --fix" help="Apply safe fixes"
 flag "--fix-suggestions" help="Apply auto-fixable suggestions. May change program behaviour"
 flag "--fix-dangerously" help="Apply dangerous fixes and suggestions"
 flag "-q --quiet" help="Run in quiet mode, which only outputs errors"
-flag "--format <FORMAT>" help="The format to output the results in" default="default" {
+flag "--format <FORMAT>" help="The format to output the results in" default="stylish" {
   choices "checkstyle" "default" "github" "gitlab" "json" "junit" "stylish" "unix"
 }
 '''

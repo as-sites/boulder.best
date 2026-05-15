@@ -5,8 +5,16 @@
       "headers": {}
     },
     "mise": {
-      "command": "mise",
-      "args": ["mcp"]
+      "type": "stdio",
+      "command": "pwsh",
+      "args": [
+        "-NoProfile",
+        "-Command",
+        "Set-Location -LiteralPath 'P:\\boulder.best'; $env:MISE_EXPERIMENTAL='1'; mise mcp"
+      ],
+      "env": {
+        "MISE_EXPERIMENTAL": "1"
+      }
     }
   }
 }

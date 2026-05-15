@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "composite": true,
+    "rootDir": ".",
+    "types": ["vitest/globals"]
+  },
+  "include": ["tests"],
+  "references": [
+    { "path": "../../packages/api-contract" },
+    { "path": "../../packages/auth" },
+    { "path": "." }
+  ]
+}
