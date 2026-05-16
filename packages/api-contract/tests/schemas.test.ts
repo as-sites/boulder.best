@@ -25,7 +25,7 @@ import {
   syncedImageFixture,
 } from './fixtures.js';
 
-describe(syncedImageSchema, () => {
+describe('synced image schema', () => {
   it('accepts valid image metadata', () => {
     expect(syncedImageSchema.safeParse(syncedImageFixture).success).toBe(true);
   });
@@ -47,7 +47,7 @@ describe(syncedImageSchema, () => {
   });
 });
 
-describe(gymsResponseSchema, () => {
+describe('gyms response schema', () => {
   it('accepts a list of gyms', () => {
     expect(gymsResponseSchema.safeParse([gymFixture]).success).toBe(true);
   });
@@ -71,7 +71,7 @@ describe(gymsResponseSchema, () => {
   });
 });
 
-describe(presignedUploadRequestSchema, () => {
+describe('presigned upload request schema', () => {
   it('accepts a valid presign request at the size limit', () => {
     expect(
       presignedUploadRequestSchema.safeParse({
@@ -111,7 +111,7 @@ describe(presignedUploadRequestSchema, () => {
   });
 });
 
-describe(presignedUploadResponseSchema, () => {
+describe('presigned upload response schema', () => {
   it('accepts upload URL, object key, photo URL, and nested image metadata', () => {
     expect(
       presignedUploadResponseSchema.safeParse(presignedUploadResponseFixture)
@@ -120,7 +120,7 @@ describe(presignedUploadResponseSchema, () => {
   });
 });
 
-describe(syncSessionPayloadSchema, () => {
+describe('sync session payload schema', () => {
   it('accepts a valid sync payload with multiple climb images', () => {
     const result = syncSessionPayloadSchema.safeParse(
       syncSessionPayloadFixture,
@@ -206,7 +206,7 @@ describe(syncSessionPayloadSchema, () => {
   });
 });
 
-describe(sessionHistoryListQuerySchema, () => {
+describe('session history list query schema', () => {
   it('defaults limit to 20 and accepts cursor pagination input', () => {
     expect(sessionHistoryListQuerySchema.parse({})).toEqual({ limit: 20 });
 
@@ -232,7 +232,7 @@ describe(sessionHistoryListQuerySchema, () => {
   });
 });
 
-describe(sessionHistoryListResponseSchema, () => {
+describe('session history list response schema', () => {
   it('accepts paginated history list items', () => {
     expect(
       sessionHistoryListResponseSchema.safeParse(
@@ -256,7 +256,7 @@ describe(sessionHistoryListResponseSchema, () => {
   });
 });
 
-describe(sessionDetailResponseSchema, () => {
+describe('session detail response schema', () => {
   it('accepts session detail with ordered climb images metadata', () => {
     expect(
       sessionDetailResponseSchema.safeParse(sessionDetailResponseFixture)
