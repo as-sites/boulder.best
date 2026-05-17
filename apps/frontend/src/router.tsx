@@ -4,7 +4,9 @@ import {
   createRouter,
 } from '@tanstack/react-router';
 import { RequireAuth } from './components/require-auth.js';
+import { AccountPage } from './pages/account.js';
 import { HistoryPage } from './pages/history.js';
+import { SettingsPage } from './pages/settings.js';
 import { TrackerPage } from './pages/tracker.js';
 import { homeRoute } from './routes/home.js';
 import { rootRoute } from './routes/root.js';
@@ -29,10 +31,24 @@ export const historyRoute = createRoute({
   ),
 });
 
+export const settingsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/settings',
+  component: SettingsPage,
+});
+
+export const accountRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/auth/account',
+  component: AccountPage,
+});
+
 const routeTree = rootRoute.addChildren([
   homeRoute,
   trackerRoute,
   historyRoute,
+  settingsRoute,
+  accountRoute,
 ]);
 
 export interface CreateAppRouterOptions {
@@ -51,6 +67,8 @@ export function createAppRouter(options: CreateAppRouterOptions = {}) {
       : {}),
   });
 }
+
+export type AppRouter = ReturnType<typeof createAppRouter>;
 
 declare module '@tanstack/react-router' {
   interface Register {

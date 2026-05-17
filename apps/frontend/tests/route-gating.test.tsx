@@ -1,8 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { MantineProvider } from '@mantine/core';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { RouterProvider } from '@tanstack/react-router';
+import { QueryClient } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
+import { AppProviders } from '../src/app.js';
 import type * as apiClientType from '../src/lib/api-client.js';
 import type { authClient } from '../src/lib/auth-client.js';
 import { createAppRouter } from '../src/router.js';
@@ -54,13 +53,7 @@ async function renderAt(path: string) {
   const router = createAppRouter({ initialEntries: [path] });
   await router.load();
 
-  return render(
-    <MantineProvider>
-      <QueryClientProvider client={queryClient}>
-        <RouterProvider router={router} />
-      </QueryClientProvider>
-    </MantineProvider>,
-  );
+  return render(<AppProviders queryClient={queryClient} router={router} />);
 }
 
 function mockSession(
@@ -120,7 +113,7 @@ describe('protected route gating', () => {
         screen.getByRole('heading', { name: 'Tracker' }),
       ).toBeInTheDocument();
     });
-    expect(screen.queryByText('Boulder Best')).toBeNull();
+    expect(screen.queryByText('Loading API message...')).toBeNull();
   });
 
   it('allows signed-in users to view history', async () => {
@@ -135,6 +128,60 @@ describe('protected route gating', () => {
         screen.getByRole('heading', { name: 'History' }),
       ).toBeInTheDocument();
     });
-    expect(screen.queryByText('Boulder Best')).toBeNull();
+    expect(screen.queryByText('Loading API message...')).toBeNull();
+  });
+});
+
+describe('route shell smoke tests', () => {
+  beforeEach(() => {
+    mockSession({ data: null, isPending: false });
+  });
+
+  it('renders the tracker route with the mobile navigation shell', async () => {
+    mockSession({
+      data: { user: { email: 'ally@example.com' } },
+      isPending: false,
+    } as ReturnType<typeof authClient.useSession>);
+
+    await renderAt('/tracker');
+
+    await expect(
+      screen.findByRole('heading', { name: 'Tracker' }),
+    ).resolves.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /settings/i })).toHaveAttribute(
+      'href',
+      '/settings',
+    );
+  });
+
+  it('renders the history route placeholder', async () => {
+    mockSession({
+      data: { user: { email: 'ally@example.com' } },
+      isPending: false,
+    } as ReturnType<typeof authClient.useSession>);
+
+    await renderAt('/history');
+
+    await expect(
+      screen.findByRole('heading', { name: 'History' }),
+    ).resolves.toBeInTheDocument();
+  });
+
+  it('renders the settings route placeholder', async () => {
+    await renderAt('/settings');
+
+    await expect(
+      screen.findByRole('heading', { name: 'Settings' }),
+    ).resolves.toBeInTheDocument();
+    expect(screen.getByText(/Manual offline mode/i)).toBeInTheDocument();
+  });
+
+  it('renders the account route placeholder', async () => {
+    await renderAt('/auth/account');
+
+    await expect(
+      screen.findByRole('heading', { name: 'Account' }),
+    ).resolves.toBeInTheDocument();
+    expect(screen.getByTestId('auth-submit')).toBeInTheDocument();
   });
 });

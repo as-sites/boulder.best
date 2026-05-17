@@ -1,19 +1,33 @@
 import { MantineProvider } from '@mantine/core';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import {
+  QueryClient,
+  QueryClientProvider,
+  type QueryClient as QueryClientType,
+} from '@tanstack/react-query';
 import { RouterProvider } from '@tanstack/react-router';
-import { createAppRouter } from './router.js';
+import { createAppRouter, type AppRouter } from './router.js';
 
 const queryClient = new QueryClient();
 const router = createAppRouter();
 
 export { AuthActions } from './components/auth-actions.js';
 
-export function App() {
+export function AppProviders({
+  queryClient: providerQueryClient,
+  router: providerRouter,
+}: {
+  queryClient: QueryClientType;
+  router: AppRouter;
+}) {
   return (
     <MantineProvider>
-      <QueryClientProvider client={queryClient}>
-        <RouterProvider router={router} />
+      <QueryClientProvider client={providerQueryClient}>
+        <RouterProvider router={providerRouter} />
       </QueryClientProvider>
     </MantineProvider>
   );
+}
+
+export function App() {
+  return <AppProviders queryClient={queryClient} router={router} />;
 }
