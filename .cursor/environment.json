@@ -1,0 +1,4 @@
+{
+  "name": "boulder.best",
+  "install": "bash .cursor/maintenance.sh"
+}
