@@ -19,6 +19,7 @@ import {
   maxUploadContentLength,
   presignedUploadRequestFixture,
   presignedUploadResponseFixture,
+  entryId,
   sessionDetailResponseFixture,
   sessionHistoryListResponseFixture,
   syncSessionPayloadFixture,
@@ -168,7 +169,7 @@ describe('sync session payload schema', () => {
             durationMs: 1000,
             name: 'Missing type',
             grade: null,
-            attempts: null,
+            climbAttempts: [],
             completed: null,
             images: [],
           },
@@ -270,7 +271,7 @@ describe('session detail response schema', () => {
         ...sessionDetailResponseFixture,
         entries: [
           {
-            id: sessionDetailResponseFixture.entries[0].id,
+            id: entryId,
             sequenceOrder: 0,
             durationMs: 1000,
             type: 'climb',
