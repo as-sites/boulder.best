@@ -8,6 +8,10 @@ import { Hono, type Context, type MiddlewareHandler } from 'hono';
 import { cors } from 'hono/cors';
 import { createDb } from './db/index.js';
 import {
+  getSessionDetail as loadSessionDetail,
+  listSessions as loadSessionHistory,
+} from './sessions/session-history.js';
+import {
   SyncSessionForbiddenError,
   syncSession as persistSyncedSession,
 } from './sessions/sync-session.js';
@@ -112,11 +116,16 @@ export function createApiApp(options: CreateApiAppOptions = {}) {
         const userId = (c as Context<ApiEnv>).get('userId');
         return await persistSyncedSession(db, userId, body);
       },
-      listSessions: () => ({
-        items: [],
-        nextCursor: null,
-      }),
-      getSessionDetail: () => null,
+      listSessions: async (c, query) => {
+        const db = createDb(c.env.DATABASE_URL);
+        const userId = (c as Context<ApiEnv>).get('userId');
+        return await loadSessionHistory(db, userId, query);
+      },
+      getSessionDetail: async (c, params) => {
+        const db = createDb(c.env.DATABASE_URL);
+        const userId = (c as Context<ApiEnv>).get('userId');
+        return await loadSessionDetail(db, userId, params.id);
+      },
     }),
   );
 
