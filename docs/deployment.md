@@ -119,16 +119,24 @@ mise run api:deploy
 Use the pooled Neon URL for runtime Worker traffic unless a migration tool or
 maintenance task explicitly needs a direct connection string.
 
-## R2 Media Placeholder
+## R2 custom domain
 
-The API Worker binds `MEDIA_BUCKET` to `boulder-dot-best` in production and
-uses `PUBLIC_PHOTO_URL_BASE` for browser-readable photo URLs. Before media
-upload endpoints are used in production, configure the bucket's public/custom
-domain and apply CORS:
+R2 public URLs are **not** a Worker binding in `wrangler.jsonc`. The bucket stays
+bound as `MEDIA_BUCKET` for uploads; browsers read objects via `PUBLIC_PHOTO_URL_BASE`
+(`https://cdn.boulder.best`), configured in `apps/api/r2-public.json` and
+`apps/api/wrangler.jsonc`.
+
+After the bucket exists, set `CLOUDFLARE_ZONE_ID` in `.env` (zone overview in the
+dashboard), then connect the custom domain from git:
 
 ```powershell
+mise run api:r2:domain:ensure   # idempotent
+mise run api:r2:domain:list
 mise run api:r2:cors:apply
 mise run api:r2:cors:list
 ```
+
+`api:r2:domain:add` is the non-idempotent equivalent. Wrangler creates the
+`cdn` DNS record and certificate; no dashboard “Connect domain” step needed.
 
 `apps/api/r2-cors.json` is the source-controlled CORS rule file.

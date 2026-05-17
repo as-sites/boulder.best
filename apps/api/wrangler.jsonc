@@ -37,6 +37,7 @@
     },
     "production": {
       "name": "boulder-api",
+      // Zone route (not custom_domain): more specific than the frontend custom domain.
       "routes": [
         {
           "pattern": "boulder.best/api/*",
