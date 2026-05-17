@@ -31,6 +31,7 @@ describe('RPC client types', () => {
   const client = createApiClient('https://api.example.com');
 
   it('exposes MVP routes on the typed client', () => {
+    expectTypeOf(client.api.health.$get).toBeFunction();
     expectTypeOf(client.api.gyms.$get).toBeFunction();
     expectTypeOf(client.api.uploads['presigned-url'].$post).toBeFunction();
     expectTypeOf(client.api.sessions.sync.$post).toBeFunction();

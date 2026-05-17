@@ -11,13 +11,18 @@ import { openApiDocumentConfig, openApiJsonPath } from './openapi.js';
 import type { ApiContractHandlers } from './routes.js';
 
 export function createApiContract(handlers: ApiContractHandlers) {
+  const healthHandler = async (
+    c: Parameters<ApiContractHandlers['hello']>[0],
+  ) => {
+    const response = await handlers.health?.(c);
+    return c.json(response ?? { ok: true });
+  };
+
   const app = $(
     new OpenAPIHono()
       .get('/api/hello', async (c) => c.json(await handlers.hello(c)))
-      .get('/health', async (c) => {
-        const response = await handlers.health?.(c);
-        return c.json(response ?? { ok: true });
-      }),
+      .get('/api/health', healthHandler)
+      .get('/health', healthHandler),
   );
 
   const getGymsHandler: RouteHandler<typeof getGymsRoute> = async (c) =>

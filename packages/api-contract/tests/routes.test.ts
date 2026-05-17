@@ -68,6 +68,20 @@ describe('MVP OpenAPI route definitions', () => {
 describe('OpenAPI document', () => {
   const app = createApiContract(stubHandlers);
 
+  it('serves deployed health JSON under /api', async () => {
+    const response = await app.request('/api/health');
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({ ok: true });
+  });
+
+  it('keeps the legacy health path available for direct Worker checks', async () => {
+    const response = await app.request('/health');
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({ ok: true });
+  });
+
   it('serves OpenAPI JSON at /openapi.json', async () => {
     const response = await app.request(openApiJsonPath);
 
