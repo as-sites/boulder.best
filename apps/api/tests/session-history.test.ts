@@ -1,15 +1,18 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AuthEnvBindings } from '@boulder/auth';
+import type { AppDb } from '../src/db/index.js';
 import { createApiApp } from '../src/index.js';
 import type * as SessionHistoryModule from '../src/sessions/session-history.js';
 
 const historyMocks = vi.hoisted(() => ({
   listSessions: vi.fn(),
   getSessionDetail: vi.fn(),
-  restoreImplementations: vi.fn(),
+  restoreImplementations: (() => {
+    /* empty */
+  }) as () => void,
 }));
 
-const mockCreateDb = vi.hoisted(() => vi.fn(() => ({})));
+const mockCreateDb = vi.hoisted(() => vi.fn((): AppDb => ({}) as AppDb));
 
 vi.mock(
   import('../src/sessions/session-history.js'),

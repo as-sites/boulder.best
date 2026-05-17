@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { getTableName } from 'drizzle-orm';
+import type { AppDb } from '../src/db/index.js';
 import { createApiApp } from '../src/index.js';
 import type * as SyncSessionModule from '../src/sessions/sync-session.js';
 import { SyncSessionForbiddenError } from '../src/sessions/sync-session.js';
@@ -17,8 +18,10 @@ vi.mock(import('../src/sessions/sync-session.js'), async (importOriginal) => {
   };
 });
 
+const mockCreateDb = vi.hoisted(() => vi.fn((): AppDb => ({}) as AppDb));
+
 vi.mock(import('../src/db/index.js'), () => ({
-  createDb: vi.fn(() => ({})),
+  createDb: mockCreateDb,
 }));
 
 const syncSessionPayloadFixture = {

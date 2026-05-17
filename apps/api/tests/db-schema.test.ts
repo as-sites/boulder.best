@@ -18,8 +18,8 @@ describe('app Drizzle schema', () => {
     expect(columns.type).toBeDefined();
     expect(columns.sequenceOrder).toBeDefined();
     expect(columns.durationMs).toBeDefined();
-    expect(columns.photoUrl).toBeUndefined();
-    expect(columns.attempts).toBeUndefined();
+    expect('photoUrl' in columns).toBe(false);
+    expect('attempts' in columns).toBe(false);
   });
 
   it('defines session_entry_images with lookup columns and stable index ordering', () => {

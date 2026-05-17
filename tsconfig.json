@@ -6,6 +6,7 @@
     { "path": "./packages/auth" },
     { "path": "./packages/auth/tsconfig.test.json" },
     { "path": "./apps/api" },
+    { "path": "./apps/api/tsconfig.test.json" },
     { "path": "./apps/frontend" },
     { "path": "./apps/frontend/tsconfig.test.json" }
   ]
