@@ -7,6 +7,7 @@ import {
 import { Hono, type Context, type MiddlewareHandler } from 'hono';
 import { cors } from 'hono/cors';
 import { createDb } from './db/index.js';
+import { listGyms as loadGyms } from './gyms/list-gyms.js';
 import {
   getSessionDetail as loadSessionDetail,
   listSessions as loadSessionHistory,
@@ -107,7 +108,10 @@ export function createApiApp(options: CreateApiAppOptions = {}) {
       hello: () => ({
         message: 'Hello from the Boulder API.',
       }),
-      getGyms: () => [],
+      getGyms: async (c) => {
+        const db = createDb(c.env.DATABASE_URL);
+        return await loadGyms(db);
+      },
       createPresignedUpload: () => {
         throw new Error('POST /api/uploads/presigned-url is not implemented');
       },
