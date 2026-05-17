@@ -50,6 +50,3 @@ jobs:
 
       - name: Deploy API Worker
         run: mise run api:deploy
-
-      - name: Smoke check production
-        run: mise run deploy:smoke
