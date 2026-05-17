@@ -109,6 +109,9 @@ importers:
       hono:
         specifier: 4.12.18
         version: 4.12.18
+      s3mini:
+        specifier: 0.9.4
+        version: 0.9.4
       zod:
         specifier: 'catalog:'
         version: 4.4.3
@@ -2420,6 +2423,10 @@ packages:
   rou3@0.7.12:
     resolution: {integrity: sha512-iFE4hLDuloSWcD7mjdCDhx2bKcIsYbtOTpfH5MHHLSKMOUyjqQXTeZVa289uuwEGEKFoE/BAPbhaU4B774nceg==}
 
+  s3mini@0.9.4:
+    resolution: {integrity: sha512-lA6p6JY0+lbcz/NJL8O/BKU8q96iA3f+wDO/QCg4QxOooEJwe0fomHZoeDJhs8TDDRTA40OVNY2E9wOQgAoAVw==}
+    engines: {node: '>=20'}
+
   scheduler@0.27.0:
     resolution: {integrity: sha512-eNv+WrVbKu1f3vbYJT/xtiF5syA5HPIMtf9IgY/nKg0sWqzAUEvqY/xm7OcZc/qafLx/iO9FgOmeSAp4v5ti/Q==}
 
@@ -4386,6 +4393,8 @@ snapshots:
       '@rolldown/binding-win32-x64-msvc': 1.0.0
 
   rou3@0.7.12: {}
+
+  s3mini@0.9.4: {}
 
   scheduler@0.27.0: {}
 

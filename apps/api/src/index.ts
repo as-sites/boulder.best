@@ -16,6 +16,7 @@ import {
   SyncSessionForbiddenError,
   syncSession as persistSyncedSession,
 } from './sessions/sync-session.js';
+import { createPresignedUpload as generatePresignedUpload } from './uploads/create-presigned-upload.js';
 
 interface ApiVariables {
   userId: string;
@@ -112,8 +113,20 @@ export function createApiApp(options: CreateApiAppOptions = {}) {
         const db = createDb(c.env.DATABASE_URL);
         return await loadGyms(db);
       },
-      createPresignedUpload: () => {
-        throw new Error('POST /api/uploads/presigned-url is not implemented');
+      createPresignedUpload: async (c, body) => {
+        const userId = (c as Context<ApiEnv>).get('userId');
+
+        return await generatePresignedUpload({
+          userId,
+          body,
+          photoUrlBase: c.env.PUBLIC_PHOTO_URL_BASE,
+          r2: {
+            accountId: c.env.R2_ACCOUNT_ID,
+            bucketName: c.env.R2_BUCKET_NAME,
+            accessKeyId: c.env.R2_ACCESS_KEY_ID,
+            secretAccessKey: c.env.R2_SECRET_ACCESS_KEY,
+          },
+        });
       },
       syncSession: async (c, body) => {
         const db = createDb(c.env.DATABASE_URL);
