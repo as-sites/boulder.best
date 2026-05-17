@@ -37,6 +37,7 @@
     },
     "production": {
       "name": "boulder-api",
+      // Zone route (not custom_domain): more specific than the frontend custom domain.
       "routes": [
         {
           "pattern": "boulder.best/api/*",
@@ -55,7 +56,6 @@
         "FRONTEND_URL": "https://boulder.best",
         "PASSKEY_RP_ID": "boulder.best",
         "PASSKEY_ORIGIN": "https://boulder.best",
-        // Replace with your R2 public domain or custom subdomain once configured
         "PUBLIC_PHOTO_URL_BASE": "https://cdn.boulder.best"
       },
       "secrets": {
@@ -69,6 +69,21 @@
           "DISCORD_CLIENT_SECRET"
         ]
       }
+    }
+  },
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1,
+    "logs": {
+      "enabled": true,
+      "head_sampling_rate": 1,
+      "persist": true,
+      "invocation_logs": true
+    },
+    "traces": {
+      "enabled": true,
+      "persist": true,
+      "head_sampling_rate": 1
     }
   }
 }
