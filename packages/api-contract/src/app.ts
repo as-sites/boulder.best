@@ -57,15 +57,13 @@ export function createApiContract(handlers: ApiContractHandlers) {
     return c.json(detail);
   };
 
-  app
+  return app
     .openapi(getGymsRoute, getGymsHandler)
     .openapi(createPresignedUploadRoute, createPresignedUploadHandler)
     .openapi(syncSessionRoute, syncSessionHandler)
     .openapi(listSessionsRoute, listSessionsHandler)
     .openapi(getSessionDetailRoute, getSessionDetailHandler)
     .doc(openApiJsonPath, openApiDocumentConfig);
-
-  return app;
 }
 
 const contractTypeApp = createApiContract({
@@ -94,6 +92,13 @@ const contractTypeApp = createApiContract({
 
 export type ApiAppType = typeof contractTypeApp;
 
+/** Default fetch init for browser clients (sends session cookies cross-origin). */
+export const apiClientOptions = {
+  init: {
+    credentials: 'include',
+  },
+} as const satisfies Parameters<typeof hc>[1];
+
 export function createApiClient(baseUrl: string) {
-  return hc<ApiAppType>(baseUrl);
+  return hc<ApiAppType>(baseUrl, apiClientOptions);
 }

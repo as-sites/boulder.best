@@ -1,4 +1,4 @@
-export { createApiClient, createApiContract } from './app.js';
+export { apiClientOptions, createApiClient, createApiContract } from './app.js';
 export type { ApiAppType } from './app.js';
 export type { ApiContractHandlers } from './routes.js';
 
