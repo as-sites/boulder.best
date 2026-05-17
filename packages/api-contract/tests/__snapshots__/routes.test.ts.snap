@@ -403,14 +403,41 @@ exports[`OpenAPI document > serves OpenAPI JSON at /openapi.json > openapi-docum
         ],
         "type": "object",
       },
+      "SyncClimbAttempt": {
+        "additionalProperties": false,
+        "properties": {
+          "durationMs": {
+            "description": "Time spent on this attempt in milliseconds",
+            "example": 12000,
+            "minimum": 0,
+            "type": "integer",
+          },
+          "notes": {
+            "nullable": true,
+            "type": "string",
+          },
+          "sequenceOrder": {
+            "description": "Chronological order of this attempt within the climb entry",
+            "example": 0,
+            "minimum": 0,
+            "type": "integer",
+          },
+        },
+        "required": [
+          "sequenceOrder",
+          "durationMs",
+        ],
+        "type": "object",
+      },
       "SyncClimbEntry": {
         "additionalProperties": false,
         "properties": {
-          "attempts": {
-            "exclusiveMinimum": true,
-            "minimum": 0,
-            "nullable": true,
-            "type": "integer",
+          "climbAttempts": {
+            "description": "Per-attempt timings for this climb; ignored on break entries",
+            "items": {
+              "$ref": "#/components/schemas/SyncClimbAttempt",
+            },
+            "type": "array",
           },
           "completed": {
             "nullable": true,
@@ -469,8 +496,8 @@ exports[`OpenAPI document > serves OpenAPI JSON at /openapi.json > openapi-docum
           "type",
           "name",
           "grade",
-          "attempts",
           "completed",
+          "climbAttempts",
           "images",
         ],
         "type": "object",

@@ -130,14 +130,32 @@ const syncBaseEntrySchema = z.object({
   }),
 });
 
+export const syncClimbAttemptSchema = z
+  .object({
+    sequenceOrder: z.number().int().nonnegative().openapi({
+      description: 'Chronological order of this attempt within the climb entry',
+      example: 0,
+    }),
+    durationMs: z.number().int().nonnegative().openapi({
+      description: 'Time spent on this attempt in milliseconds',
+      example: 12_000,
+    }),
+    notes: z.string().nullable().optional(),
+  })
+  .strict()
+  .openapi('SyncClimbAttempt');
+
 export const syncClimbEntrySchema = syncBaseEntrySchema
   .extend({
     type: z.literal('climb'),
     name: z.string().max(255).nullable(),
     grade: z.string().max(50).nullable(),
-    attempts: z.number().int().positive().nullable(),
     completed: z.boolean().nullable(),
     notes: z.string().nullable().optional(),
+    climbAttempts: z.array(syncClimbAttemptSchema).openapi({
+      description:
+        'Per-attempt timings for this climb; ignored on break entries',
+    }),
     images: z.array(syncedImageSchema).openapi({
       description:
         'Remote image metadata after R2 upload (multiple photos per climb)',
@@ -179,6 +197,7 @@ export const syncSessionPayloadSchema = z
   })
   .openapi('SyncSessionPayload');
 
+export type SyncClimbAttempt = z.infer<typeof syncClimbAttemptSchema>;
 export type SyncClimbEntry = z.infer<typeof syncClimbEntrySchema>;
 export type SyncBreakEntry = z.infer<typeof syncBreakEntrySchema>;
 export type SyncSessionEntry = z.infer<typeof syncSessionEntrySchema>;

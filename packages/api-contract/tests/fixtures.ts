@@ -48,9 +48,12 @@ export const syncSessionPayloadFixture = {
       type: 'climb' as const,
       name: 'Pink corner route',
       grade: 'V3',
-      attempts: 2,
       completed: true,
       notes: null,
+      climbAttempts: [
+        { sequenceOrder: 0, durationMs: 20_000, notes: 'Slipped on crux' },
+        { sequenceOrder: 1, durationMs: 25_000, notes: null },
+      ],
       images: [syncedImageFixture, syncedImageFixtureTwo],
     },
     {
@@ -101,7 +104,21 @@ export const sessionDetailResponseFixture = {
   endTime: '2026-05-13T12:00:00.000Z',
   totalDurationMs: 7_200_000,
   notes: 'Felt strong today.',
-  entries: syncSessionPayloadFixture.entries,
+  entries: [
+    {
+      id: syncSessionPayloadFixture.entries[0].id,
+      sequenceOrder: syncSessionPayloadFixture.entries[0].sequenceOrder,
+      durationMs: syncSessionPayloadFixture.entries[0].durationMs,
+      type: 'climb' as const,
+      name: syncSessionPayloadFixture.entries[0].name,
+      grade: syncSessionPayloadFixture.entries[0].grade,
+      attempts: syncSessionPayloadFixture.entries[0].climbAttempts.length,
+      completed: syncSessionPayloadFixture.entries[0].completed,
+      notes: syncSessionPayloadFixture.entries[0].notes,
+      images: syncSessionPayloadFixture.entries[0].images,
+    },
+    syncSessionPayloadFixture.entries[1],
+  ],
 };
 
 export const maxUploadContentLength = MAX_IMAGE_UPLOAD_BYTES;

@@ -6,6 +6,11 @@ import {
 } from '@boulder/auth';
 import { Hono, type Context, type MiddlewareHandler } from 'hono';
 import { cors } from 'hono/cors';
+import { createDb } from './db/index.js';
+import {
+  SyncSessionForbiddenError,
+  syncSession as persistSyncedSession,
+} from './sessions/sync-session.js';
 
 interface ApiVariables {
   userId: string;
@@ -78,6 +83,20 @@ export function createApiApp(options: CreateApiAppOptions = {}) {
     async (c) => await createAuthServer(c.env).handler(c.req.raw),
   );
 
+  const protectedMiddleware = createProtectedUserMiddleware(createAuthServer);
+  app.use('/api/gyms', protectedMiddleware);
+  app.use('/api/uploads/*', protectedMiddleware);
+  app.use('/api/sessions', protectedMiddleware);
+  app.use('/api/sessions/*', protectedMiddleware);
+
+  app.onError((error, c) => {
+    if (error instanceof SyncSessionForbiddenError) {
+      return c.body(null, 403);
+    }
+
+    throw error;
+  });
+
   app.route(
     '/',
     createApiContract({
@@ -88,8 +107,10 @@ export function createApiApp(options: CreateApiAppOptions = {}) {
       createPresignedUpload: () => {
         throw new Error('POST /api/uploads/presigned-url is not implemented');
       },
-      syncSession: () => {
-        throw new Error('POST /api/sessions/sync is not implemented');
+      syncSession: async (c, body) => {
+        const db = createDb(c.env.DATABASE_URL);
+        const userId = (c as Context<ApiEnv>).get('userId');
+        return await persistSyncedSession(db, userId, body);
       },
       listSessions: () => ({
         items: [],

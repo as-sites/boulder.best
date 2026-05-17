@@ -1,0 +1,229 @@
+import type {
+  SyncClimbEntry,
+  SyncSessionPayload,
+  SyncSessionSuccessResponse,
+} from '@boulder/api-contract';
+import { and, eq } from 'drizzle-orm';
+import type { AppDb } from '../db/index.js';
+import {
+  climbAttempts,
+  sessionEntries,
+  sessionEntryImages,
+  sessions,
+} from '../db/schema.js';
+
+export class SyncSessionForbiddenError extends Error {
+  public readonly name = 'SyncSessionForbiddenError';
+  public readonly status = 403;
+
+  constructor() {
+    super('Session belongs to another user');
+  }
+}
+
+export async function syncSession(
+  db: AppDb,
+  userId: string,
+  payload: SyncSessionPayload,
+): Promise<SyncSessionSuccessResponse> {
+  await db.transaction(async (tx) => {
+    const [existingSession] = await tx
+      .select({ userId: sessions.userId })
+      .from(sessions)
+      .where(eq(sessions.id, payload.id))
+      .limit(1);
+
+    if (existingSession && existingSession.userId !== userId) {
+      throw new SyncSessionForbiddenError();
+    }
+
+    const startTime = new Date(payload.startTime);
+    const endTime = new Date(payload.endTime);
+    const now = new Date();
+
+    await tx
+      .insert(sessions)
+      .values({
+        id: payload.id,
+        userId,
+        gymId: payload.gymId,
+        startTime,
+        endTime,
+        totalDurationMs: payload.totalDurationMs,
+        notes: payload.notes ?? null,
+        updatedAt: now,
+      })
+      .onConflictDoUpdate({
+        target: sessions.id,
+        set: {
+          gymId: payload.gymId,
+          startTime,
+          endTime,
+          totalDurationMs: payload.totalDurationMs,
+          notes: payload.notes ?? null,
+          updatedAt: now,
+        },
+      });
+
+    for (const entry of payload.entries) {
+      if (entry.type === 'climb') {
+        await upsertClimbEntry(tx, {
+          userId,
+          sessionId: payload.id,
+          entry,
+        });
+        continue;
+      }
+
+      await upsertBreakEntry(tx, {
+        userId,
+        sessionId: payload.id,
+        entry,
+      });
+    }
+  });
+
+  return { success: true, sessionId: payload.id };
+}
+
+type SyncTransaction = Parameters<Parameters<AppDb['transaction']>[0]>[0];
+
+async function upsertBreakEntry(
+  tx: SyncTransaction,
+  {
+    userId,
+    sessionId,
+    entry,
+  }: {
+    userId: string;
+    sessionId: string;
+    entry: Extract<SyncSessionPayload['entries'][number], { type: 'break' }>;
+  },
+) {
+  const now = new Date();
+
+  await tx
+    .insert(sessionEntries)
+    .values({
+      id: entry.id,
+      sessionId,
+      userId,
+      sequenceOrder: entry.sequenceOrder,
+      type: 'break',
+      durationMs: entry.durationMs,
+      updatedAt: now,
+    })
+    .onConflictDoUpdate({
+      target: sessionEntries.id,
+      set: {
+        sequenceOrder: entry.sequenceOrder,
+        durationMs: entry.durationMs,
+        updatedAt: now,
+      },
+    });
+}
+
+async function upsertClimbEntry(
+  tx: SyncTransaction,
+  {
+    userId,
+    sessionId,
+    entry,
+  }: {
+    userId: string;
+    sessionId: string;
+    entry: SyncClimbEntry;
+  },
+) {
+  const now = new Date();
+
+  await tx
+    .insert(sessionEntries)
+    .values({
+      id: entry.id,
+      sessionId,
+      userId,
+      sequenceOrder: entry.sequenceOrder,
+      type: 'climb',
+      durationMs: entry.durationMs,
+      name: entry.name,
+      grade: entry.grade,
+      completed: entry.completed,
+      notes: entry.notes ?? null,
+      updatedAt: now,
+    })
+    .onConflictDoUpdate({
+      target: sessionEntries.id,
+      set: {
+        sequenceOrder: entry.sequenceOrder,
+        durationMs: entry.durationMs,
+        name: entry.name,
+        grade: entry.grade,
+        completed: entry.completed,
+        notes: entry.notes ?? null,
+        updatedAt: now,
+      },
+    });
+
+  for (const image of entry.images) {
+    await tx
+      .insert(sessionEntryImages)
+      .values({
+        id: image.id,
+        sessionId,
+        entryId: entry.id,
+        userId,
+        imageIndex: image.index,
+        objectKey: image.objectKey,
+        photoUrl: image.photoUrl,
+        contentType: image.contentType,
+        contentLength: image.contentLength,
+        updatedAt: now,
+      })
+      .onConflictDoUpdate({
+        target: sessionEntryImages.id,
+        set: {
+          sessionId,
+          entryId: entry.id,
+          imageIndex: image.index,
+          objectKey: image.objectKey,
+          photoUrl: image.photoUrl,
+          contentType: image.contentType,
+          contentLength: image.contentLength,
+          updatedAt: now,
+        },
+      });
+  }
+
+  for (const attempt of entry.climbAttempts) {
+    const [existingAttempt] = await tx
+      .select({ id: climbAttempts.id })
+      .from(climbAttempts)
+      .where(
+        and(
+          eq(climbAttempts.entryId, entry.id),
+          eq(climbAttempts.sequenceOrder, attempt.sequenceOrder),
+        ),
+      )
+      .limit(1);
+
+    if (existingAttempt) {
+      await tx
+        .update(climbAttempts)
+        .set({
+          durationMs: attempt.durationMs,
+          notes: attempt.notes ?? null,
+          updatedAt: now,
+        })
+        .where(eq(climbAttempts.id, existingAttempt.id));
+      continue;
+    }
+
+    await tx.insert(climbAttempts).values({
+      entryId: entry.id,
+      sequenceOrder: attempt.sequenceOrder,
+      durationMs: attempt.durationMs,
+      notes: attempt.notes ?? null,
+    });
+  }
+}
