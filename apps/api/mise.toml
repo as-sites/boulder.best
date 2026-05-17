@@ -50,12 +50,12 @@ run = "wrangler deploy --env production --dry-run --outdir dist"
 [tasks."r2:cors:apply"]
 alias = ["api:r2:cors:apply"]
 description = "Apply r2-cors.json CORS rules to the production R2 bucket"
-run = "wrangler r2 bucket cors put boulder-photos --rules-file r2-cors.json"
+run = "wrangler r2 bucket cors put boulder-dot-best --rules-file r2-cors.json"
 
 [tasks."r2:cors:list"]
 alias = ["api:r2:cors:list"]
 description = "List current CORS rules on the production R2 bucket"
-run = "wrangler r2 bucket cors list boulder-photos"
+run = "wrangler r2 bucket cors list boulder-dot-best"
 
 [tasks."auth:generate-schema"]
 alias = ["api:auth:generate-schema"]

@@ -10,9 +10,9 @@
       "r2_buckets": [
         {
           "binding": "MEDIA_BUCKET",
-          "bucket_name": "boulder-photos-dev",
+          "bucket_name": "boulder-dot-best-dev",
           // wrangler dev simulates R2 locally; no real bucket is needed for local dev
-          "preview_bucket_name": "boulder-photos-dev"
+          "preview_bucket_name": "boulder-dot-best-dev"
         }
       ],
       "vars": {
@@ -47,7 +47,7 @@
         {
           "binding": "MEDIA_BUCKET",
           // Apply CORS rules before deploying: mise run api:r2:cors:apply
-          "bucket_name": "boulder-photos"
+          "bucket_name": "boulder-dot-best"
         }
       ],
       "vars": {
