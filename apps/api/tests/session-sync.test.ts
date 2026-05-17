@@ -1,9 +1,28 @@
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { getTableName } from 'drizzle-orm';
-import {
-  SyncSessionForbiddenError,
-  syncSession,
-} from '../src/sessions/sync-session.js';
+import type { AppDb } from '../src/db/index.js';
+import { createApiApp } from '../src/index.js';
+import type * as SyncSessionModule from '../src/sessions/sync-session.js';
+import { SyncSessionForbiddenError } from '../src/sessions/sync-session.js';
+
+const syncMocks = vi.hoisted(() => ({
+  syncSession: vi.fn(),
+}));
+
+vi.mock(import('../src/sessions/sync-session.js'), async (importOriginal) => {
+  const actual = await importOriginal<typeof SyncSessionModule>();
+  syncMocks.syncSession.mockImplementation(actual.syncSession);
+  return {
+    ...actual,
+    syncSession: syncMocks.syncSession,
+  };
+});
+
+const mockCreateDb = vi.hoisted(() => vi.fn((): AppDb => ({}) as AppDb));
+
+vi.mock(import('../src/db/index.js'), () => ({
+  createDb: mockCreateDb,
+}));
 
 const syncSessionPayloadFixture = {
   id: '987fcdeb-51a2-43d7-9012-345678901234',
@@ -133,11 +152,15 @@ function createMockDb(options: { existingUserId?: string } = {}) {
 }
 
 describe('syncSession persistence', () => {
+  beforeEach(() => {
+    syncMocks.syncSession.mockClear();
+  });
+
   it('upserts the session, entries, images, and climb attempts for the user', async () => {
     const { db, sessionUpserts, entryUpserts, imageUpserts, attemptInserts } =
       createMockDb();
 
-    const response = await syncSession(
+    const response = await syncMocks.syncSession(
       db as never,
       'user_123',
       syncSessionPayloadFixture,
@@ -169,8 +192,16 @@ describe('syncSession persistence', () => {
   it('updates existing climb attempts on retry instead of inserting duplicates', async () => {
     const mock = createMockDb();
 
-    await syncSession(mock.db as never, 'user_123', syncSessionPayloadFixture);
-    await syncSession(mock.db as never, 'user_123', syncSessionPayloadFixture);
+    await syncMocks.syncSession(
+      mock.db as never,
+      'user_123',
+      syncSessionPayloadFixture,
+    );
+    await syncMocks.syncSession(
+      mock.db as never,
+      'user_123',
+      syncSessionPayloadFixture,
+    );
 
     expect(mock.attemptInserts).toHaveLength(2);
     expect(mock.attemptUpdates.length).toBeGreaterThan(0);
@@ -180,14 +211,21 @@ describe('syncSession persistence', () => {
     const mock = createMockDb({ existingUserId: 'other_user' });
 
     await expect(
-      syncSession(mock.db as never, 'user_123', syncSessionPayloadFixture),
+      syncMocks.syncSession(
+        mock.db as never,
+        'user_123',
+        syncSessionPayloadFixture,
+      ),
     ).rejects.toBeInstanceOf(SyncSessionForbiddenError);
   });
 });
 
 describe('session sync route', () => {
+  beforeEach(() => {
+    syncMocks.syncSession.mockClear();
+  });
+
   it('returns 401 without an authenticated session', async () => {
-    const { createApiApp } = await import('../src/index.js');
     const app = createApiApp({
       createAuthServer: () => ({
         handler: () => new Response(null),
@@ -204,5 +242,6 @@ describe('session sync route', () => {
     });
 
     expect(response.status).toBe(401);
+    expect(syncMocks.syncSession).not.toHaveBeenCalled();
   });
 });
