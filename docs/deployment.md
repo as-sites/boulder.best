@@ -21,16 +21,22 @@ wrangler whoami
 
 ### Workers and R2
 
-| Resource                     | Name                   | Notes                                        |
-| ---------------------------- | ---------------------- | -------------------------------------------- |
-| API Worker (production)      | `boulder-api`          | Route `boulder.best/api/*`                   |
-| Frontend Worker (production) | `boulder-frontend`     | Zone routes on `boulder.best` (existing DNS) |
-| R2 (production)              | `boulder-dot-best`     | Bound as `MEDIA_BUCKET`                      |
-| R2 (local dev)               | `boulder-dot-best-dev` | Preview bucket for `wrangler dev --env dev`  |
+| Resource                     | Name                   | Notes                                                  |
+| ---------------------------- | ---------------------- | ------------------------------------------------------ |
+| API Worker (production)      | `boulder-api`          | Route `boulder.best/api/*`                             |
+| Frontend Worker (production) | `boulder-frontend`     | Custom domain `boulder.best` (DNS managed on deploy)   |
+| API Worker route             | `boulder.best/api/*`   | Zone route; takes precedence over the frontend domain  |
+| R2 (production)              | `boulder-dot-best`     | Bound as `MEDIA_BUCKET`; public URL `cdn.boulder.best` |
+| R2 (local dev)               | `boulder-dot-best-dev` | Preview bucket for `wrangler dev --env dev`            |
 
-The API route (`boulder.best/api/*`) is more specific than the frontend catch-all
-routes, so `/api/*` continues to hit the API Worker. Use zone routes (not
-`custom_domain`) when `boulder.best` already has proxied DNS records.
+The frontend uses a **custom domain** on `boulder.best` (Wrangler creates apex DNS
+and TLS). The API keeps a **zone route** on `boulder.best/api/*`, which is more
+specific, so `/api/*` still hits `boulder-api`.
+
+If you previously created manual apex DNS for `boulder.best`, delete that record
+before the first custom-domain frontend deploy (Wrangler cannot attach while a
+conflicting CNAME exists). `cdn.boulder.best` is separate R2 public access — see
+[R2 custom domain](#r2-custom-domain) below.
 
 ## Frontend Worker
 
