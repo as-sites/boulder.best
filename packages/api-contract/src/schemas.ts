@@ -275,3 +275,42 @@ export type SessionDetailBreakEntry = z.infer<
 >;
 export type SessionDetailEntry = z.infer<typeof sessionDetailEntrySchema>;
 export type SessionDetailResponse = z.infer<typeof sessionDetailResponseSchema>;
+
+// --- Route params ---
+
+export const sessionIdParamSchema = z
+  .object({
+    id: uuidSchema.openapi({
+      param: {
+        name: 'id',
+        in: 'path',
+      },
+      example: '987fcdeb-51a2-43d7-9012-345678901234',
+    }),
+  })
+  .openapi('SessionIdParam');
+
+export type SessionIdParam = z.infer<typeof sessionIdParamSchema>;
+
+// --- Sync session response ---
+
+export const syncSessionSuccessResponseSchema = z
+  .object({
+    success: z.literal(true),
+    sessionId: uuidSchema.openapi({
+      description: 'Synced session id (matches client payload id)',
+    }),
+  })
+  .openapi('SyncSessionSuccessResponse');
+
+export const apiErrorResponseSchema = z
+  .object({
+    success: z.literal(false),
+    error: z.string(),
+  })
+  .openapi('ApiErrorResponse');
+
+export type SyncSessionSuccessResponse = z.infer<
+  typeof syncSessionSuccessResponseSchema
+>;
+export type ApiErrorResponse = z.infer<typeof apiErrorResponseSchema>;
