@@ -55,3 +55,34 @@ See additional info in the `plans` directory:
 
 - plans/features.md
 - plans/Project Blueprint.md
+
+## Cursor Cloud specific instructions
+
+### Services overview
+
+| Service         | Command                        | Port | Notes                                                                           |
+| --------------- | ------------------------------ | ---- | ------------------------------------------------------------------------------- |
+| Frontend (Vite) | `mise run //apps/frontend:dev` | 5173 | Proxies `/api/*` to the API on 8787                                             |
+| API (Wrangler)  | `mise run //apps/api:dev`      | 8787 | R2 emulated locally; requires `DATABASE_URL` and `BETTER_AUTH_SECRET` in `.env` |
+
+`mise dev` starts both in parallel.
+
+### Environment setup
+
+- **mise** is the task runner. Activate it with `eval "$(mise activate bash)"` in any new shell. The update script handles `mise install` and `pnpm install`.
+- Copy `.env.example` to `.env` and fill in `DATABASE_URL` (Neon connection string) and `BETTER_AUTH_SECRET` (any random hex string). OAuth and Resend keys are optional.
+- The `mise.toml` auto-loads `.env` (`_.file = ".env"`), so all mise tasks inherit these vars.
+
+### Key commands (all via mise)
+
+- **Lint:** `mise lint` (oxlint)
+- **Format:** `mise format` / `mise format -- --check`
+- **Test:** `mise test` (vitest, 4 projects: frontend, api, api-contract, auth)
+- **Typecheck:** `mise typecheck` (runs `tsc -b` across all workspaces)
+- **Build:** `mise build`
+
+### Gotchas
+
+- The test in `packages/api-contract/tests/rpc-client.test.ts` requires the TypeScript `dist/` output. Run `mise typecheck` before `mise test` if `dist/` doesn't exist yet.
+- The wrangler dev server warns about missing optional secrets (Google/Discord OAuth, Resend). These are non-blocking for core local dev; auth sign-up/sign-in flows that touch the DB require a valid `DATABASE_URL`.
+- The frontend uses `createMemoryHistory` from TanStack Router (in-memory routing, not browser history).
