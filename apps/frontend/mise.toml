@@ -18,6 +18,11 @@ alias = ["frontend:deploy"]
 description = "Deploy the frontend Worker static assets app"
 run = "wrangler deploy"
 
+[tasks."deploy:dry-run"]
+alias = ["frontend:deploy:dry-run"]
+description = "Validate the frontend Worker static assets deployment without deploying"
+run = "wrangler deploy --dry-run --outdir .wrangler/deploy-dry-run"
+
 [tasks.typecheck]
 alias = ["frontend:typecheck"]
 description = "Typecheck the frontend app"
