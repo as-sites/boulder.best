@@ -1,9 +1,46 @@
 export { createApiClient, createApiContract } from './app.js';
 export type { ApiAppType } from './app.js';
 export type { ApiContractHandlers } from './routes.js';
+
+export { MAX_IMAGE_UPLOAD_BYTES, MAX_IMAGE_UPLOAD_ERROR } from './constants.js';
+
 export {
+  gymSchema,
+  gymsResponseSchema,
   healthResponseSchema,
   helloResponseSchema,
+  imageContentTypeSchema,
+  presignedUploadRequestSchema,
+  presignedUploadResponseSchema,
+  sessionDetailBreakEntrySchema,
+  sessionDetailClimbEntrySchema,
+  sessionDetailEntrySchema,
+  sessionDetailResponseSchema,
+  sessionHistoryListItemSchema,
+  sessionHistoryListQuerySchema,
+  sessionHistoryListResponseSchema,
+  syncBreakEntrySchema,
+  syncClimbEntrySchema,
+  syncSessionEntrySchema,
+  syncSessionPayloadSchema,
+  syncedImageSchema,
+  type Gym,
+  type GymsResponse,
   type HealthResponse,
   type HelloResponse,
+  type ImageContentType,
+  type PresignedUploadRequest,
+  type PresignedUploadResponse,
+  type SessionDetailBreakEntry,
+  type SessionDetailClimbEntry,
+  type SessionDetailEntry,
+  type SessionDetailResponse,
+  type SessionHistoryListItem,
+  type SessionHistoryListQuery,
+  type SessionHistoryListResponse,
+  type SyncBreakEntry,
+  type SyncClimbEntry,
+  type SyncSessionEntry,
+  type SyncSessionPayload,
+  type SyncedImage,
 } from './schemas.js';
