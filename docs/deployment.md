@@ -4,11 +4,46 @@ This app deploys to Cloudflare Workers. The frontend is a Workers Static Assets
 SPA, and the API is a separate Worker routed under `https://boulder.best/api/*`.
 Keep deployment commands in mise tasks; do not add package.json scripts.
 
+## Cloudflare account setup
+
+Workers are created on first deploy. Wrangler resolves the target account from
+`CLOUDFLARE_ACCOUNT_ID` (recommended) or your logged-in default account.
+
+**Local:** add to the repo root `.env` (see `.env.example`), or run
+`wrangler login` and `wrangler whoami`.
+
+**CI:** set the `CLOUDFLARE_ACCOUNT_ID` repository secret (see `.github/workflows/deploy.yml`).
+
+```powershell
+wrangler login   # optional if CLOUDFLARE_ACCOUNT_ID is in .env
+wrangler whoami
+```
+
+### Workers and R2
+
+| Resource                     | Name                   | Notes                                        |
+| ---------------------------- | ---------------------- | -------------------------------------------- |
+| API Worker (production)      | `boulder-api`          | Route `boulder.best/api/*`                   |
+| Frontend Worker (production) | `boulder-frontend`     | Zone routes on `boulder.best` (existing DNS) |
+| R2 (production)              | `boulder-dot-best`     | Bound as `MEDIA_BUCKET`                      |
+| R2 (local dev)               | `boulder-dot-best-dev` | Preview bucket for `wrangler dev --env dev`  |
+
+The API route (`boulder.best/api/*`) is more specific than the frontend catch-all
+routes, so `/api/*` continues to hit the API Worker. Use zone routes (not
+`custom_domain`) when `boulder.best` already has proxied DNS records.
+
 ## Frontend Worker
 
 `apps/frontend/wrangler.jsonc` serves `./dist` with
 `not_found_handling` set to `single-page-application`. That keeps TanStack
 Router browser routes working when a user refreshes a nested URL.
+
+The frontend uses `@cloudflare/vite-plugin`, which bakes the active Cloudflare
+environment into `dist/wrangler.json` at build time. `frontend:build` sets
+`CLOUDFLARE_ENV=production` via `apps/frontend/mise.toml` (and optionally in CI).
+Deploy
+with `wrangler deploy` from `apps/frontend` after a production build — do not
+pass `--env`; the generated config already targets production.
 
 Use:
 
@@ -50,16 +85,18 @@ PASSKEY_ORIGIN=https://boulder.best
 PUBLIC_PHOTO_URL_BASE=https://cdn.boulder.best
 ```
 
-Set secrets from `apps/api`:
+Fill in the repo root `.env` (see `.env.example`), then sync all API secrets at
+once:
+
+```powershell
+mise run api:secrets:sync
+```
+
+That reads `.env` and runs `wrangler secret bulk` for the production API
+Worker. You can still set secrets individually from `apps/api` if needed:
 
 ```powershell
 wrangler secret put DATABASE_URL --env production
-wrangler secret put BETTER_AUTH_SECRET --env production
-wrangler secret put GOOGLE_CLIENT_ID --env production
-wrangler secret put GOOGLE_CLIENT_SECRET --env production
-wrangler secret put RESEND_API_KEY --env production
-wrangler secret put DISCORD_CLIENT_ID --env production
-wrangler secret put DISCORD_CLIENT_SECRET --env production
 ```
 
 ## Neon
@@ -89,26 +126,3 @@ mise run api:r2:cors:list
 ```
 
 `apps/api/r2-cors.json` is the source-controlled CORS rule file.
-
-## Smoke Check
-
-After deploying both Workers, run:
-
-```powershell
-mise run deploy:smoke
-```
-
-The smoke command checks:
-
-- the frontend app shell at `https://boulder.best/`
-- API health at `https://boulder.best/api/health`
-- auth route reachability at `https://boulder.best/api/auth/session`
-
-For preview environments, override the targets:
-
-```powershell
-$env:FRONTEND_ORIGIN="https://preview.boulder.best"
-$env:API_ORIGIN="https://preview-api.boulder.best"
-$env:API_BASE_PATH="/api"
-mise run deploy:smoke
-```

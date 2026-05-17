@@ -16,7 +16,7 @@ A lightweight, client-side, offline-capable Progressive Web App (PWA) for tracki
 ## **Architecture & Infrastructure**
 
 - **Monorepo Tooling:** pnpm workspaces for package linking, managed via mise experimental tasks/monorepo support (avoids Nx/Turborepo bloat).
-- **Frontend Hosting:** Cloudflare Pages (or Vercel)
+- **Frontend Hosting:** Cloudflare Workers Static Assets (SPA on `boulder.best`)
 - **Backend API:** Cloudflare Workers (Edge runtime)
 - **Database:** Neon (Serverless PostgreSQL)
 - **Blob/Image Storage:** Cloudflare R2 (S3-compatible, zero egress fees)
