@@ -9,7 +9,6 @@ import {
 } from '@mantine/core';
 import { useQuery } from '@tanstack/react-query';
 import { Link, createRoute } from '@tanstack/react-router';
-import { AuthActions } from '../components/auth-actions.js';
 import { apiClient } from '../lib/api-client.js';
 import { rootRoute } from './root.js';
 
@@ -39,6 +38,9 @@ function Home() {
           <Button component={Link} to="/history" variant="light">
             History
           </Button>
+          <Button component={Link} to="/settings" variant="light">
+            Settings
+          </Button>
         </Group>
         <Group align="center" gap="sm">
           <Button onClick={() => void helloQuery.refetch()}>Refresh API</Button>
@@ -51,7 +53,6 @@ function Home() {
             {helloQuery.data?.message ?? 'Loading API message...'}
           </Text>
         )}
-        <AuthActions />
       </Stack>
     </Container>
   );
