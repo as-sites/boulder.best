@@ -7,6 +7,7 @@ run = "vite"
 alias = ["frontend:build"]
 description = "Build the frontend Worker static assets app"
 run = "vite build"
+env.CLOUDFLARE_ENV = "production"
 
 [tasks.preview]
 alias = ["frontend:preview"]
@@ -16,11 +17,13 @@ run = "vite preview"
 [tasks.deploy]
 alias = ["frontend:deploy"]
 description = "Deploy the frontend Worker static assets app"
+depends = ["build"]
 run = "wrangler deploy"
 
 [tasks."deploy:dry-run"]
 alias = ["frontend:deploy:dry-run"]
 description = "Validate the frontend Worker static assets deployment without deploying"
+depends = ["build"]
 run = "wrangler deploy --dry-run --outdir .wrangler/deploy-dry-run"
 
 [tasks.typecheck]
