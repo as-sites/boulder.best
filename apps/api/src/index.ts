@@ -84,6 +84,18 @@ export function createApiApp(options: CreateApiAppOptions = {}) {
       hello: () => ({
         message: 'Hello from the Boulder API.',
       }),
+      getGyms: () => [],
+      createPresignedUpload: () => {
+        throw new Error('POST /api/uploads/presigned-url is not implemented');
+      },
+      syncSession: () => {
+        throw new Error('POST /api/sessions/sync is not implemented');
+      },
+      listSessions: () => ({
+        items: [],
+        nextCursor: null,
+      }),
+      getSessionDetail: () => null,
     }),
   );
 

@@ -1,0 +1,862 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`OpenAPI document > serves OpenAPI JSON at /openapi.json > openapi-document 1`] = `
+{
+  "components": {
+    "parameters": {},
+    "schemas": {
+      "ApiErrorResponse": {
+        "properties": {
+          "error": {
+            "type": "string",
+          },
+          "success": {
+            "enum": [
+              false,
+            ],
+            "type": "boolean",
+          },
+        },
+        "required": [
+          "success",
+          "error",
+        ],
+        "type": "object",
+      },
+      "Gym": {
+        "properties": {
+          "grades": {
+            "items": {
+              "type": "string",
+            },
+            "type": "array",
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string",
+          },
+          "name": {
+            "minLength": 1,
+            "type": "string",
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string",
+          },
+        },
+        "required": [
+          "id",
+          "name",
+          "grades",
+          "updatedAt",
+        ],
+        "type": "object",
+      },
+      "GymsResponse": {
+        "items": {
+          "$ref": "#/components/schemas/Gym",
+        },
+        "type": "array",
+      },
+      "PresignedUploadRequest": {
+        "properties": {
+          "contentLength": {
+            "exclusiveMinimum": true,
+            "maximum": 31457280,
+            "minimum": 0,
+            "type": "integer",
+          },
+          "contentType": {
+            "description": "Allowed image MIME types for uploads and synced metadata",
+            "enum": [
+              "image/jpeg",
+              "image/png",
+              "image/webp",
+            ],
+            "type": "string",
+          },
+          "entryId": {
+            "description": "Climb entry id used in the R2 object key path",
+            "format": "uuid",
+            "type": "string",
+          },
+          "imageId": {
+            "description": "Client-generated image id",
+            "format": "uuid",
+            "type": "string",
+          },
+          "index": {
+            "description": "Stable image index within the climb entry",
+            "minimum": 0,
+            "type": "integer",
+          },
+          "sessionId": {
+            "description": "Client session id used in the R2 object key path",
+            "format": "uuid",
+            "type": "string",
+          },
+        },
+        "required": [
+          "sessionId",
+          "entryId",
+          "imageId",
+          "index",
+          "contentType",
+          "contentLength",
+        ],
+        "type": "object",
+      },
+      "PresignedUploadResponse": {
+        "properties": {
+          "image": {
+            "$ref": "#/components/schemas/SyncedImage",
+          },
+          "objectKey": {
+            "minLength": 1,
+            "type": "string",
+          },
+          "photoUrl": {
+            "format": "uri",
+            "type": "string",
+          },
+          "uploadUrl": {
+            "format": "uri",
+            "type": "string",
+          },
+        },
+        "required": [
+          "uploadUrl",
+          "objectKey",
+          "photoUrl",
+          "image",
+        ],
+        "type": "object",
+      },
+      "SessionDetailBreakEntry": {
+        "additionalProperties": false,
+        "properties": {
+          "durationMs": {
+            "description": "Total time spent on this block in milliseconds",
+            "example": 45000,
+            "minimum": 0,
+            "type": "integer",
+          },
+          "id": {
+            "description": "Client-generated UUID for the row entry",
+            "example": "123e4567-e89b-12d3-a456-426614174000",
+            "format": "uuid",
+            "type": "string",
+          },
+          "sequenceOrder": {
+            "description": "Chronological order of this entry in the session",
+            "example": 0,
+            "minimum": 0,
+            "type": "integer",
+          },
+          "type": {
+            "enum": [
+              "break",
+            ],
+            "type": "string",
+          },
+        },
+        "required": [
+          "id",
+          "sequenceOrder",
+          "durationMs",
+          "type",
+        ],
+        "type": "object",
+      },
+      "SessionDetailClimbEntry": {
+        "additionalProperties": false,
+        "properties": {
+          "attempts": {
+            "exclusiveMinimum": true,
+            "minimum": 0,
+            "nullable": true,
+            "type": "integer",
+          },
+          "completed": {
+            "nullable": true,
+            "type": "boolean",
+          },
+          "durationMs": {
+            "description": "Total time spent on this block in milliseconds",
+            "example": 45000,
+            "minimum": 0,
+            "type": "integer",
+          },
+          "grade": {
+            "maxLength": 50,
+            "nullable": true,
+            "type": "string",
+          },
+          "id": {
+            "description": "Client-generated UUID for the row entry",
+            "example": "123e4567-e89b-12d3-a456-426614174000",
+            "format": "uuid",
+            "type": "string",
+          },
+          "images": {
+            "items": {
+              "$ref": "#/components/schemas/SyncedImage",
+            },
+            "type": "array",
+          },
+          "name": {
+            "maxLength": 255,
+            "nullable": true,
+            "type": "string",
+          },
+          "notes": {
+            "nullable": true,
+            "type": "string",
+          },
+          "sequenceOrder": {
+            "description": "Chronological order of this entry in the session",
+            "example": 0,
+            "minimum": 0,
+            "type": "integer",
+          },
+          "type": {
+            "enum": [
+              "climb",
+            ],
+            "type": "string",
+          },
+        },
+        "required": [
+          "id",
+          "sequenceOrder",
+          "durationMs",
+          "type",
+          "name",
+          "grade",
+          "attempts",
+          "completed",
+          "images",
+        ],
+        "type": "object",
+      },
+      "SessionDetailEntry": {
+        "discriminator": {
+          "mapping": {
+            "break": "#/components/schemas/SessionDetailBreakEntry",
+            "climb": "#/components/schemas/SessionDetailClimbEntry",
+          },
+          "propertyName": "type",
+        },
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/SessionDetailClimbEntry",
+          },
+          {
+            "$ref": "#/components/schemas/SessionDetailBreakEntry",
+          },
+        ],
+      },
+      "SessionDetailResponse": {
+        "properties": {
+          "endTime": {
+            "format": "date-time",
+            "type": "string",
+          },
+          "entries": {
+            "description": "Entries sorted by sequenceOrder; climb images sorted by index",
+            "items": {
+              "$ref": "#/components/schemas/SessionDetailEntry",
+            },
+            "type": "array",
+          },
+          "gymId": {
+            "format": "uuid",
+            "type": "string",
+          },
+          "gymName": {
+            "minLength": 1,
+            "type": "string",
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string",
+          },
+          "notes": {
+            "nullable": true,
+            "type": "string",
+          },
+          "startTime": {
+            "format": "date-time",
+            "type": "string",
+          },
+          "totalDurationMs": {
+            "minimum": 0,
+            "type": "integer",
+          },
+        },
+        "required": [
+          "id",
+          "gymId",
+          "gymName",
+          "startTime",
+          "endTime",
+          "totalDurationMs",
+          "entries",
+        ],
+        "type": "object",
+      },
+      "SessionHistoryListItem": {
+        "properties": {
+          "endTime": {
+            "format": "date-time",
+            "type": "string",
+          },
+          "entryCount": {
+            "minimum": 0,
+            "type": "integer",
+          },
+          "gymId": {
+            "format": "uuid",
+            "type": "string",
+          },
+          "gymName": {
+            "minLength": 1,
+            "type": "string",
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string",
+          },
+          "startTime": {
+            "format": "date-time",
+            "type": "string",
+          },
+          "totalDurationMs": {
+            "minimum": 0,
+            "type": "integer",
+          },
+        },
+        "required": [
+          "id",
+          "gymId",
+          "gymName",
+          "startTime",
+          "endTime",
+          "totalDurationMs",
+          "entryCount",
+        ],
+        "type": "object",
+      },
+      "SessionHistoryListResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/SessionHistoryListItem",
+            },
+            "type": "array",
+          },
+          "nextCursor": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string",
+          },
+        },
+        "required": [
+          "items",
+          "nextCursor",
+        ],
+        "type": "object",
+      },
+      "SyncBreakEntry": {
+        "additionalProperties": false,
+        "properties": {
+          "durationMs": {
+            "description": "Total time spent on this block in milliseconds",
+            "example": 45000,
+            "minimum": 0,
+            "type": "integer",
+          },
+          "id": {
+            "description": "Client-generated UUID for the row entry",
+            "example": "123e4567-e89b-12d3-a456-426614174000",
+            "format": "uuid",
+            "type": "string",
+          },
+          "sequenceOrder": {
+            "description": "Chronological order of this entry in the session",
+            "example": 0,
+            "minimum": 0,
+            "type": "integer",
+          },
+          "type": {
+            "enum": [
+              "break",
+            ],
+            "type": "string",
+          },
+        },
+        "required": [
+          "id",
+          "sequenceOrder",
+          "durationMs",
+          "type",
+        ],
+        "type": "object",
+      },
+      "SyncClimbEntry": {
+        "additionalProperties": false,
+        "properties": {
+          "attempts": {
+            "exclusiveMinimum": true,
+            "minimum": 0,
+            "nullable": true,
+            "type": "integer",
+          },
+          "completed": {
+            "nullable": true,
+            "type": "boolean",
+          },
+          "durationMs": {
+            "description": "Total time spent on this block in milliseconds",
+            "example": 45000,
+            "minimum": 0,
+            "type": "integer",
+          },
+          "grade": {
+            "maxLength": 50,
+            "nullable": true,
+            "type": "string",
+          },
+          "id": {
+            "description": "Client-generated UUID for the row entry",
+            "example": "123e4567-e89b-12d3-a456-426614174000",
+            "format": "uuid",
+            "type": "string",
+          },
+          "images": {
+            "description": "Remote image metadata after R2 upload (multiple photos per climb)",
+            "items": {
+              "$ref": "#/components/schemas/SyncedImage",
+            },
+            "type": "array",
+          },
+          "name": {
+            "maxLength": 255,
+            "nullable": true,
+            "type": "string",
+          },
+          "notes": {
+            "nullable": true,
+            "type": "string",
+          },
+          "sequenceOrder": {
+            "description": "Chronological order of this entry in the session",
+            "example": 0,
+            "minimum": 0,
+            "type": "integer",
+          },
+          "type": {
+            "enum": [
+              "climb",
+            ],
+            "type": "string",
+          },
+        },
+        "required": [
+          "id",
+          "sequenceOrder",
+          "durationMs",
+          "type",
+          "name",
+          "grade",
+          "attempts",
+          "completed",
+          "images",
+        ],
+        "type": "object",
+      },
+      "SyncSessionEntry": {
+        "discriminator": {
+          "mapping": {
+            "break": "#/components/schemas/SyncBreakEntry",
+            "climb": "#/components/schemas/SyncClimbEntry",
+          },
+          "propertyName": "type",
+        },
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/SyncClimbEntry",
+          },
+          {
+            "$ref": "#/components/schemas/SyncBreakEntry",
+          },
+        ],
+      },
+      "SyncSessionPayload": {
+        "properties": {
+          "endTime": {
+            "example": "2026-05-13T12:00:00.000Z",
+            "format": "date-time",
+            "type": "string",
+          },
+          "entries": {
+            "description": "Chronological list of climbs and breaks for this session",
+            "items": {
+              "$ref": "#/components/schemas/SyncSessionEntry",
+            },
+            "type": "array",
+          },
+          "gymId": {
+            "format": "uuid",
+            "type": "string",
+          },
+          "id": {
+            "example": "987fcdeb-51a2-43d7-9012-345678901234",
+            "format": "uuid",
+            "type": "string",
+          },
+          "notes": {
+            "nullable": true,
+            "type": "string",
+          },
+          "startTime": {
+            "example": "2026-05-13T10:00:00.000Z",
+            "format": "date-time",
+            "type": "string",
+          },
+          "totalDurationMs": {
+            "example": 7200000,
+            "minimum": 0,
+            "type": "integer",
+          },
+        },
+        "required": [
+          "id",
+          "gymId",
+          "startTime",
+          "endTime",
+          "totalDurationMs",
+          "entries",
+        ],
+        "type": "object",
+      },
+      "SyncSessionSuccessResponse": {
+        "properties": {
+          "sessionId": {
+            "description": "Synced session id (matches client payload id)",
+            "format": "uuid",
+            "type": "string",
+          },
+          "success": {
+            "enum": [
+              true,
+            ],
+            "type": "boolean",
+          },
+        },
+        "required": [
+          "success",
+          "sessionId",
+        ],
+        "type": "object",
+      },
+      "SyncedImage": {
+        "properties": {
+          "contentLength": {
+            "example": 1024000,
+            "exclusiveMinimum": true,
+            "minimum": 0,
+            "type": "integer",
+          },
+          "contentType": {
+            "description": "Allowed image MIME types for uploads and synced metadata",
+            "enum": [
+              "image/jpeg",
+              "image/png",
+              "image/webp",
+            ],
+            "type": "string",
+          },
+          "id": {
+            "description": "Client-generated image id",
+            "example": "123e4567-e89b-12d3-a456-426614174001",
+            "format": "uuid",
+            "type": "string",
+          },
+          "index": {
+            "description": "Stable ordering index within the climb entry",
+            "example": 0,
+            "minimum": 0,
+            "type": "integer",
+          },
+          "objectKey": {
+            "example": "user-id/session-id/entry-id/1715600000000-0.webp",
+            "minLength": 1,
+            "type": "string",
+          },
+          "photoUrl": {
+            "example": "https://cdn.example.com/user-id/session-id/entry-id/1715600000000-0.webp",
+            "format": "uri",
+            "type": "string",
+          },
+        },
+        "required": [
+          "id",
+          "index",
+          "objectKey",
+          "photoUrl",
+          "contentType",
+          "contentLength",
+        ],
+        "type": "object",
+      },
+    },
+  },
+  "info": {
+    "description": "Offline-first bouldering tracker MVP API contract shared between frontend and worker.",
+    "title": "Boulder Best API",
+    "version": "0.0.0",
+  },
+  "openapi": "3.0.0",
+  "paths": {
+    "/api/gyms": {
+      "get": {
+        "description": "Returns the read-only gym catalog with grade scales for online use and offline cache hydration.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GymsResponse",
+                },
+              },
+            },
+            "description": "Available gyms",
+          },
+          "401": {
+            "description": "Unauthorized",
+          },
+        },
+        "security": [
+          {
+            "sessionCookie": [],
+          },
+        ],
+        "summary": "List gyms",
+        "tags": [
+          "Gyms",
+        ],
+      },
+    },
+    "/api/sessions": {
+      "get": {
+        "description": "Returns paginated session summaries for the authenticated user, newest first by startTime.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 50,
+              "minimum": 1,
+              "type": "integer",
+            },
+          },
+          {
+            "description": "Pagination cursor based on session startTime",
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "description": "Pagination cursor based on session startTime",
+              "format": "date-time",
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionHistoryListResponse",
+                },
+              },
+            },
+            "description": "Paginated session history",
+          },
+          "401": {
+            "description": "Unauthorized",
+          },
+        },
+        "security": [
+          {
+            "sessionCookie": [],
+          },
+        ],
+        "summary": "List session history",
+        "tags": [
+          "Sessions",
+        ],
+      },
+    },
+    "/api/sessions/sync": {
+      "post": {
+        "description": "Upserts a completed session payload from the offline sync queue for the authenticated user.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SyncSessionPayload",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyncSessionSuccessResponse",
+                },
+              },
+            },
+            "description": "Session synced successfully",
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
+            "description": "Validation error",
+          },
+          "401": {
+            "description": "Unauthorized",
+          },
+        },
+        "security": [
+          {
+            "sessionCookie": [],
+          },
+        ],
+        "summary": "Sync an offline session",
+        "tags": [
+          "Sessions",
+        ],
+      },
+    },
+    "/api/sessions/{id}": {
+      "get": {
+        "description": "Returns a single session with entries ordered by sequenceOrder and climb images ordered by index.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "example": "987fcdeb-51a2-43d7-9012-345678901234",
+              "format": "uuid",
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionDetailResponse",
+                },
+              },
+            },
+            "description": "Session detail",
+          },
+          "401": {
+            "description": "Unauthorized",
+          },
+          "404": {
+            "description": "Session not found",
+          },
+        },
+        "security": [
+          {
+            "sessionCookie": [],
+          },
+        ],
+        "summary": "Get session detail",
+        "tags": [
+          "Sessions",
+        ],
+      },
+    },
+    "/api/uploads/presigned-url": {
+      "post": {
+        "description": "Returns a temporary upload URL and final image metadata for a client-side Dexie image blob.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PresignedUploadRequest",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PresignedUploadResponse",
+                },
+              },
+            },
+            "description": "Presigned upload URL generated",
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
+            "description": "Validation error",
+          },
+          "401": {
+            "description": "Unauthorized",
+          },
+        },
+        "security": [
+          {
+            "sessionCookie": [],
+          },
+        ],
+        "summary": "Create presigned R2 upload URL",
+        "tags": [
+          "Uploads",
+        ],
+      },
+    },
+  },
+  "tags": [
+    {
+      "description": "Read-only gym catalog",
+      "name": "Gyms",
+    },
+    {
+      "description": "Authenticated R2 presigned uploads",
+      "name": "Uploads",
+    },
+    {
+      "description": "Session sync and history",
+      "name": "Sessions",
+    },
+  ],
+}
+`;
