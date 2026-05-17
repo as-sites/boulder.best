@@ -57,13 +57,13 @@ export function createApiContract(handlers: ApiContractHandlers) {
     return c.json(detail);
   };
 
-  app.openapi(getGymsRoute, getGymsHandler);
-  app.openapi(createPresignedUploadRoute, createPresignedUploadHandler);
-  app.openapi(syncSessionRoute, syncSessionHandler);
-  app.openapi(listSessionsRoute, listSessionsHandler);
-  app.openapi(getSessionDetailRoute, getSessionDetailHandler);
-
-  app.doc(openApiJsonPath, openApiDocumentConfig);
+  app
+    .openapi(getGymsRoute, getGymsHandler)
+    .openapi(createPresignedUploadRoute, createPresignedUploadHandler)
+    .openapi(syncSessionRoute, syncSessionHandler)
+    .openapi(listSessionsRoute, listSessionsHandler)
+    .openapi(getSessionDetailRoute, getSessionDetailHandler)
+    .doc(openApiJsonPath, openApiDocumentConfig);
 
   return app;
 }
