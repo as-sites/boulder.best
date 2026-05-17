@@ -8,6 +8,13 @@
       "when": 1778769458921,
       "tag": "0000_broad_purple_man",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1779020484414,
+      "tag": "0001_session_entry_images_and_climb_attempts",
+      "breakpoints": true
     }
   ]
 }
