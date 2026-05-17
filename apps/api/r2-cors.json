@@ -1,0 +1,8 @@
+[
+  {
+    "AllowedOrigins": ["https://boulder.best"],
+    "AllowedMethods": ["PUT", "GET", "HEAD"],
+    "AllowedHeaders": ["Content-Type", "Content-Length"],
+    "MaxAgeSeconds": 3600
+  }
+]

@@ -7,11 +7,21 @@
   "env": {
     "dev": {
       "name": "boulder-api-dev",
+      "r2_buckets": [
+        {
+          "binding": "MEDIA_BUCKET",
+          "bucket_name": "boulder-photos-dev",
+          // wrangler dev simulates R2 locally; no real bucket is needed for local dev
+          "preview_bucket_name": "boulder-photos-dev"
+        }
+      ],
       "vars": {
         "BETTER_AUTH_URL": "http://localhost:5173",
         "FRONTEND_URL": "http://localhost:5173",
         "PASSKEY_RP_ID": "localhost",
-        "PASSKEY_ORIGIN": "http://localhost:5173"
+        "PASSKEY_ORIGIN": "http://localhost:5173",
+        // Base URL served by wrangler dev's local R2 emulation
+        "PUBLIC_PHOTO_URL_BASE": "http://localhost:8787"
       },
       "secrets": {
         "required": [
@@ -33,11 +43,20 @@
           "zone_name": "boulder.best"
         }
       ],
+      "r2_buckets": [
+        {
+          "binding": "MEDIA_BUCKET",
+          // Apply CORS rules before deploying: mise run api:r2:cors:apply
+          "bucket_name": "boulder-photos"
+        }
+      ],
       "vars": {
         "BETTER_AUTH_URL": "https://boulder.best",
         "FRONTEND_URL": "https://boulder.best",
         "PASSKEY_RP_ID": "boulder.best",
-        "PASSKEY_ORIGIN": "https://boulder.best"
+        "PASSKEY_ORIGIN": "https://boulder.best",
+        // Replace with your R2 public domain or custom subdomain once configured
+        "PUBLIC_PHOTO_URL_BASE": "https://cdn.boulder.best"
       },
       "secrets": {
         "required": [
