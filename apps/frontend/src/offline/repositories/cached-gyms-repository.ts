@@ -14,4 +14,8 @@ export const cachedGymsRepository = {
   async getByName(name: string): Promise<Gym | undefined> {
     return await table.where('name').equals(name).first();
   },
+
+  async listAll(): Promise<Gym[]> {
+    return await table.orderBy('name').toArray();
+  },
 };
