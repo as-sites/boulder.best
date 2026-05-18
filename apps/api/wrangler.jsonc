@@ -21,12 +21,16 @@
         "PASSKEY_RP_ID": "localhost",
         "PASSKEY_ORIGIN": "http://localhost:5173",
         // Base URL served by wrangler dev's local R2 emulation
-        "PUBLIC_PHOTO_URL_BASE": "http://localhost:8787"
+        "PUBLIC_PHOTO_URL_BASE": "http://localhost:8787",
+        "R2_BUCKET_NAME": "boulder-dot-best-dev"
       },
       "secrets": {
         "required": [
           "DATABASE_URL",
           "BETTER_AUTH_SECRET",
+          "R2_ACCOUNT_ID",
+          "R2_ACCESS_KEY_ID",
+          "R2_SECRET_ACCESS_KEY",
           "GOOGLE_CLIENT_ID",
           "GOOGLE_CLIENT_SECRET",
           "RESEND_API_KEY",
@@ -56,12 +60,16 @@
         "FRONTEND_URL": "https://boulder.best",
         "PASSKEY_RP_ID": "boulder.best",
         "PASSKEY_ORIGIN": "https://boulder.best",
-        "PUBLIC_PHOTO_URL_BASE": "https://cdn.boulder.best"
+        "PUBLIC_PHOTO_URL_BASE": "https://cdn.boulder.best",
+        "R2_BUCKET_NAME": "boulder-dot-best"
       },
       "secrets": {
         "required": [
           "DATABASE_URL",
           "BETTER_AUTH_SECRET",
+          "R2_ACCOUNT_ID",
+          "R2_ACCESS_KEY_ID",
+          "R2_SECRET_ACCESS_KEY",
           "GOOGLE_CLIENT_ID",
           "GOOGLE_CLIENT_SECRET",
           "RESEND_API_KEY",
