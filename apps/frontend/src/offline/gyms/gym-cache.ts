@@ -14,22 +14,22 @@ export const fetchGymsFromApi: FetchGyms = async () => {
   return await response.json();
 };
 
-export async function refreshCachedGymsFromApi(
+export const refreshCachedGymsFromApi = async (
   fetchGyms: FetchGyms = fetchGymsFromApi,
-): Promise<Gym[]> {
+): Promise<Gym[]> => {
   const gyms = await fetchGyms();
   await cachedGymsRepository.upsertMany(gyms);
   return gyms;
-}
+};
 
 /**
  * Returns cached gyms, refreshing from the API when online and the request
  * succeeds. Falls back to IndexedDB when offline or the network call fails.
  */
-export async function loadCachedGyms(options?: {
+export const loadCachedGyms = async (options?: {
   refreshWhenOnline?: boolean;
   fetchGyms?: FetchGyms;
-}): Promise<Gym[]> {
+}): Promise<Gym[]> => {
   const shouldRefresh =
     options?.refreshWhenOnline !== false && navigator.onLine;
 
@@ -42,4 +42,4 @@ export async function loadCachedGyms(options?: {
   }
 
   return await cachedGymsRepository.listAll();
-}
+};
