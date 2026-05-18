@@ -4,6 +4,7 @@ import type {
   SyncClimbEntry,
   SyncSessionPayload,
 } from '@boulder/api-contract';
+import type { TimerState } from '../../lib/timer/types.js';
 
 export type SyncQueueStatus = 'pending' | 'syncing' | 'error' | 'synced';
 
@@ -20,11 +21,7 @@ export type OfflineImage = Pick<
   createdAt: number;
 };
 
-export interface TimerState {
-  accumulatedDurationMs: number;
-  activeStartTime: string | null;
-  status: 'idle' | 'running' | 'paused' | 'stopped';
-}
+export type { TimerState };
 
 /** Draft climb row; `images` live in {@link OfflineImage}, not form JSON. */
 export interface ClimbFormEntry extends Omit<SyncClimbEntry, 'images'> {
