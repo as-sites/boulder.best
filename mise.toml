@@ -110,3 +110,8 @@ run = "tsc -b"
 alias = 'build'
 description = "Build all workspace projects"
 depends = ["//...:build"]
+
+[tasks.checks]
+alias = 'checks'
+description = "Run all checks for the workspace"
+depends = ["lint", "format", "typecheck"]

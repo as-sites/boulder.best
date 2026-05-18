@@ -7,3 +7,4 @@ export {
   startTimer,
   stopTimer,
 } from './timer-math.js';
+export { formatDurationMs } from './format-duration.js';
