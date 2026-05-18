@@ -54,7 +54,9 @@ const syncPayloadFixture = (): SyncSessionPayload => ({
   ],
 });
 
-const queueItemFixture = (): SyncQueueItem => ({
+const queueItemFixture = (
+  overrides: Partial<SyncQueueItem> = {},
+): SyncQueueItem => ({
   id: 'queue-1',
   sessionId: 'session-1',
   payload: syncPayloadFixture(),
@@ -62,6 +64,7 @@ const queueItemFixture = (): SyncQueueItem => ({
   retryCount: 0,
   createdAt: 1_700_000_000_000,
   updatedAt: 1_700_000_000_000,
+  ...overrides,
 });
 
 const imageFixture = (): OfflineImage => ({
@@ -159,6 +162,38 @@ describe('offline repositories', () => {
 
       await syncQueueRepository.delete(item.id);
       await expect(syncQueueRepository.get(item.id)).resolves.toBeUndefined();
+    });
+
+    it('lists all items chronologically', async () => {
+      const pending = queueItemFixture({
+        id: 'pending-1',
+        createdAt: 100,
+        updatedAt: 100,
+      });
+      const errorItem: SyncQueueItem = {
+        ...queueItemFixture({
+          id: 'error-1',
+          createdAt: 200,
+          updatedAt: 200,
+        }),
+        status: 'error',
+        retryCount: 1,
+        lastError: 'Network Error',
+      };
+
+      await syncQueueRepository.put(pending);
+      await syncQueueRepository.put(errorItem);
+
+      await expect(
+        syncQueueRepository.listByStatus('pending'),
+      ).resolves.toEqual([pending]);
+      await expect(syncQueueRepository.listByStatus('error')).resolves.toEqual([
+        errorItem,
+      ]);
+      await expect(syncQueueRepository.listAll()).resolves.toEqual([
+        pending,
+        errorItem,
+      ]);
     });
   });
 
