@@ -162,6 +162,9 @@ importers:
       '@cloudflare/vite-plugin':
         specifier: 1.36.4
         version: 1.36.4(vite@8.0.12(@types/node@24.12.3)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.9.0))(workerd@1.20260508.1)(wrangler@4.90.1)
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.12.3
       '@types/react':
         specifier: 'catalog:'
         version: 19.2.14
@@ -171,6 +174,9 @@ importers:
       '@vitejs/plugin-react':
         specifier: 6.0.1
         version: 6.0.1(vite@8.0.12(@types/node@24.12.3)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.9.0))
+      sharp:
+        specifier: 0.34.5
+        version: 0.34.5
       vite:
         specifier: 8.0.12
         version: 8.0.12(@types/node@24.12.3)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.9.0)

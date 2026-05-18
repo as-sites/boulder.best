@@ -18,9 +18,11 @@
   "devDependencies": {
     "@better-auth/core": "catalog:better-auth",
     "@cloudflare/vite-plugin": "1.36.4",
+    "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "6.0.1",
+    "sharp": "0.34.5",
     "vite": "8.0.12",
     "wrangler": "4.90.1"
   }
