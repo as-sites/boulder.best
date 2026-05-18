@@ -6,6 +6,7 @@ export {
 } from './db/database.js';
 export type {
   BreakFormEntry,
+  ClimbAttemptFormEntry,
   ClimbFormEntry,
   DraftSession,
   DraftSessionId,
@@ -28,6 +29,15 @@ export type {
   SyncedImage,
 } from '@boulder/api-contract';
 export {
+  autosaveActiveDraft,
+  restoreActiveDraft,
+} from './draft/draft-autosave.js';
+export {
+  buildSyncSessionPayload,
+  finalizeStoppedSession,
+} from './draft/finalize-session.js';
+export { loadCachedGyms, refreshCachedGymsFromApi } from './gyms/gym-cache.js';
+export {
   cachedGymsRepository,
   createCrudRepository,
   draftSessionRepository,
@@ -40,4 +50,5 @@ export {
   useSyncQueueList,
   useSyncQueuePendingCount,
 } from './hooks/index.js';
+export { createIdleTimer } from '../lib/timer/index.js';
 export { requestPersistentStorage, toIsoDateTime } from './storage.js';

@@ -1,12 +1,15 @@
 import type {
   PresignedUploadRequest,
   SyncBreakEntry,
+  SyncClimbAttempt,
   SyncClimbEntry,
   SyncSessionPayload,
 } from '@boulder/api-contract';
 import type { TimerState } from '../../lib/timer/types.js';
 
 export type SyncQueueStatus = 'pending' | 'syncing' | 'error' | 'synced';
+
+export type { TimerState };
 
 /**
  * Local blob store row; presign fields from {@link PresignedUploadRequest} plus
@@ -21,11 +24,18 @@ export type OfflineImage = Pick<
   createdAt: number;
 };
 
-export type { TimerState };
+/** Per-attempt draft row with pause-resilient timer state. */
+export interface ClimbAttemptFormEntry extends SyncClimbAttempt {
+  timer: TimerState;
+}
 
 /** Draft climb row; `images` live in {@link OfflineImage}, not form JSON. */
-export interface ClimbFormEntry extends Omit<SyncClimbEntry, 'images'> {
+export interface ClimbFormEntry extends Omit<
+  SyncClimbEntry,
+  'images' | 'climbAttempts'
+> {
   timer: TimerState;
+  climbAttempts: ClimbAttemptFormEntry[];
 }
 
 export interface BreakFormEntry extends SyncBreakEntry {
