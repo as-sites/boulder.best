@@ -18,6 +18,8 @@ export default defineConfig({
       ],
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,webmanifest}'],
+        // OAuth callbacks are full-page navigations to /api/auth/callback/* — must hit the API Worker.
+        navigateFallbackDenylist: [/^\/api/],
       },
     }),
     cloudflare(),
