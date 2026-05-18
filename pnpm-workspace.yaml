@@ -9,6 +9,8 @@ catalog:
   '@types/react-dom': 19.2.3
   '@types/node': 24.12.3
   zod: 4.4.3
+  wrangler: 4.92.0
+  hono: 4.12.19
 
 catalogs:
   vitest:
@@ -16,9 +18,12 @@ catalogs:
     '@vitest/ui': *vitest_version
     '@vitest/coverage-v8': *vitest_version
   better-auth:
-    better-auth: &better_auth_version 1.6.10
+    better-auth: &better_auth_version 1.6.11
     '@better-auth/passkey': *better_auth_version
     '@better-auth/core': *better_auth_version
+  mantine:
+    '@mantine/core': &mantine_version 9.2.1
+    '@mantine/hooks': *mantine_version
 
 autoInstallPeers: false
 peerDependencyRules:
