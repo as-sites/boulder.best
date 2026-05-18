@@ -55,7 +55,7 @@ export interface CreateAppRouterOptions {
   initialEntries?: string[];
 }
 
-export function createAppRouter(options: CreateAppRouterOptions = {}) {
+export const createAppRouter = (options: CreateAppRouterOptions = {}) => {
   const { initialEntries } = options;
 
   return createRouter({
@@ -66,7 +66,7 @@ export function createAppRouter(options: CreateAppRouterOptions = {}) {
         }
       : {}),
   });
-}
+};
 
 export type AppRouter = ReturnType<typeof createAppRouter>;
 

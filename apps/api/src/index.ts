@@ -33,10 +33,10 @@ export interface AuthenticatedUser {
   userId: string;
 }
 
-export async function getAuthenticatedUser(
+export const getAuthenticatedUser = async (
   c: Context<ApiEnv>,
   auth: AuthServer,
-): Promise<AuthenticatedUser | Response> {
+): Promise<AuthenticatedUser | Response> => {
   const session = await auth.api.getSession({ headers: c.req.raw.headers });
 
   if (!session) {
@@ -44,12 +44,13 @@ export async function getAuthenticatedUser(
   }
 
   return { userId: session.user.id };
-}
+};
 
-export function createProtectedUserMiddleware(
-  createAuthServer: CreateAuthServer = createAuth,
-): MiddlewareHandler<ApiEnv> {
-  return async (c, next) => {
+export const createProtectedUserMiddleware =
+  (
+    createAuthServer: CreateAuthServer = createAuth,
+  ): MiddlewareHandler<ApiEnv> =>
+  async (c, next) => {
     const user = await getAuthenticatedUser(c, createAuthServer(c.env));
 
     if (user instanceof Response) {
@@ -59,13 +60,12 @@ export function createProtectedUserMiddleware(
     c.set('userId', user.userId);
     await next();
   };
-}
 
 interface CreateApiAppOptions {
   createAuthServer?: CreateAuthServer;
 }
 
-export function createApiApp(options: CreateApiAppOptions = {}) {
+export const createApiApp = (options: CreateApiAppOptions = {}) => {
   const createAuthServer = options.createAuthServer ?? createAuth;
   const app = new Hono<ApiEnv>();
 
@@ -147,7 +147,7 @@ export function createApiApp(options: CreateApiAppOptions = {}) {
   );
 
   return app;
-}
+};
 
 const app = createApiApp();
 

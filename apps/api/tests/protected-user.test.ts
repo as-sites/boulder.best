@@ -10,7 +10,7 @@ const env = {
   DATABASE_URL: 'postgresql://user:pass@host/db',
 } satisfies AuthEnvBindings;
 
-function createTestApp(auth: AuthServer) {
+const createTestApp = (auth: AuthServer) => {
   const app = new Hono<{
     Bindings: AuthEnvBindings;
     Variables: {
@@ -25,7 +25,7 @@ function createTestApp(auth: AuthServer) {
   );
 
   return app;
-}
+};
 
 describe('protected user middleware', () => {
   it('returns 401 when auth headers are missing', async () => {

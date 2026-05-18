@@ -14,15 +14,11 @@ import {
   sessions,
 } from '../db/schema.js';
 
-function toIsoDateTime(value: Date): string {
-  return value.toISOString();
-}
-
-export async function listSessions(
+export const listSessions = async (
   db: AppDb,
   userId: string,
   query: SessionHistoryListQuery,
-): Promise<SessionHistoryListResponse> {
+): Promise<SessionHistoryListResponse> => {
   const conditions = [eq(sessions.userId, userId)];
 
   if (query.cursor) {
@@ -63,20 +59,20 @@ export async function listSessions(
       id: row.id,
       gymId: row.gymId,
       gymName: row.gymName,
-      startTime: toIsoDateTime(row.startTime),
-      endTime: toIsoDateTime(row.endTime),
+      startTime: row.startTime.toISOString(),
+      endTime: row.endTime.toISOString(),
       totalDurationMs: row.totalDurationMs,
       entryCount: row.entryCount,
     })),
-    nextCursor: hasMore && lastRow ? toIsoDateTime(lastRow.startTime) : null,
+    nextCursor: hasMore && lastRow ? lastRow.startTime.toISOString() : null,
   };
-}
+};
 
-export async function getSessionDetail(
+export const getSessionDetail = async (
   db: AppDb,
   userId: string,
   sessionId: string,
-): Promise<SessionDetailResponse | null> {
+): Promise<SessionDetailResponse | null> => {
   const [session] = await db
     .select({
       id: sessions.id,
@@ -163,8 +159,8 @@ export async function getSessionDetail(
     id: session.id,
     gymId: session.gymId,
     gymName: session.gymName,
-    startTime: toIsoDateTime(session.startTime),
-    endTime: toIsoDateTime(session.endTime),
+    startTime: session.startTime.toISOString(),
+    endTime: session.endTime.toISOString(),
     totalDurationMs: session.totalDurationMs,
     notes: session.notes ?? undefined,
     entries: entries.map((entry) => {
@@ -200,4 +196,4 @@ export async function getSessionDetail(
       };
     }),
   };
-}
+};

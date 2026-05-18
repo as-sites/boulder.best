@@ -95,13 +95,6 @@ export default defineConfig({
 
   */
   rules: {
-    /* TO ENABLE IN FOLLOW UP PR:
-    'vitest/require-mock-type-parameters': 'error',
-    'eslint/no-await-in-loop': 'error',
-    'react/no-array-index-key': 'error',
-    'typescript/consistent-indexed-object-style': 'error',
-    'typescript/no-unsafe-type-assertion': 'error',
-    */
     'eslint/accessor-pairs': 'error',
     'eslint/array-callback-return': [
       'error',
@@ -119,6 +112,7 @@ export default defineConfig({
     'eslint/eqeqeq': ['error', 'always'],
     'eslint/for-direction': 'error',
     'eslint/func-names': ['error', 'always', { generators: 'always' }],
+    'eslint/func-style': ['error', 'expression'],
     'eslint/getter-return': 'error',
     'eslint/grouped-accessor-pairs': 'error',
     'eslint/guard-for-in': 'error',

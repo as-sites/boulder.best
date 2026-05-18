@@ -39,7 +39,7 @@ const env = {
 const gymId = 'a1b2c3d4-e5f6-4789-a234-56789abcdef0';
 const updatedAt = new Date('2026-05-13T08:00:00.000Z');
 
-function createGymsDb(rows: Array<Record<string, unknown>>) {
+const createGymsDb = (rows: Array<Record<string, unknown>>) => {
   const orderBy = vi.fn().mockResolvedValue(rows);
   const from = vi.fn(() => ({ orderBy }));
   const select = vi.fn(() => ({ from }));
@@ -48,7 +48,7 @@ function createGymsDb(rows: Array<Record<string, unknown>>) {
     db: { select } as never,
     orderBy,
   };
-}
+};
 
 describe('gyms list persistence', () => {
   beforeEach(() => {
@@ -91,8 +91,8 @@ describe('gyms routes', () => {
     gymMocks.restoreImplementations();
   });
 
-  function createAuthedApp(userIdForSession: string | null) {
-    return createApiApp({
+  const createAuthedApp = (userIdForSession: string | null) =>
+    createApiApp({
       createAuthServer: () => ({
         handler: () => new Response(null),
         api: {
@@ -107,7 +107,6 @@ describe('gyms routes', () => {
         },
       }),
     });
-  }
 
   it('returns 401 without an authenticated session', async () => {
     const app = createAuthedApp(null);

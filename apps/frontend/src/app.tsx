@@ -12,22 +12,20 @@ const router = createAppRouter();
 
 export { AuthActions } from './components/auth-actions.js';
 
-export function AppProviders({
+export const AppProviders = ({
   queryClient: providerQueryClient,
   router: providerRouter,
 }: {
   queryClient: QueryClientType;
   router: AppRouter;
-}) {
-  return (
-    <MantineProvider>
-      <QueryClientProvider client={providerQueryClient}>
-        <RouterProvider router={providerRouter} />
-      </QueryClientProvider>
-    </MantineProvider>
-  );
-}
+}) => (
+  <MantineProvider>
+    <QueryClientProvider client={providerQueryClient}>
+      <RouterProvider router={providerRouter} />
+    </QueryClientProvider>
+  </MantineProvider>
+);
 
-export function App() {
-  return <AppProviders queryClient={queryClient} router={router} />;
-}
+export const App = () => (
+  <AppProviders queryClient={queryClient} router={router} />
+);

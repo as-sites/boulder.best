@@ -29,10 +29,10 @@ export class BoulderingTrackerDB extends Dexie {
 
 export const db = new BoulderingTrackerDB();
 
-export async function resetOfflineDatabase(): Promise<void> {
+export const resetOfflineDatabase = async (): Promise<void> => {
   if (db.isOpen()) {
     db.close();
   }
   await db.delete();
   await db.open();
-}
+};

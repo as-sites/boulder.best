@@ -52,7 +52,7 @@ const breakEntryId = '423e4567-e89b-12d3-a456-426614174003';
 const newerStartTime = new Date('2026-05-14T10:00:00.000Z');
 const olderStartTime = new Date('2026-05-13T10:00:00.000Z');
 
-function createListDb(rows: Array<Record<string, unknown>>) {
+const createListDb = (rows: Array<Record<string, unknown>>) => {
   const limit = vi.fn().mockResolvedValue(rows);
 
   const orderBy = vi.fn(() => ({ limit }));
@@ -68,14 +68,14 @@ function createListDb(rows: Array<Record<string, unknown>>) {
     limit,
     where,
   };
-}
+};
 
-function createDetailDb(options: {
+const createDetailDb = (options: {
   session?: Record<string, unknown> | null;
   entries?: Array<Record<string, unknown>>;
   images?: Array<Record<string, unknown>>;
   attemptCounts?: Array<{ entryId: string; attempts: number }>;
-}) {
+}) => {
   let selectCall = 0;
 
   const db = {
@@ -134,7 +134,7 @@ function createDetailDb(options: {
   };
 
   return { db: db as never };
-}
+};
 
 describe('session history list persistence', () => {
   beforeEach(() => {
@@ -346,8 +346,8 @@ describe('session history routes', () => {
     historyMocks.restoreImplementations();
   });
 
-  function createAuthedApp(userIdForSession: string | null) {
-    return createApiApp({
+  const createAuthedApp = (userIdForSession: string | null) =>
+    createApiApp({
       createAuthServer: () => ({
         handler: () => new Response(null),
         api: {
@@ -362,7 +362,6 @@ describe('session history routes', () => {
         },
       }),
     });
-  }
 
   it('returns 401 without an authenticated session for list and detail', async () => {
     const app = createAuthedApp(null);
