@@ -1,3 +1,8 @@
+[tasks.icons]
+alias = ["frontend:icons"]
+description = "Generate PNG app icons from public/favicon.svg"
+run = "node scripts/generate-icons.ts"
+
 [tasks.dev]
 alias = ["frontend:dev"]
 description = "Start the frontend Vite dev server"
