@@ -35,4 +35,9 @@ export {
   syncQueueRepository,
   type CrudRepository,
 } from './repositories/index.js';
+export {
+  useSyncQueueErrorCount,
+  useSyncQueueList,
+  useSyncQueuePendingCount,
+} from './hooks/index.js';
 export { requestPersistentStorage, toIsoDateTime } from './storage.js';

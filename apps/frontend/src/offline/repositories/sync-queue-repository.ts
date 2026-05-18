@@ -20,4 +20,8 @@ export const syncQueueRepository = {
       )
       .sortBy('createdAt');
   },
+
+  async listAll(): Promise<SyncQueueItem[]> {
+    return await table.orderBy('createdAt').toArray();
+  },
 };
