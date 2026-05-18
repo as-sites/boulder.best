@@ -1,10 +1,10 @@
-import { readFileSync } from 'node:fs';
+import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import sharp from 'sharp';
 
 const root = join(import.meta.dirname, '..');
 const publicDir = join(root, 'public');
-const svg = readFileSync(join(publicDir, 'favicon.svg'));
+const svg = await readFile(join(publicDir, 'favicon.svg'));
 
 const outputs = [
   { file: 'apple-touch-icon.png', size: 180 },
