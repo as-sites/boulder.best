@@ -6,24 +6,24 @@
   "dependencies": {
     "@better-auth/passkey": "catalog:better-auth",
     "@boulder/api-contract": "workspace:*",
-    "@mantine/core": "9.2.0",
-    "@mantine/hooks": "9.2.0",
+    "@mantine/core": "catalog:mantine",
+    "@mantine/hooks": "catalog:mantine",
     "@tanstack/react-query": "5.100.10",
-    "@tanstack/react-router": "1.169.2",
+    "@tanstack/react-router": "1.170.3",
     "better-auth": "1.6.11",
-    "hono": "4.12.18",
+    "hono": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:"
   },
   "devDependencies": {
     "@better-auth/core": "catalog:better-auth",
-    "@cloudflare/vite-plugin": "1.36.4",
+    "@cloudflare/vite-plugin": "1.37.1",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "@vitejs/plugin-react": "6.0.1",
+    "@vitejs/plugin-react": "6.0.2",
     "sharp": "0.34.5",
-    "vite": "8.0.12",
-    "wrangler": "4.90.1"
+    "vite": "8.0.13",
+    "wrangler": "catalog:"
   }
 }
