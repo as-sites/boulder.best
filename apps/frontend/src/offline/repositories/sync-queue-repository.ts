@@ -1,0 +1,23 @@
+import { db } from '../db/database.js';
+import type { SyncQueueItem, SyncQueueStatus } from '../db/types.js';
+import { createCrudRepository } from './base.js';
+
+const { syncQueue: table } = db;
+
+export const syncQueueRepository = {
+  ...createCrudRepository(table),
+
+  async listByStatus(status: SyncQueueStatus): Promise<SyncQueueItem[]> {
+    return await table.where('status').equals(status).sortBy('createdAt');
+  },
+
+  async listReadyForRetry(now = Date.now()): Promise<SyncQueueItem[]> {
+    return await table
+      .where('status')
+      .equals('error')
+      .filter(
+        (item) => item.nextRetryAt === undefined || item.nextRetryAt <= now,
+      )
+      .sortBy('createdAt');
+  },
+};

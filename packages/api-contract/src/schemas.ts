@@ -24,15 +24,13 @@ export const imageContentTypeSchema = z
 
 export type ImageContentType = z.infer<typeof imageContentTypeSchema>;
 
-const uuidSchema = z.uuid();
-
 const isoDateTimeSchema = z.iso.datetime();
 
 // --- Image metadata ---
 
 export const syncedImageSchema = z
   .object({
-    id: uuidSchema.openapi({
+    id: z.uuid().openapi({
       description: 'Client-generated image id',
       example: '123e4567-e89b-12d3-a456-426614174001',
     }),
@@ -60,7 +58,7 @@ export type SyncedImage = z.infer<typeof syncedImageSchema>;
 
 export const gymSchema = z
   .object({
-    id: uuidSchema,
+    id: z.uuid(),
     name: z.string().min(1),
     grades: z.array(z.string()),
     updatedAt: isoDateTimeSchema,
@@ -76,13 +74,13 @@ export type GymsResponse = z.infer<typeof gymsResponseSchema>;
 
 export const presignedUploadRequestSchema = z
   .object({
-    sessionId: uuidSchema.openapi({
+    sessionId: z.uuid().openapi({
       description: 'Client session id used in the R2 object key path',
     }),
-    entryId: uuidSchema.openapi({
+    entryId: z.uuid().openapi({
       description: 'Climb entry id used in the R2 object key path',
     }),
-    imageId: uuidSchema.openapi({
+    imageId: z.uuid().openapi({
       description: 'Client-generated image id',
     }),
     index: z.number().int().nonnegative().openapi({
@@ -116,7 +114,7 @@ export type PresignedUploadResponse = z.infer<
 // --- Sync session payload ---
 
 const syncBaseEntrySchema = z.object({
-  id: uuidSchema.openapi({
+  id: z.uuid().openapi({
     description: 'Client-generated UUID for the row entry',
     example: '123e4567-e89b-12d3-a456-426614174000',
   }),
@@ -177,10 +175,10 @@ export const syncSessionEntrySchema = z
 
 export const syncSessionPayloadSchema = z
   .object({
-    id: uuidSchema.openapi({
+    id: z.uuid().openapi({
       example: '987fcdeb-51a2-43d7-9012-345678901234',
     }),
-    gymId: uuidSchema,
+    gymId: z.uuid(),
     startTime: isoDateTimeSchema.openapi({
       example: '2026-05-13T10:00:00.000Z',
     }),
@@ -214,8 +212,8 @@ export const sessionHistoryListQuerySchema = z.object({
 
 export const sessionHistoryListItemSchema = z
   .object({
-    id: uuidSchema,
-    gymId: uuidSchema,
+    id: z.uuid(),
+    gymId: z.uuid(),
     gymName: z.string().min(1),
     startTime: isoDateTimeSchema,
     endTime: isoDateTimeSchema,
@@ -272,8 +270,8 @@ export const sessionDetailEntrySchema = z
 
 export const sessionDetailResponseSchema = z
   .object({
-    id: uuidSchema,
-    gymId: uuidSchema,
+    id: z.uuid(),
+    gymId: z.uuid(),
     gymName: z.string().min(1),
     startTime: isoDateTimeSchema,
     endTime: isoDateTimeSchema,
@@ -299,7 +297,7 @@ export type SessionDetailResponse = z.infer<typeof sessionDetailResponseSchema>;
 
 export const sessionIdParamSchema = z
   .object({
-    id: uuidSchema.openapi({
+    id: z.uuid().openapi({
       param: {
         name: 'id',
         in: 'path',
@@ -316,7 +314,7 @@ export type SessionIdParam = z.infer<typeof sessionIdParamSchema>;
 export const syncSessionSuccessResponseSchema = z
   .object({
     success: z.literal(true),
-    sessionId: uuidSchema.openapi({
+    sessionId: z.uuid().openapi({
       description: 'Synced session id (matches client payload id)',
     }),
   })
