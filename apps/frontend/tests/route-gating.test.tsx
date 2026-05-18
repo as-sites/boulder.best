@@ -46,7 +46,7 @@ vi.mock(
     }) as unknown as typeof apiClientType,
 );
 
-async function renderAt(path: string) {
+const renderAt = async (path: string) => {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   });
@@ -54,11 +54,11 @@ async function renderAt(path: string) {
   await router.load();
 
   return render(<AppProviders queryClient={queryClient} router={router} />);
-}
+};
 
-function mockSession(
+const mockSession = (
   session: Partial<ReturnType<typeof authClient.useSession>>,
-) {
+) => {
   authMocks.useSession.mockReturnValue({
     data: null,
     error: null,
@@ -66,7 +66,7 @@ function mockSession(
     refetch: vi.fn(),
     ...session,
   } as ReturnType<typeof authClient.useSession>);
-}
+};
 
 describe('protected route gating', () => {
   beforeEach(() => {

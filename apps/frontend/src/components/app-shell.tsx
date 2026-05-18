@@ -22,7 +22,7 @@ const navItems: NavItem[] = [
   { label: 'Account', to: '/auth/account', marker: 'A' },
 ];
 
-export function AppShell() {
+export const AppShell = () => {
   const location = useLocation();
 
   return (
@@ -94,4 +94,4 @@ export function AppShell() {
       </MantineAppShell.Footer>
     </MantineAppShell>
   );
-}
+};

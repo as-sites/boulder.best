@@ -12,7 +12,7 @@ import { Link, createRoute } from '@tanstack/react-router';
 import { apiClient } from '../lib/api-client.js';
 import { rootRoute } from './root.js';
 
-function Home() {
+const Home = () => {
   const helloQuery = useQuery({
     queryKey: ['hello'],
     queryFn: async () => {
@@ -56,7 +56,7 @@ function Home() {
       </Stack>
     </Container>
   );
-}
+};
 
 export const homeRoute = createRoute({
   getParentRoute: () => rootRoute,

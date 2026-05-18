@@ -3,7 +3,7 @@ import { Center, Loader, Stack, Text } from '@mantine/core';
 import { useNavigate } from '@tanstack/react-router';
 import { authClient } from '../lib/auth-client.js';
 
-export function RequireAuth({ children }: { children: ReactElement }) {
+export const RequireAuth = ({ children }: { children: ReactElement }) => {
   const session = authClient.useSession();
   const navigate = useNavigate();
 
@@ -31,4 +31,4 @@ export function RequireAuth({ children }: { children: ReactElement }) {
   }
 
   return children;
-}
+};

@@ -65,11 +65,10 @@ const requiredAuthEnvKeys = [
   'DATABASE_URL',
 ] as const satisfies ReadonlyArray<keyof AuthEnvBindings>;
 
-function hasValue(value: string | undefined): value is string {
-  return value !== undefined && value.length > 0;
-}
+const hasValue = (value: string | undefined): value is string =>
+  value !== undefined && value.length > 0;
 
-function assertAuthEnv(env: AuthEnvBindings): void {
+const assertAuthEnv = (env: AuthEnvBindings): void => {
   const missing = requiredAuthEnvKeys.filter((key) => !hasValue(env[key]));
 
   if (missing.length > 0) {
@@ -79,13 +78,13 @@ function assertAuthEnv(env: AuthEnvBindings): void {
       )}. Declare required secret names in the API Wrangler config and provide local values in .env or Cloudflare Worker secrets.`,
     );
   }
-}
+};
 
-function providerPair(
+const providerPair = (
   provider: 'Google' | 'Discord',
   clientId: string | undefined,
   clientSecret: string | undefined,
-): OAuthProviderConfig | undefined {
+): OAuthProviderConfig | undefined => {
   const hasClientId = hasValue(clientId);
   const hasClientSecret = hasValue(clientSecret);
 
@@ -98,9 +97,9 @@ function providerPair(
   return hasClientId && hasClientSecret
     ? { clientId, clientSecret }
     : undefined;
-}
+};
 
-function assertOrigin(value: string, name: string): string {
+const assertOrigin = (value: string, name: string): string => {
   let parsed: URL;
 
   try {
@@ -114,19 +113,19 @@ function assertOrigin(value: string, name: string): string {
   }
 
   return value;
-}
+};
 
-function assertRpId(value: string): string {
+const assertRpId = (value: string): string => {
   if (value.includes('://') || value.includes('/') || value.endsWith('.')) {
     throw new Error('PASSKEY_RP_ID must be a domain-style RP ID, not a URL.');
   }
 
   return value;
-}
+};
 
-export function createAuthProviderConfig(
+export const createAuthProviderConfig = (
   env: AuthEnvBindings,
-): AuthProviderConfig {
+): AuthProviderConfig => {
   const google = providerPair(
     'Google',
     env.GOOGLE_CLIENT_ID,
@@ -155,10 +154,10 @@ export function createAuthProviderConfig(
     },
     ...(passkeyOptions && { passkey: passkeyOptions }),
   };
-}
+};
 
-function createAuthCacheKey(env: AuthEnvBindings): string {
-  return JSON.stringify({
+const createAuthCacheKey = (env: AuthEnvBindings): string =>
+  JSON.stringify({
     secret: env.BETTER_AUTH_SECRET,
     url: env.BETTER_AUTH_URL,
     frontendUrl: env.FRONTEND_URL,
@@ -171,9 +170,8 @@ function createAuthCacheKey(env: AuthEnvBindings): string {
     passkeyRpId: env.PASSKEY_RP_ID,
     passkeyOrigin: env.PASSKEY_ORIGIN,
   });
-}
 
-function buildAuth(env: AuthEnvBindings): AuthServer {
+const buildAuth = (env: AuthEnvBindings): AuthServer => {
   const sql = neon(env.DATABASE_URL);
   const db = drizzle({ client: sql, schema: authSchema });
   const providerConfig = createAuthProviderConfig(env);
@@ -210,13 +208,13 @@ function buildAuth(env: AuthEnvBindings): AuthServer {
       },
     },
   }) as unknown as AuthServer;
-}
+};
 
 // Module-level cache — valid within a CF Worker isolate (shared across requests in the same instance)
 let _auth: AuthServer | null = null;
 let _cacheKey: string | null = null;
 
-export function createAuth(env: AuthEnvBindings): AuthServer {
+export const createAuth = (env: AuthEnvBindings): AuthServer => {
   assertAuthEnv(env);
   const cacheKey = createAuthCacheKey(env);
 
@@ -226,6 +224,6 @@ export function createAuth(env: AuthEnvBindings): AuthServer {
   _auth = buildAuth(env);
   _cacheKey = cacheKey;
   return _auth;
-}
+};
 
 export * from './schema.js';

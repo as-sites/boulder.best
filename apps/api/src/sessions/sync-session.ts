@@ -21,11 +21,11 @@ export class SyncSessionForbiddenError extends Error {
   }
 }
 
-export async function syncSession(
+export const syncSession = async (
   db: AppDb,
   userId: string,
   payload: SyncSessionPayload,
-): Promise<SyncSessionSuccessResponse> {
+): Promise<SyncSessionSuccessResponse> => {
   await db.transaction(async (tx) => {
     const [existingSession] = await tx
       .select({ userId: sessions.userId })
@@ -84,11 +84,11 @@ export async function syncSession(
   });
 
   return { success: true, sessionId: payload.id };
-}
+};
 
 type SyncTransaction = Parameters<Parameters<AppDb['transaction']>[0]>[0];
 
-async function upsertBreakEntry(
+const upsertBreakEntry = async (
   tx: SyncTransaction,
   {
     userId,
@@ -99,7 +99,7 @@ async function upsertBreakEntry(
     sessionId: string;
     entry: Extract<SyncSessionPayload['entries'][number], { type: 'break' }>;
   },
-) {
+) => {
   const now = new Date();
 
   await tx
@@ -121,9 +121,9 @@ async function upsertBreakEntry(
         updatedAt: now,
       },
     });
-}
+};
 
-async function upsertClimbEntry(
+const upsertClimbEntry = async (
   tx: SyncTransaction,
   {
     userId,
@@ -134,7 +134,7 @@ async function upsertClimbEntry(
     sessionId: string;
     entry: SyncClimbEntry;
   },
-) {
+) => {
   const now = new Date();
 
   await tx
@@ -226,4 +226,4 @@ async function upsertClimbEntry(
       notes: attempt.notes ?? null,
     });
   }
-}
+};

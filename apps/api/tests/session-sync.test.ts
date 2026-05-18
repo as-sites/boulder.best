@@ -65,7 +65,7 @@ const syncSessionPayloadFixture = {
   ],
 } as const;
 
-function createMockDb(options: { existingUserId?: string } = {}) {
+const createMockDb = (options: { existingUserId?: string } = {}) => {
   const sessionUpserts: unknown[] = [];
   const entryUpserts: unknown[] = [];
   const imageUpserts: unknown[] = [];
@@ -149,7 +149,7 @@ function createMockDb(options: { existingUserId?: string } = {}) {
     attemptInserts,
     attemptUpdates,
   };
-}
+};
 
 describe('syncSession persistence', () => {
   beforeEach(() => {

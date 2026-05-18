@@ -10,7 +10,7 @@ import {
 import { openApiDocumentConfig, openApiJsonPath } from './openapi.js';
 import type { ApiContractHandlers } from './routes.js';
 
-export function createApiContract(handlers: ApiContractHandlers) {
+export const createApiContract = (handlers: ApiContractHandlers) => {
   const healthHandler = async (
     c: Parameters<ApiContractHandlers['hello']>[0],
   ) => {
@@ -69,7 +69,7 @@ export function createApiContract(handlers: ApiContractHandlers) {
     .openapi(listSessionsRoute, listSessionsHandler)
     .openapi(getSessionDetailRoute, getSessionDetailHandler)
     .doc(openApiJsonPath, openApiDocumentConfig);
-}
+};
 
 const contractTypeApp = createApiContract({
   hello: () => ({ message: '' }),
@@ -104,6 +104,5 @@ export const apiClientOptions = {
   },
 } as const satisfies Parameters<typeof hc>[1];
 
-export function createApiClient(baseUrl: string) {
-  return hc<ApiAppType>(baseUrl, apiClientOptions);
-}
+export const createApiClient = (baseUrl: string) =>
+  hc<ApiAppType>(baseUrl, apiClientOptions);

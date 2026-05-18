@@ -12,17 +12,17 @@ import {
 } from '@mantine/core';
 import { authClient, type OAuthProvider } from '../lib/auth-client.js';
 
-function authResult(
+const authResult = (
   result: { error?: { message?: string | undefined } | null },
   fallback: string,
-): { message: string; isError: boolean } {
+): { message: string; isError: boolean } => {
   if (result.error) {
     return { message: result.error.message ?? fallback, isError: true };
   }
   return { message: fallback, isError: false };
-}
+};
 
-export function AuthActions() {
+export const AuthActions = () => {
   const session = authClient.useSession();
   const isAuthenticated = !!session.data?.user;
 
@@ -35,9 +35,9 @@ export function AuthActions() {
   const [isError, setIsError] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  async function runAction(
+  const runAction = async (
     action: () => Promise<{ message: string; isError: boolean }>,
-  ) {
+  ) => {
     setStatus(null);
     setIsSubmitting(true);
     try {
@@ -52,30 +52,30 @@ export function AuthActions() {
     } finally {
       setIsSubmitting(false);
     }
-  }
+  };
 
-  async function signInWithEmail() {
+  const signInWithEmail = async () => {
     await runAction(async () => {
       const result = await authClient.signIn.email({ email, password });
       return authResult(result, 'Signed in.');
     });
-  }
+  };
 
-  async function signUpWithEmail() {
+  const signUpWithEmail = async () => {
     await runAction(async () => {
       const result = await authClient.signUp.email({ email, password, name });
       return authResult(result, 'Account created. Check your email to verify.');
     });
-  }
+  };
 
-  async function signOut() {
+  const signOut = async () => {
     await runAction(async () => {
       const result = await authClient.signOut();
       return authResult(result, 'Signed out.');
     });
-  }
+  };
 
-  async function signInWithProvider(provider: OAuthProvider) {
+  const signInWithProvider = async (provider: OAuthProvider) => {
     await runAction(async () => {
       const result = await authClient.signIn.social({
         provider,
@@ -83,16 +83,16 @@ export function AuthActions() {
       });
       return authResult(result, `Started ${provider} sign-in.`);
     });
-  }
+  };
 
-  async function signInWithPasskey() {
+  const signInWithPasskey = async () => {
     await runAction(async () => {
       const result = await authClient.signIn.passkey({ autoFill: false });
       return authResult(result, 'Signed in with passkey.');
     });
-  }
+  };
 
-  async function registerPasskey() {
+  const registerPasskey = async () => {
     await runAction(async () => {
       const trimmedPasskeyName = passkeyName.trim();
       const result = await authClient.passkey.addPasskey({
@@ -101,12 +101,12 @@ export function AuthActions() {
       });
       return authResult(result, 'Registered passkey.');
     });
-  }
+  };
 
-  function switchMode(next: 'signin' | 'signup') {
+  const switchMode = (next: 'signin' | 'signup') => {
     setMode(next);
     setStatus(null);
-  }
+  };
 
   const statusEl = status ? (
     <Text c={isError ? 'red' : 'dimmed'} size="sm">
@@ -249,4 +249,4 @@ export function AuthActions() {
       </Stack>
     </Paper>
   );
-}
+};

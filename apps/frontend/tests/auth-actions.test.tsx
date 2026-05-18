@@ -33,13 +33,12 @@ vi.mock(import('../src/lib/auth-client.js'), () => ({
   },
 }));
 
-function renderAuthActions() {
-  return render(
+const renderAuthActions = () =>
+  render(
     <MantineProvider>
       <AuthActions />
     </MantineProvider>,
   );
-}
 
 describe(AuthActions, () => {
   beforeEach(() => {
