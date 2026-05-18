@@ -21,6 +21,10 @@ concurrency:
   group: deploy-${{ github.workflow }}-${{ github.event.workflow_run.head_branch || github.ref_name }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+  deployments: write
+
 jobs:
   deploy:
     name: Deploy to Cloudflare
@@ -29,6 +33,9 @@ jobs:
       github.event.workflow_run.conclusion == 'success'
     runs-on: blacksmith-2vcpu-ubuntu-2404
     timeout-minutes: 30
+    environment:
+      name: production
+      url: https://boulder.best
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
