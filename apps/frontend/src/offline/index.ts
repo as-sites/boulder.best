@@ -61,3 +61,13 @@ export {
   mapFileToOfflineImage,
   type MapFileToOfflineImageInput,
 } from './images/map-file-to-offline-image.js';
+export {
+  canProcessSyncQueue,
+  computeNextRetryAt,
+  isQueueItemReadyForAttempt,
+  listEligibleQueueItems,
+  markQueueItemError,
+  markQueueItemSynced,
+  markQueueItemSyncing,
+  type SyncQueueRuntimeContext,
+} from './sync/queue-orchestration.js';
