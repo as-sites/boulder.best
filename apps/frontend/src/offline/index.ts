@@ -79,4 +79,9 @@ export {
   uploadOfflineImage,
   uploadOfflineImagesForSession,
 } from './sync/upload-offline-image.js';
+export { attachSyncedImagesToPayload } from './sync/attach-synced-images.js';
+export {
+  buildSessionSyncPayload,
+  submitSyncSession,
+} from './sync/submit-sync-session.js';
 export { drainSyncQueue } from './sync/drain-sync-queue.js';

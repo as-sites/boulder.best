@@ -3,9 +3,11 @@ import {
   canProcessSyncQueue,
   listEligibleQueueItems,
   markQueueItemError,
+  markQueueItemSynced,
   markQueueItemSyncing,
   type SyncQueueRuntimeContext,
 } from './queue-orchestration.js';
+import { submitSyncSession } from './submit-sync-session.js';
 import { uploadOfflineImagesForSession } from './upload-offline-image.js';
 
 export const drainSyncQueue = async (
@@ -23,12 +25,11 @@ export const drainSyncQueue = async (
     await syncQueueRepository.put(syncing);
 
     try {
-      await uploadOfflineImagesForSession(item.sessionId);
-      await syncQueueRepository.put({
-        ...item,
-        status: 'pending',
-        updatedAt: Date.now(),
-      });
+      const uploadedImages = await uploadOfflineImagesForSession(
+        item.sessionId,
+      );
+      await submitSyncSession(item.payload, uploadedImages);
+      await syncQueueRepository.put(markQueueItemSynced(item));
     } catch (error) {
       const message =
         error instanceof Error ? error.message : 'Sync failed unexpectedly';

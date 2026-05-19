@@ -8,9 +8,14 @@ import {
 } from '../../src/offline/index.js';
 
 const uploadSessionImages = vi.hoisted(() => vi.fn());
+const submitSession = vi.hoisted(() => vi.fn());
 
 vi.mock(import('../../src/offline/sync/upload-offline-image.js'), () => ({
   uploadOfflineImagesForSession: uploadSessionImages,
+}));
+
+vi.mock(import('../../src/offline/sync/submit-sync-session.js'), () => ({
+  submitSyncSession: submitSession,
 }));
 
 const syncPayloadFixture = (): SyncSessionPayload => ({
@@ -47,17 +52,22 @@ describe('drain sync queue', () => {
     await resetOfflineDatabase();
     uploadSessionImages.mockReset();
     uploadSessionImages.mockResolvedValue([]);
+    submitSession.mockReset();
+    submitSession.mockResolvedValue(undefined);
   });
 
-  it('uploads images for eligible queue items', async () => {
+  it('uploads images and submits the session for eligible queue items', async () => {
     const item = queueItemFixture();
+    const uploadedImages = [{ id: 'image-1' }];
     await syncQueueRepository.put(item);
+    uploadSessionImages.mockResolvedValue(uploadedImages);
 
     await drainSyncQueue(eligibleContext);
 
     expect(uploadSessionImages).toHaveBeenCalledWith(item.sessionId);
+    expect(submitSession).toHaveBeenCalledWith(item.payload, uploadedImages);
     await expect(syncQueueRepository.get(item.id)).resolves.toMatchObject({
-      status: 'pending',
+      status: 'synced',
     });
   });
 
@@ -68,9 +78,23 @@ describe('drain sync queue', () => {
 
     await drainSyncQueue(eligibleContext);
 
+    expect(submitSession).not.toHaveBeenCalled();
     await expect(syncQueueRepository.get(item.id)).resolves.toMatchObject({
       status: 'error',
       lastError: 'Upload failed',
+    });
+  });
+
+  it('marks queue items as error when session sync fails', async () => {
+    const item = queueItemFixture();
+    await syncQueueRepository.put(item);
+    submitSession.mockRejectedValue(new Error('Session sync failed'));
+
+    await drainSyncQueue(eligibleContext);
+
+    await expect(syncQueueRepository.get(item.id)).resolves.toMatchObject({
+      status: 'error',
+      lastError: 'Session sync failed',
     });
   });
 
