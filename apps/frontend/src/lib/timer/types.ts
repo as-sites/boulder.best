@@ -1,8 +1,14 @@
 /** Injectable clock for deterministic timer tests. */
 export type TimerNow = () => Temporal.Instant;
 
-export interface TimerState {
-  accumulatedDurationMs: number;
-  activeStartTime: string | null;
-  status: 'idle' | 'running' | 'paused' | 'stopped';
-}
+export type TimerState =
+  | {
+      status: 'idle' | 'paused' | 'stopped';
+      accumulatedDurationMs: number;
+      activeStartTime: null;
+    }
+  | {
+      status: 'running';
+      accumulatedDurationMs: number;
+      activeStartTime: string;
+    };

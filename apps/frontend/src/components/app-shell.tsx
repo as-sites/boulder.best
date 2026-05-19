@@ -1,3 +1,4 @@
+import type { ComponentType } from 'react';
 import {
   Anchor,
   AppShell as MantineAppShell,
@@ -7,19 +8,25 @@ import {
   Text,
   ThemeIcon,
 } from '@mantine/core';
+import {
+  ClockCounterClockwiseIcon,
+  GearSixIcon,
+  TimerIcon,
+  UserCircleIcon,
+} from '@phosphor-icons/react';
 import { Link, Outlet, useLocation } from '@tanstack/react-router';
 
 interface NavItem {
   label: string;
   to: '/tracker' | '/history' | '/settings' | '/auth/account';
-  marker: string;
+  Icon: ComponentType<{ size: number }>;
 }
 
 const navItems: NavItem[] = [
-  { label: 'Tracker', to: '/tracker', marker: 'T' },
-  { label: 'History', to: '/history', marker: 'H' },
-  { label: 'Settings', to: '/settings', marker: 'S' },
-  { label: 'Account', to: '/auth/account', marker: 'A' },
+  { label: 'Tracker', to: '/tracker', Icon: TimerIcon },
+  { label: 'History', to: '/history', Icon: ClockCounterClockwiseIcon },
+  { label: 'Settings', to: '/settings', Icon: GearSixIcon },
+  { label: 'Account', to: '/auth/account', Icon: UserCircleIcon },
 ];
 
 export const AppShell = () => {
@@ -78,9 +85,7 @@ export const AppShell = () => {
                       size="sm"
                       variant={isActive ? 'filled' : 'light'}
                     >
-                      <Text fw={700} size="xs">
-                        {item.marker}
-                      </Text>
+                      <item.Icon size={14} />
                     </ThemeIcon>
                     <Text fw={isActive ? 700 : 500} size="xs">
                       {item.label}

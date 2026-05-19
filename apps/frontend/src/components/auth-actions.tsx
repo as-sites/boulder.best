@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
 import {
   Button,
   Group,
@@ -10,6 +11,8 @@ import {
   TextInput,
   Title,
 } from '@mantine/core';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
 import { authClient, type OAuthProvider } from '../lib/auth-client.js';
 
 const authResult = (
@@ -22,14 +25,122 @@ const authResult = (
   return { message: fallback, isError: false };
 };
 
+const signInSchema = z.object({
+  email: z.email('Enter a valid email'),
+  password: z.string().min(1, 'Password is required'),
+});
+
+const signUpSchema = signInSchema.extend({
+  name: z.string().min(1, 'Name is required'),
+});
+
+type SignInValues = z.infer<typeof signInSchema>;
+type SignUpValues = z.infer<typeof signUpSchema>;
+
+const SignInForm = ({
+  disabled,
+  onSubmit,
+}: {
+  disabled: boolean;
+  onSubmit: (data: SignInValues) => Promise<void>;
+}) => {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<SignInValues>({
+    resolver: zodResolver(signInSchema),
+    defaultValues: { email: '', password: '' },
+  });
+
+  return (
+    <form noValidate onSubmit={(event) => void handleSubmit(onSubmit)(event)}>
+      <Stack gap="xs">
+        <TextInput
+          disabled={disabled}
+          label="Email"
+          placeholder="you@example.com"
+          type="email"
+          {...register('email')}
+          error={errors.email?.message}
+        />
+        <PasswordInput
+          disabled={disabled}
+          label="Password"
+          {...register('password')}
+          error={errors.password?.message}
+        />
+        <Button
+          data-testid="auth-submit"
+          disabled={disabled}
+          loading={disabled}
+          type="submit"
+        >
+          Sign in
+        </Button>
+      </Stack>
+    </form>
+  );
+};
+
+const SignUpForm = ({
+  disabled,
+  onSubmit,
+}: {
+  disabled: boolean;
+  onSubmit: (data: SignUpValues) => Promise<void>;
+}) => {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<SignUpValues>({
+    resolver: zodResolver(signUpSchema),
+    defaultValues: { email: '', password: '', name: '' },
+  });
+
+  return (
+    <form noValidate onSubmit={(event) => void handleSubmit(onSubmit)(event)}>
+      <Stack gap="xs">
+        <TextInput
+          disabled={disabled}
+          label="Name"
+          placeholder="Your name"
+          {...register('name')}
+          error={errors.name?.message}
+        />
+        <TextInput
+          disabled={disabled}
+          label="Email"
+          placeholder="you@example.com"
+          type="email"
+          {...register('email')}
+          error={errors.email?.message}
+        />
+        <PasswordInput
+          disabled={disabled}
+          label="Password"
+          {...register('password')}
+          error={errors.password?.message}
+        />
+        <Button
+          data-testid="auth-submit"
+          disabled={disabled}
+          loading={disabled}
+          type="submit"
+        >
+          Create account
+        </Button>
+      </Stack>
+    </form>
+  );
+};
+
 export const AuthActions = () => {
   const session = authClient.useSession();
   const isAuthenticated = !!session.data?.user;
 
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
   const [passkeyName, setPasskeyName] = useState('');
   const [status, setStatus] = useState<string | null>(null);
   const [isError, setIsError] = useState(false);
@@ -54,14 +165,14 @@ export const AuthActions = () => {
     }
   };
 
-  const signInWithEmail = async () => {
+  const signInWithEmail = async ({ email, password }: SignInValues) => {
     await runAction(async () => {
       const result = await authClient.signIn.email({ email, password });
       return authResult(result, 'Signed in.');
     });
   };
 
-  const signUpWithEmail = async () => {
+  const signUpWithEmail = async ({ email, password, name }: SignUpValues) => {
     await runAction(async () => {
       const result = await authClient.signUp.email({ email, password, name });
       return authResult(result, 'Account created. Check your email to verify.');
@@ -184,41 +295,11 @@ export const AuthActions = () => {
             Sign up
           </Button>
         </Group>
-        <Stack gap="xs">
-          {mode === 'signup' ? (
-            <TextInput
-              disabled={isSubmitting}
-              label="Name"
-              onChange={(event) => setName(event.currentTarget.value)}
-              placeholder="Your name"
-              value={name}
-            />
-          ) : null}
-          <TextInput
-            disabled={isSubmitting}
-            label="Email"
-            onChange={(event) => setEmail(event.currentTarget.value)}
-            placeholder="you@example.com"
-            type="email"
-            value={email}
-          />
-          <PasswordInput
-            disabled={isSubmitting}
-            label="Password"
-            onChange={(event) => setPassword(event.currentTarget.value)}
-            value={password}
-          />
-          <Button
-            data-testid="auth-submit"
-            disabled={isSubmitting}
-            loading={isSubmitting}
-            onClick={() =>
-              void (mode === 'signin' ? signInWithEmail() : signUpWithEmail())
-            }
-          >
-            {mode === 'signin' ? 'Sign in' : 'Create account'}
-          </Button>
-        </Stack>
+        {mode === 'signin' ? (
+          <SignInForm disabled={isSubmitting} onSubmit={signInWithEmail} />
+        ) : (
+          <SignUpForm disabled={isSubmitting} onSubmit={signUpWithEmail} />
+        )}
         <Text c="dimmed" size="xs">
           Or continue with
         </Text>

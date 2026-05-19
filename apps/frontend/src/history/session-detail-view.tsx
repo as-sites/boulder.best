@@ -1,7 +1,7 @@
+import { useMemo } from 'react';
 import type {
   SessionDetailClimbEntry,
   SessionDetailResponse,
-  SyncedImage,
 } from '@boulder/api-contract';
 import { Image, Paper, SimpleGrid, Stack, Text, Title } from '@mantine/core';
 import { useLiveQuery } from 'dexie-react-hooks';
@@ -9,21 +9,15 @@ import { useBlobObjectUrl } from '../hooks/use-blob-object-url.js';
 import { formatDurationMs } from '../lib/timer/index.js';
 import type { OfflineImage } from '../offline/db/types.js';
 import { offlineImagesRepository } from '../offline/repositories/offline-images-repository.js';
+import { formatSessionDate } from './format-session-date.js';
 import type { SessionDetailSource } from './load-session-detail.js';
 import {
   sortSessionDetailEntries,
   sortSyncedImages,
 } from './sort-session-detail.js';
 
-const SyncedImagePreview = ({ image }: { image: SyncedImage }) => (
-  <Image
-    src={image.photoUrl}
-    alt={`Climb photo ${image.index + 1}`}
-    radius="sm"
-    h={96}
-    w={96}
-    fit="cover"
-  />
+const ClimbImagePreview = ({ src, alt }: { src: string; alt: string }) => (
+  <Image src={src} alt={alt} radius="sm" h={96} w={96} fit="cover" />
 );
 
 const PendingImagePreview = ({ image }: { image: OfflineImage }) => {
@@ -34,38 +28,22 @@ const PendingImagePreview = ({ image }: { image: OfflineImage }) => {
   }
 
   return (
-    <Image
+    <ClimbImagePreview
       src={src}
       alt={`Pending climb photo ${image.index + 1}`}
-      radius="sm"
-      h={96}
-      w={96}
-      fit="cover"
     />
   );
 };
 
 const ClimbEntryImages = ({
   entry,
-  sessionId,
   source,
+  pendingImages,
 }: {
   entry: SessionDetailClimbEntry;
-  sessionId: string;
   source: SessionDetailSource;
+  pendingImages: OfflineImage[];
 }) => {
-  const pendingImages = useLiveQuery(
-    async () => {
-      if (source !== 'local') {
-        return [];
-      }
-
-      return await offlineImagesRepository.listByEntry(sessionId, entry.id);
-    },
-    [entry.id, sessionId, source],
-    [],
-  );
-
   if (source === 'server') {
     const images = sortSyncedImages(entry.images);
     if (images.length === 0) {
@@ -75,7 +53,11 @@ const ClimbEntryImages = ({
     return (
       <SimpleGrid cols={{ base: 3, xs: 4 }} spacing="xs">
         {images.map((image) => (
-          <SyncedImagePreview key={image.id} image={image} />
+          <ClimbImagePreview
+            key={image.id}
+            src={image.photoUrl}
+            alt={`Climb photo ${image.index + 1}`}
+          />
         ))}
       </SimpleGrid>
     );
@@ -105,13 +87,38 @@ export const SessionDetailView = ({
 }: SessionDetailViewProps) => {
   const entries = sortSessionDetailEntries(session.entries);
 
+  const allPendingImages = useLiveQuery(
+    async () => {
+      if (source !== 'local') {
+        return [];
+      }
+
+      return await offlineImagesRepository.listBySession(session.id);
+    },
+    [source, session.id],
+    [],
+  );
+
+  const pendingImagesByEntryId = useMemo(() => {
+    const map = new Map<string, OfflineImage[]>();
+    for (const img of allPendingImages) {
+      const bucket = map.get(img.entryId);
+      if (bucket) {
+        bucket.push(img);
+      } else {
+        map.set(img.entryId, [img]);
+      }
+    }
+    return map;
+  }, [allPendingImages]);
+
   return (
     <Stack gap="md">
       <Stack gap={4}>
         <Title order={2}>{session.gymName}</Title>
         <Text c="dimmed" size="sm">
-          {new Date(session.startTime).toLocaleString()} –{' '}
-          {new Date(session.endTime).toLocaleString()}
+          {formatSessionDate(session.startTime)} –{' '}
+          {formatSessionDate(session.endTime)}
         </Text>
         <Text size="sm">Total {formatDurationMs(session.totalDurationMs)}</Text>
         {session.notes ? <Text size="sm">{session.notes}</Text> : null}
@@ -136,8 +143,8 @@ export const SessionDetailView = ({
                   {entry.notes ? <Text size="sm">{entry.notes}</Text> : null}
                   <ClimbEntryImages
                     entry={entry}
-                    sessionId={session.id}
                     source={source}
+                    pendingImages={pendingImagesByEntryId.get(entry.id) ?? []}
                   />
                 </>
               ) : null}

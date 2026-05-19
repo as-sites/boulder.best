@@ -1,13 +1,8 @@
 import { Badge, Divider, Group, Paper, Stack, Text } from '@mantine/core';
 import { Link } from '@tanstack/react-router';
 import { formatDurationMs } from '../lib/timer/index.js';
+import { formatSessionDate } from './format-session-date.js';
 import type { MergedHistoryItem } from './merge-session-history.js';
-
-const formatSessionDate = (isoDate: string): string =>
-  new Date(isoDate).toLocaleString(undefined, {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  });
 
 export interface HistoryListItemProps {
   item: MergedHistoryItem;

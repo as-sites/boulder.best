@@ -1,10 +1,17 @@
 import { z } from 'zod';
 
-export const timerStateSchema = z.object({
-  accumulatedDurationMs: z.number().int().nonnegative(),
-  activeStartTime: z.string().nullable(),
-  status: z.enum(['idle', 'running', 'paused', 'stopped']),
-});
+export const timerStateSchema = z.union([
+  z.object({
+    status: z.enum(['idle', 'paused', 'stopped']),
+    accumulatedDurationMs: z.number().int().nonnegative(),
+    activeStartTime: z.null(),
+  }),
+  z.object({
+    status: z.literal('running'),
+    accumulatedDurationMs: z.number().int().nonnegative(),
+    activeStartTime: z.string(),
+  }),
+]);
 
 export const climbAttemptFormEntrySchema = z.object({
   sequenceOrder: z.number().int().nonnegative(),
