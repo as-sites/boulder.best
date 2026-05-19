@@ -10,7 +10,7 @@ export const useBlobObjectUrl = (
   const [objectUrl, setObjectUrl] = useState<string | undefined>();
 
   useEffect(() => {
-    if (!blob) {
+    if (!blob || !(blob instanceof Blob)) {
       setObjectUrl(undefined);
       return;
     }

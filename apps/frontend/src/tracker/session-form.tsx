@@ -60,6 +60,7 @@ export const SessionForm = ({
     control: form.control,
     defaultValue: initialValues,
   });
+  const sessionId = values.id ?? initialValues.id;
   const status = values.status ?? initialValues.status;
   const gymId = values.gymId ?? initialValues.gymId;
   const startTime = values.startTime ?? initialValues.startTime;
@@ -260,6 +261,7 @@ export const SessionForm = ({
                 key={entry.id}
                 control={form.control}
                 index={index}
+                sessionId={sessionId}
                 grades={grades}
                 isFinalized={isFinalized}
                 defaultName={defaultName}

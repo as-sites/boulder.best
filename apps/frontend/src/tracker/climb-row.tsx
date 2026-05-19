@@ -23,6 +23,7 @@ import {
   stopTimer,
 } from '../lib/timer/index.js';
 import type { SessionFormValues } from '../offline/db/types.js';
+import { ClimbPhotoAttachments } from './climb-photo-attachments.js';
 import { confirmRemoval } from './confirm-removal.js';
 import { createClimbAttempt } from './entry-factory.js';
 import { TimerControls } from './timer-controls.js';
@@ -30,6 +31,7 @@ import { TimerControls } from './timer-controls.js';
 export interface ClimbRowProps {
   control: Control<SessionFormValues>;
   index: number;
+  sessionId: string;
   grades: string[];
   isFinalized: boolean;
   defaultName: string;
@@ -39,6 +41,7 @@ export interface ClimbRowProps {
 export const ClimbRow = ({
   control,
   index,
+  sessionId,
   grades,
   isFinalized,
   defaultName,
@@ -171,6 +174,12 @@ export const ClimbRow = ({
               shouldDirty: true,
             });
           }}
+        />
+
+        <ClimbPhotoAttachments
+          sessionId={sessionId}
+          entryId={climb.id}
+          disabled={isFinalized}
         />
 
         <Stack gap="xs">
