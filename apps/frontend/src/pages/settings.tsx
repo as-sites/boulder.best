@@ -7,22 +7,16 @@ import {
   Text,
   Title,
 } from '@mantine/core';
+import { SyncQueuePanel } from '../components/sync-queue-panel.js';
 import {
   useBrowserOnline,
   useManualOfflineMode,
 } from '../lib/settings/index.js';
-import {
-  useSyncQueueErrorCount,
-  useSyncQueuePendingCount,
-} from '../offline/index.js';
 
 export const SettingsPage = () => {
   const { enabled: manualOfflineMode, setEnabled: setManualOfflineMode } =
     useManualOfflineMode();
   const isOnline = useBrowserOnline();
-  const pendingCount = useSyncQueuePendingCount();
-  const errorCount = useSyncQueueErrorCount();
-
   const autoSyncBlocked = manualOfflineMode || !isOnline;
 
   return (
@@ -75,10 +69,7 @@ export const SettingsPage = () => {
               : 'Automatic sync is allowed when you are signed in and sessions are queued.'}
           </Text>
 
-          <Text size="sm">
-            Sync queue: {pendingCount} pending
-            {errorCount > 0 ? `, ${errorCount} failed` : ''}.
-          </Text>
+          <SyncQueuePanel />
         </Stack>
       </Stack>
     </Container>

@@ -46,7 +46,9 @@ export {
   type CrudRepository,
 } from './repositories/index.js';
 export {
+  useSyncNow,
   useSyncQueueErrorCount,
+  useSyncQueueLastError,
   useSyncQueueList,
   useSyncQueuePendingCount,
 } from './hooks/index.js';
@@ -77,3 +79,4 @@ export {
   uploadOfflineImage,
   uploadOfflineImagesForSession,
 } from './sync/upload-offline-image.js';
+export { drainSyncQueue } from './sync/drain-sync-queue.js';
