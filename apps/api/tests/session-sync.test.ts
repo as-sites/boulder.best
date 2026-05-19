@@ -22,6 +22,7 @@ const mockCreateDb = vi.hoisted(() => vi.fn((): AppDb => ({}) as AppDb));
 
 vi.mock(import('../src/db/index.js'), () => ({
   createDb: mockCreateDb,
+  getDb: mockCreateDb,
 }));
 
 const syncSessionPayloadFixture = {
@@ -70,8 +71,7 @@ const createMockDb = (options: { existingUserId?: string } = {}) => {
   const entryUpserts: unknown[] = [];
   const imageUpserts: unknown[] = [];
   const attemptInserts: Array<{ entryId: string; sequenceOrder: number }> = [];
-  const attemptUpdates: unknown[] = [];
-  let climbAttemptSelectCalls = 0;
+  const attemptConflictUpdates: unknown[] = [];
 
   const tx = {
     select: vi.fn(() => ({
@@ -83,13 +83,6 @@ const createMockDb = (options: { existingUserId?: string } = {}) => {
             if (tableName === 'sessions') {
               return options.existingUserId
                 ? [{ userId: options.existingUserId }]
-                : [];
-            }
-
-            if (tableName === 'climb_attempts') {
-              climbAttemptSelectCalls += 1;
-              return climbAttemptSelectCalls > 2
-                ? [{ id: 'existing-attempt' }]
                 : [];
             }
 
@@ -122,16 +115,13 @@ const createMockDb = (options: { existingUserId?: string } = {}) => {
         }
 
         return {
-          onConflictDoUpdate: vi.fn().mockResolvedValue(undefined),
+          onConflictDoUpdate: vi.fn(async (update) => {
+            if (tableName === 'climb_attempts') {
+              attemptConflictUpdates.push(update);
+            }
+          }),
         };
       }),
-    })),
-    update: vi.fn(() => ({
-      set: vi.fn((values: Record<string, unknown>) => ({
-        where: vi.fn(async () => {
-          attemptUpdates.push(values);
-        }),
-      })),
     })),
   };
 
@@ -147,7 +137,7 @@ const createMockDb = (options: { existingUserId?: string } = {}) => {
     entryUpserts,
     imageUpserts,
     attemptInserts,
-    attemptUpdates,
+    attemptConflictUpdates,
   };
 };
 
@@ -203,8 +193,8 @@ describe('syncSession persistence', () => {
       syncSessionPayloadFixture,
     );
 
-    expect(mock.attemptInserts).toHaveLength(2);
-    expect(mock.attemptUpdates.length).toBeGreaterThan(0);
+    expect(mock.attemptInserts).toHaveLength(4);
+    expect(mock.attemptConflictUpdates).toHaveLength(4);
   });
 
   it('rejects syncing a session owned by another user', async () => {

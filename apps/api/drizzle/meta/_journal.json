@@ -15,6 +15,13 @@
       "when": 1779020484414,
       "tag": "0001_session_entry_images_and_climb_attempts",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1779201845086,
+      "tag": "0002_climb_attempts_entry_sequence_unique",
+      "breakpoints": true
     }
   ]
 }

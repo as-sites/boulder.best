@@ -8,6 +8,7 @@ import {
   pgTable,
   text,
   timestamp,
+  uniqueIndex,
   uuid,
   varchar,
 } from 'drizzle-orm/pg-core';
@@ -134,7 +135,7 @@ export const climbAttempts = pgTable(
   },
   (table) => [
     index('climb_attempts_entry_id_idx').on(table.entryId),
-    index('climb_attempts_entry_sequence_idx').on(
+    uniqueIndex('climb_attempts_entry_sequence_idx').on(
       table.entryId,
       table.sequenceOrder,
     ),

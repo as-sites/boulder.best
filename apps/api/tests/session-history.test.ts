@@ -33,6 +33,7 @@ vi.mock(
 
 vi.mock(import('../src/db/index.js'), () => ({
   createDb: mockCreateDb,
+  getDb: mockCreateDb,
 }));
 
 const env = {

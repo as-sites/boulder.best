@@ -1,4 +1,5 @@
 import { $, OpenAPIHono, type RouteHandler } from '@hono/zod-openapi';
+import type { Env } from 'hono';
 import { hc } from 'hono/client';
 import {
   createPresignedUploadRoute,
@@ -10,39 +11,42 @@ import {
 import { openApiDocumentConfig, openApiJsonPath } from './openapi.js';
 import type { ApiContractHandlers } from './routes.js';
 
-export const createApiContract = (handlers: ApiContractHandlers) => {
+export const createApiContract = <E extends Env = Env>(
+  handlers: ApiContractHandlers<E>,
+) => {
   const healthHandler = async (
-    c: Parameters<ApiContractHandlers['hello']>[0],
+    c: Parameters<ApiContractHandlers<E>['hello']>[0],
   ) => {
     const response = await handlers.health?.(c);
     return c.json(response ?? { ok: true });
   };
 
   const app = $(
-    new OpenAPIHono()
+    new OpenAPIHono<E>()
       .get('/api/hello', async (c) => c.json(await handlers.hello(c)))
       .get('/api/health', healthHandler)
       .get('/health', healthHandler),
   );
 
-  const getGymsHandler: RouteHandler<typeof getGymsRoute> = async (c) =>
+  const getGymsHandler: RouteHandler<typeof getGymsRoute, E> = async (c) =>
     c.json(await handlers.getGyms(c));
 
   const createPresignedUploadHandler: RouteHandler<
-    typeof createPresignedUploadRoute
+    typeof createPresignedUploadRoute,
+    E
   > = async (c) => {
     const body = c.req.valid('json');
     return c.json(await handlers.createPresignedUpload(c, body));
   };
 
-  const syncSessionHandler: RouteHandler<typeof syncSessionRoute> = async (
+  const syncSessionHandler: RouteHandler<typeof syncSessionRoute, E> = async (
     c,
   ) => {
     const body = c.req.valid('json');
     return c.json(await handlers.syncSession(c, body));
   };
 
-  const listSessionsHandler: RouteHandler<typeof listSessionsRoute> = async (
+  const listSessionsHandler: RouteHandler<typeof listSessionsRoute, E> = async (
     c,
   ) => {
     const query = c.req.valid('query');
@@ -50,7 +54,8 @@ export const createApiContract = (handlers: ApiContractHandlers) => {
   };
 
   const getSessionDetailHandler: RouteHandler<
-    typeof getSessionDetailRoute
+    typeof getSessionDetailRoute,
+    E
   > = async (c) => {
     const params = c.req.valid('param');
     const detail = await handlers.getSessionDetail(c, params);

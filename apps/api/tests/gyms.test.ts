@@ -27,6 +27,7 @@ vi.mock(import('../src/gyms/list-gyms.js'), async (importOriginal) => {
 
 vi.mock(import('../src/db/index.js'), () => ({
   createDb: mockCreateDb,
+  getDb: mockCreateDb,
 }));
 
 const env = {

@@ -1,4 +1,4 @@
-import type { Context } from 'hono';
+import type { Context, Env } from 'hono';
 import type {
   GymsResponse,
   HealthResponse,
@@ -15,24 +15,24 @@ import type {
 
 type MaybePromise<T> = T | Promise<T>;
 
-export interface ApiContractHandlers {
-  hello: (c: Context) => MaybePromise<HelloResponse>;
-  health?: (c: Context) => MaybePromise<HealthResponse>;
-  getGyms: (c: Context) => MaybePromise<GymsResponse>;
+export interface ApiContractHandlers<E extends Env = Env> {
+  hello: (c: Context<E>) => MaybePromise<HelloResponse>;
+  health?: (c: Context<E>) => MaybePromise<HealthResponse>;
+  getGyms: (c: Context<E>) => MaybePromise<GymsResponse>;
   createPresignedUpload: (
-    c: Context,
+    c: Context<E>,
     body: PresignedUploadRequest,
   ) => MaybePromise<PresignedUploadResponse>;
   syncSession: (
-    c: Context,
+    c: Context<E>,
     body: SyncSessionPayload,
   ) => MaybePromise<SyncSessionSuccessResponse>;
   listSessions: (
-    c: Context,
+    c: Context<E>,
     query: SessionHistoryListQuery,
   ) => MaybePromise<SessionHistoryListResponse>;
   getSessionDetail: (
-    c: Context,
+    c: Context<E>,
     params: SessionIdParam,
   ) => MaybePromise<SessionDetailResponse | null>;
 }

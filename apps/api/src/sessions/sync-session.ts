@@ -3,7 +3,7 @@ import type {
   SyncSessionPayload,
   SyncSessionSuccessResponse,
 } from '@boulder/api-contract';
-import { and, eq } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import type { AppDb } from '../db/index.js';
 import {
   climbAttempts,
@@ -71,6 +71,7 @@ export const syncSession = async (
           userId,
           sessionId: payload.id,
           entry,
+          now,
         });
         continue;
       }
@@ -79,6 +80,7 @@ export const syncSession = async (
         userId,
         sessionId: payload.id,
         entry,
+        now,
       });
     }
   });
@@ -94,14 +96,14 @@ const upsertBreakEntry = async (
     userId,
     sessionId,
     entry,
+    now,
   }: {
     userId: string;
     sessionId: string;
     entry: Extract<SyncSessionPayload['entries'][number], { type: 'break' }>;
+    now: Date;
   },
 ) => {
-  const now = new Date();
-
   await tx
     .insert(sessionEntries)
     .values({
@@ -129,14 +131,14 @@ const upsertClimbEntry = async (
     userId,
     sessionId,
     entry,
+    now,
   }: {
     userId: string;
     sessionId: string;
     entry: SyncClimbEntry;
+    now: Date;
   },
 ) => {
-  const now = new Date();
-
   await tx
     .insert(sessionEntries)
     .values({
@@ -196,34 +198,22 @@ const upsertClimbEntry = async (
   }
 
   for (const attempt of entry.climbAttempts) {
-    const [existingAttempt] = await tx
-      .select({ id: climbAttempts.id })
-      .from(climbAttempts)
-      .where(
-        and(
-          eq(climbAttempts.entryId, entry.id),
-          eq(climbAttempts.sequenceOrder, attempt.sequenceOrder),
-        ),
-      )
-      .limit(1);
-
-    if (existingAttempt) {
-      await tx
-        .update(climbAttempts)
-        .set({
+    await tx
+      .insert(climbAttempts)
+      .values({
+        entryId: entry.id,
+        sequenceOrder: attempt.sequenceOrder,
+        durationMs: attempt.durationMs,
+        notes: attempt.notes ?? null,
+        updatedAt: now,
+      })
+      .onConflictDoUpdate({
+        target: [climbAttempts.entryId, climbAttempts.sequenceOrder],
+        set: {
           durationMs: attempt.durationMs,
           notes: attempt.notes ?? null,
           updatedAt: now,
-        })
-        .where(eq(climbAttempts.id, existingAttempt.id));
-      continue;
-    }
-
-    await tx.insert(climbAttempts).values({
-      entryId: entry.id,
-      sequenceOrder: attempt.sequenceOrder,
-      durationMs: attempt.durationMs,
-      notes: attempt.notes ?? null,
-    });
+        },
+      });
   }
 };

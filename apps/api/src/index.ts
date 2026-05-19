@@ -6,7 +6,7 @@ import {
 } from '@boulder/auth';
 import { Hono, type Context, type MiddlewareHandler } from 'hono';
 import { cors } from 'hono/cors';
-import { createDb } from './db/index.js';
+import { getDb } from './db/index.js';
 import { listGyms as loadGyms } from './gyms/list-gyms.js';
 import {
   getSessionDetail as loadSessionDetail,
@@ -105,16 +105,16 @@ export const createApiApp = (options: CreateApiAppOptions = {}) => {
 
   app.route(
     '/',
-    createApiContract({
+    createApiContract<ApiEnv>({
       hello: () => ({
         message: 'Hello from the Boulder API.',
       }),
       getGyms: async (c) => {
-        const db = createDb(c.env.DATABASE_URL);
+        const db = getDb(c.env.DATABASE_URL);
         return await loadGyms(db);
       },
       createPresignedUpload: async (c, body) => {
-        const userId = (c as Context<ApiEnv>).get('userId');
+        const userId = c.get('userId');
 
         return await generatePresignedUpload({
           userId,
@@ -129,18 +129,18 @@ export const createApiApp = (options: CreateApiAppOptions = {}) => {
         });
       },
       syncSession: async (c, body) => {
-        const db = createDb(c.env.DATABASE_URL);
-        const userId = (c as Context<ApiEnv>).get('userId');
+        const db = getDb(c.env.DATABASE_URL);
+        const userId = c.get('userId');
         return await persistSyncedSession(db, userId, body);
       },
       listSessions: async (c, query) => {
-        const db = createDb(c.env.DATABASE_URL);
-        const userId = (c as Context<ApiEnv>).get('userId');
+        const db = getDb(c.env.DATABASE_URL);
+        const userId = c.get('userId');
         return await loadSessionHistory(db, userId, query);
       },
       getSessionDetail: async (c, params) => {
-        const db = createDb(c.env.DATABASE_URL);
-        const userId = (c as Context<ApiEnv>).get('userId');
+        const db = getDb(c.env.DATABASE_URL);
+        const userId = c.get('userId');
         return await loadSessionDetail(db, userId, params.id);
       },
     }),
