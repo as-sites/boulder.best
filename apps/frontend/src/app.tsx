@@ -10,8 +10,6 @@ import { createAppRouter, type AppRouter } from './router.js';
 const queryClient = new QueryClient();
 const router = createAppRouter();
 
-export { AuthActions } from './components/auth-actions.js';
-
 export const AppProviders = ({
   queryClient: providerQueryClient,
   router: providerRouter,

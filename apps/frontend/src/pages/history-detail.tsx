@@ -1,7 +1,9 @@
 import { useMemo } from 'react';
-import { Container, Loader, Stack, Text, Title } from '@mantine/core';
+import { Container, Title } from '@mantine/core';
 import { useQuery } from '@tanstack/react-query';
 import { useParams } from '@tanstack/react-router';
+import { PageError } from '../components/page-error.js';
+import { PageLoading } from '../components/page-loading.js';
 import { loadSessionDetail } from '../history/load-session-detail.js';
 import { SessionDetailView } from '../history/session-detail-view.js';
 import { useCachedGymsQuery } from '../tracker/use-cached-gyms-query.js';
@@ -18,33 +20,24 @@ export const HistoryDetailPage = () => {
   );
 
   const detailQuery = useQuery({
-    queryKey: ['session-detail', sessionId, gymNamesById],
+    queryKey: ['session-detail', sessionId],
     queryFn: async () => await loadSessionDetail(sessionId, gymNamesById),
     enabled: Boolean(sessionId),
   });
 
   if (detailQuery.isPending || gymsQuery.isPending) {
-    return (
-      <Container py="xl" size="sm">
-        <Stack align="center" gap="sm">
-          <Loader size="sm" />
-          <Text c="dimmed" size="sm">
-            Loading session...
-          </Text>
-        </Stack>
-      </Container>
-    );
+    return <PageLoading message="Loading session..." />;
   }
 
   if (detailQuery.isError) {
     return (
-      <Container py="xl" size="sm">
-        <Text c="red" size="sm">
-          {detailQuery.error instanceof Error
+      <PageError
+        message={
+          detailQuery.error instanceof Error
             ? detailQuery.error.message
-            : 'Unable to load session'}
-        </Text>
-      </Container>
+            : 'Unable to load session'
+        }
+      />
     );
   }
 

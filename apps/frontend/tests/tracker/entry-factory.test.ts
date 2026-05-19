@@ -16,7 +16,7 @@ describe('entry factory', () => {
     ];
 
     expect(countClimbsInEntries(entries)).toBe(2);
-    expect(defaultClimbName(entries, 1)).toBe('Climb 2');
+    expect(defaultClimbName(1)).toBe('Climb 2');
   });
 
   it('resequences entries after removal', () => {

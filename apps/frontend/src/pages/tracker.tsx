@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Container, Stack, Text, Title } from '@mantine/core';
+import { PageLoading } from '../components/page-loading.js';
 import type { SessionFormValues } from '../offline/db/types.js';
 import {
   finalizeStoppedSession,
@@ -44,15 +45,11 @@ export const TrackerPage = () => {
 
   if (initialValues === null) {
     return (
-      <Container
-        py="xl"
+      <PageLoading
+        message="Loading session..."
         pb="calc(var(--mantine-spacing-xl) + env(safe-area-inset-bottom))"
-        size="sm"
-      >
-        <Text c="dimmed" size="sm">
-          Loading session...
-        </Text>
-      </Container>
+        spinner={false}
+      />
     );
   }
 

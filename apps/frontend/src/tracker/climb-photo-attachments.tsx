@@ -58,9 +58,7 @@ export const ClimbPhotoAttachments = ({
     }
 
     setError(null);
-    const existingCount = images.length;
-
-    let nextIndex = existingCount;
+    let nextIndex = Math.max(-1, ...images.map((img) => img.index)) + 1;
 
     for (const file of Array.from(files)) {
       try {
