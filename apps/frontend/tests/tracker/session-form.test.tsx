@@ -6,13 +6,14 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { createEmptySessionForm } from '../../src/tracker/session-form-state.js';
 import { SessionForm } from '../../src/tracker/session-form.js';
 
-const gymFixture: Gym[] = [
+const gymFixture = [
   {
     id: 'a1b2c3d4-e5f6-4789-a234-56789abcdef0',
     name: 'Test Gym',
     grades: ['V0', 'V1', 'V2'],
+    updatedAt: '2026-05-13T08:00:00.000Z',
   },
-];
+] as const satisfies Gym[];
 
 const gymMocks = vi.hoisted(() => ({
   loadCachedGyms: vi.fn(async () => gymFixture),
