@@ -5,6 +5,7 @@ import {
 } from '@tanstack/react-router';
 import { RequireAuth } from './components/require-auth.js';
 import { AccountPage } from './pages/account.js';
+import { HistoryDetailPage } from './pages/history-detail.js';
 import { HistoryPage } from './pages/history.js';
 import { SettingsPage } from './pages/settings.js';
 import { TrackerPage } from './pages/tracker.js';
@@ -31,6 +32,16 @@ export const historyRoute = createRoute({
   ),
 });
 
+export const historyDetailRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/history/$sessionId',
+  component: () => (
+    <RequireAuth>
+      <HistoryDetailPage />
+    </RequireAuth>
+  ),
+});
+
 export const settingsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/settings',
@@ -47,6 +58,7 @@ const routeTree = rootRoute.addChildren([
   homeRoute,
   trackerRoute,
   historyRoute,
+  historyDetailRoute,
   settingsRoute,
   accountRoute,
 ]);
