@@ -52,3 +52,12 @@ export {
 } from './hooks/index.js';
 export { createIdleTimer } from '../lib/timer/index.js';
 export { requestPersistentStorage, toIsoDateTime } from './storage.js';
+export {
+  ImageValidationError,
+  validateImageFile,
+  type ValidatedImageFile,
+} from './images/validate-image.js';
+export {
+  mapFileToOfflineImage,
+  type MapFileToOfflineImageInput,
+} from './images/map-file-to-offline-image.js';
