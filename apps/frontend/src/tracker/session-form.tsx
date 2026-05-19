@@ -16,10 +16,7 @@ import {
   useWatch,
 } from 'react-hook-form';
 import { TimerDisplay } from '../components/timer/timer-display.js';
-import type {
-  SessionFormEntry,
-  SessionFormValues,
-} from '../offline/db/types.js';
+import type { SessionFormValues } from '../offline/db/types.js';
 import { autosaveActiveDraft } from '../offline/draft/draft-autosave.js';
 import { BreakRow } from './break-row.js';
 import { ClimbRow } from './climb-row.js';
@@ -64,7 +61,7 @@ export const SessionForm = ({ initialValues, onStopped }: SessionFormProps) => {
   const entries = useWatch({
     control: form.control,
     name: 'entries',
-  }) as SessionFormEntry[];
+  });
 
   const canStart = status === 'not_started' && gymId !== null;
   const canStop = status === 'active';
