@@ -5,10 +5,7 @@ import {
   startTimer,
   type TimerNow,
 } from '../../src/lib/timer/index.js';
-import type {
-  ClimbFormEntry,
-  SessionFormEntry,
-} from '../../src/offline/db/types.js';
+import type { ClimbFormEntry } from '../../src/offline/db/types.js';
 import {
   createBreakEntry,
   createClimbEntry,
@@ -24,10 +21,10 @@ const fixedNow =
   () =>
     Temporal.Instant.fromEpochMilliseconds(epochMs);
 
-const expectClimb = (entry: SessionFormEntry): ClimbFormEntry => {
-  expect(entry.type).toBe('climb');
-  return entry as ClimbFormEntry;
-};
+// const expectClimb = (entry: SessionFormEntry): ClimbFormEntry => {
+//   expect(entry.type).toBe('climb');
+//   return entry as ClimbFormEntry;
+// };
 
 const runningClimb = (): ClimbFormEntry => {
   const climb = createClimbEntry(0, 'Climb 1');
@@ -42,9 +39,11 @@ describe('timer orchestration', () => {
     const entries = [runningClimb(), createBreakEntry(1)];
     const next = applyBreakStart(entries, 1);
 
-    expect(expectClimb(next[0]).timer.status).toBe('paused');
-    expect(next[1].type).toBe('break');
-    expect(next[1].timer.status).toBe('running');
+    expect(next[0]?.type).toBe('climb');
+    expect(next[0]?.timer.status).toBe('paused');
+
+    expect(next[1]?.type).toBe('break');
+    expect(next[1]?.timer.status).toBe('running');
   });
 
   it('ends a break and resumes the previous paused climb', () => {
@@ -63,9 +62,11 @@ describe('timer orchestration', () => {
 
     const next = applyBreakEnd(entries, 1);
 
-    expect(next[1].type).toBe('break');
-    expect(next[1].timer.status).toBe('stopped');
-    expect(expectClimb(next[0]).timer.status).toBe('running');
+    expect(next[1]?.type).toBe('break');
+    expect(next[1]?.timer.status).toBe('stopped');
+
+    expect(next[0]?.type).toBe('climb');
+    expect(next[0]?.timer.status).toBe('running');
   });
 
   it('pauseAllRunningClimbs leaves breaks unchanged', () => {
@@ -73,6 +74,7 @@ describe('timer orchestration', () => {
     const next = pauseAllRunningClimbs(entries);
 
     expect(next[1]).toEqual(entries[1]);
-    expect(expectClimb(next[0]).timer.status).toBe('paused');
+    expect(next[0]?.type).toBe('climb');
+    expect(next[0]?.timer.status).toBe('paused');
   });
 });
