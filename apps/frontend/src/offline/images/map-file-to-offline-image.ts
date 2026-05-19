@@ -30,5 +30,6 @@ export const mapFileToOfflineImage = ({
     contentType,
     contentLength,
     createdAt,
+    uploadStatus: 'pending',
   };
 };

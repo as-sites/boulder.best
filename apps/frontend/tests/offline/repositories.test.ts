@@ -76,6 +76,7 @@ const imageFixture = (): OfflineImage => ({
   contentType: 'image/jpeg',
   contentLength: 13,
   createdAt: 1_700_000_000_000,
+  uploadStatus: 'pending',
 });
 
 describe('offline repositories', () => {

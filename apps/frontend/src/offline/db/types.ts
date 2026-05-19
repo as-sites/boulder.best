@@ -15,6 +15,8 @@ export type { TimerState };
  * Local blob store row; presign fields from {@link PresignedUploadRequest} plus
  * blob and createdAt.
  */
+export type OfflineImageUploadStatus = 'pending' | 'uploaded';
+
 export type OfflineImage = Pick<
   PresignedUploadRequest,
   'sessionId' | 'entryId' | 'index' | 'contentType' | 'contentLength'
@@ -22,6 +24,10 @@ export type OfflineImage = Pick<
   id: PresignedUploadRequest['imageId'];
   blob: Blob;
   createdAt: number;
+  uploadStatus: OfflineImageUploadStatus;
+  objectKey?: string;
+  photoUrl?: string;
+  uploadedAt?: number;
 };
 
 /** Per-attempt draft row with pause-resilient timer state. */

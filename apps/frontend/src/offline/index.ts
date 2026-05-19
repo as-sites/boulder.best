@@ -71,3 +71,9 @@ export {
   markQueueItemSyncing,
   type SyncQueueRuntimeContext,
 } from './sync/queue-orchestration.js';
+export {
+  isOfflineImageUploaded,
+  toSyncedImage,
+  uploadOfflineImage,
+  uploadOfflineImagesForSession,
+} from './sync/upload-offline-image.js';
