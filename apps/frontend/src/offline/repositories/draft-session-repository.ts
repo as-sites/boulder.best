@@ -2,7 +2,6 @@ import { db } from '../db/database.js';
 import {
   ACTIVE_DRAFT_SESSION_ID,
   type DraftSession,
-  type DraftSessionId,
   type SessionFormValues,
 } from '../db/types.js';
 import { createCrudRepository } from './base.js';
@@ -19,14 +18,15 @@ export const draftSessionRepository = {
   async saveActive(input: {
     formData: SessionFormValues;
     lastSavedAt?: number;
-  }): Promise<DraftSessionId> {
+  }): Promise<DraftSession> {
     const draft: DraftSession = {
       id: ACTIVE_DRAFT_SESSION_ID,
       formData: input.formData,
       lastSavedAt: input.lastSavedAt ?? Date.now(),
     };
 
-    return await table.put(draft);
+    await table.put(draft);
+    return draft;
   },
 
   async clearActive(): Promise<void> {

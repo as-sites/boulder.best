@@ -66,7 +66,7 @@ const requiredAuthEnvKeys = [
 ] as const satisfies ReadonlyArray<keyof AuthEnvBindings>;
 
 const hasValue = (value: string | undefined): value is string =>
-  value !== undefined && value.length > 0;
+  value !== undefined && value.trim().length > 0;
 
 const assertAuthEnv = (env: AuthEnvBindings): void => {
   const missing = requiredAuthEnvKeys.filter((key) => !hasValue(env[key]));
@@ -156,20 +156,34 @@ export const createAuthProviderConfig = (
   };
 };
 
-const createAuthCacheKey = (env: AuthEnvBindings): string =>
-  JSON.stringify({
-    secret: env.BETTER_AUTH_SECRET,
-    url: env.BETTER_AUTH_URL,
-    frontendUrl: env.FRONTEND_URL,
-    databaseUrl: env.DATABASE_URL,
-    resendApiKey: env.RESEND_API_KEY,
-    googleClientId: env.GOOGLE_CLIENT_ID,
-    googleClientSecret: env.GOOGLE_CLIENT_SECRET,
-    discordClientId: env.DISCORD_CLIENT_ID,
-    discordClientSecret: env.DISCORD_CLIENT_SECRET,
-    passkeyRpId: env.PASSKEY_RP_ID,
-    passkeyOrigin: env.PASSKEY_ORIGIN,
-  });
+// Hash env bindings to a 32-bit key so we never keep raw secrets in a
+// long-lived module string. djb2xor is fast and collision risk is negligible
+// for the "did bindings change?" check inside a single CF Worker isolate.
+const djb2Hash = (input: string): number => {
+  let hash = 5381;
+  for (const char of input) {
+    const code = char.codePointAt(0) ?? 0;
+    hash = Math.trunc((hash * 33 + code) % 2 ** 32);
+  }
+  return hash;
+};
+
+const createAuthCacheKey = (env: AuthEnvBindings): number =>
+  djb2Hash(
+    [
+      env.BETTER_AUTH_SECRET,
+      env.BETTER_AUTH_URL,
+      env.FRONTEND_URL,
+      env.DATABASE_URL,
+      env.RESEND_API_KEY ?? '',
+      env.GOOGLE_CLIENT_ID ?? '',
+      env.GOOGLE_CLIENT_SECRET ?? '',
+      env.DISCORD_CLIENT_ID ?? '',
+      env.DISCORD_CLIENT_SECRET ?? '',
+      env.PASSKEY_RP_ID ?? '',
+      env.PASSKEY_ORIGIN ?? '',
+    ].join('\0'),
+  );
 
 const buildAuth = (env: AuthEnvBindings): AuthServer => {
   const sql = neon(env.DATABASE_URL);
@@ -212,10 +226,12 @@ const buildAuth = (env: AuthEnvBindings): AuthServer => {
 
 // Module-level cache — valid within a CF Worker isolate (shared across requests in the same instance)
 let _auth: AuthServer | null = null;
-let _cacheKey: string | null = null;
+let _cacheKey: number | null = null;
 
 export const createAuth = (env: AuthEnvBindings): AuthServer => {
   assertAuthEnv(env);
+  assertOrigin(env.BETTER_AUTH_URL, 'BETTER_AUTH_URL');
+  assertOrigin(env.FRONTEND_URL, 'FRONTEND_URL');
   const cacheKey = createAuthCacheKey(env);
 
   if (_auth !== null && _cacheKey === cacheKey) {

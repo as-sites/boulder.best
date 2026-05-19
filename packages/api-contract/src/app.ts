@@ -71,31 +71,9 @@ export const createApiContract = (handlers: ApiContractHandlers) => {
     .doc(openApiJsonPath, openApiDocumentConfig);
 };
 
-const contractTypeApp = createApiContract({
-  hello: () => ({ message: '' }),
-  getGyms: () => [],
-  createPresignedUpload: () => ({
-    uploadUrl: 'https://example.com/upload',
-    objectKey: 'key',
-    photoUrl: 'https://example.com/photo',
-    image: {
-      id: '123e4567-e89b-12d3-a456-426614174001',
-      index: 0,
-      objectKey: 'key',
-      photoUrl: 'https://example.com/photo',
-      contentType: 'image/webp',
-      contentLength: 1,
-    },
-  }),
-  syncSession: () => ({
-    success: true,
-    sessionId: '987fcdeb-51a2-43d7-9012-345678901234',
-  }),
-  listSessions: () => ({ items: [], nextCursor: null }),
-  getSessionDetail: () => null,
-});
-
-export type ApiAppType = typeof contractTypeApp;
+// Derive the client type purely from the function signature so importing this
+// module does not construct a real app instance with stub handlers at load time.
+export type ApiAppType = ReturnType<typeof createApiContract>;
 
 /** Default fetch init for browser clients (sends session cookies cross-origin). */
 export const apiClientOptions = {

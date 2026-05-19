@@ -1,9 +1,5 @@
 export type PersistentStorageStatus = 'granted' | 'denied' | 'unsupported';
 
-/** Normalize app `Date` values to ISO strings for Dexie and API payloads. */
-export const toIsoDateTime = (value: Date | string): string =>
-  value instanceof Date ? value.toISOString() : value;
-
 const hasPersistentStorageApi = (): boolean =>
   'storage' in navigator &&
   typeof navigator.storage.persist === 'function' &&

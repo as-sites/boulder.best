@@ -11,16 +11,6 @@ export const syncQueueRepository = {
     return await table.where('status').equals(status).sortBy('createdAt');
   },
 
-  async listReadyForRetry(now = Date.now()): Promise<SyncQueueItem[]> {
-    return await table
-      .where('status')
-      .equals('error')
-      .filter(
-        (item) => item.nextRetryAt === undefined || item.nextRetryAt <= now,
-      )
-      .sortBy('createdAt');
-  },
-
   async listAll(): Promise<SyncQueueItem[]> {
     return await table.orderBy('createdAt').toArray();
   },

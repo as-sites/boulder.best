@@ -53,7 +53,7 @@ export {
   useSyncQueuePendingCount,
 } from './hooks/index.js';
 export { createIdleTimer } from '../lib/timer/index.js';
-export { requestPersistentStorage, toIsoDateTime } from './storage.js';
+export { requestPersistentStorage } from './storage.js';
 export {
   ImageValidationError,
   validateImageFile,

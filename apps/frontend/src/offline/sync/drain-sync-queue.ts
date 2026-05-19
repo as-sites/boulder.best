@@ -1,3 +1,4 @@
+import type { SyncQueueItem } from '../db/types.js';
 import { syncQueueRepository } from '../repositories/sync-queue-repository.js';
 import {
   canProcessSyncQueue,
@@ -15,6 +16,23 @@ export const drainSyncQueue = async (
 ): Promise<void> => {
   if (!canProcessSyncQueue(context)) {
     return;
+  }
+
+  const allItems = await syncQueueRepository.listAll();
+
+  // Reset items left stuck in 'syncing' by a previous app/tab crash. Without
+  // this they are silently skipped forever since listEligibleQueueItems only
+  // considers 'pending' and 'error'.
+  const now = Date.now();
+  for (const item of allItems) {
+    if (item.status === 'syncing') {
+      const recovered: SyncQueueItem = {
+        ...item,
+        status: 'pending',
+        updatedAt: now,
+      };
+      await syncQueueRepository.put(recovered);
+    }
   }
 
   const items = await syncQueueRepository.listAll();
