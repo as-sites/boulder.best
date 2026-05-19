@@ -1,8 +1,10 @@
 import '@mantine/core/styles.css';
 import { createRoot } from 'react-dom/client';
 import { App } from './app.js';
+import { initSentry } from './lib/sentry.js';
 import { requestPersistentStorage } from './offline/index.js';
 
+initSentry();
 void requestPersistentStorage();
 
 const rootElement = document.querySelector('#root');
