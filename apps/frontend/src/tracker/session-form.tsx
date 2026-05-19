@@ -16,10 +16,7 @@ import {
   useWatch,
 } from 'react-hook-form';
 import { TimerDisplay } from '../components/timer/timer-display.js';
-import type {
-  SessionFormEntry,
-  SessionFormValues,
-} from '../offline/db/types.js';
+import type { SessionFormValues } from '../offline/db/types.js';
 import { autosaveActiveDraft } from '../offline/draft/draft-autosave.js';
 import { BreakRow } from './break-row.js';
 import { ClimbRow } from './climb-row.js';
@@ -33,7 +30,6 @@ import {
 } from './entry-factory.js';
 import { sessionFormSchema } from './session-form-schema.js';
 import {
-  createEmptySessionForm,
   sessionDisplayTimer,
   startSession,
   stopSession,
@@ -42,33 +38,31 @@ import { applyBreakEnd, applyBreakStart } from './timer-orchestration.js';
 import { useCachedGymsQuery } from './use-cached-gyms-query.js';
 
 export interface SessionFormProps {
-  initialValues?: SessionFormValues;
+  initialValues: SessionFormValues;
   onStopped?: (values: SessionFormValues) => void;
 }
 
-export const SessionForm = ({
-  initialValues = createEmptySessionForm(),
-  onStopped,
-}: SessionFormProps) => {
+export const SessionForm = ({ initialValues, onStopped }: SessionFormProps) => {
   const gymsQuery = useCachedGymsQuery();
   const form = useForm<SessionFormValues>({
     resolver: zodResolver(sessionFormSchema),
     defaultValues: initialValues,
   });
 
-  const values = useWatch({
+  const sessionId = useWatch({ control: form.control, name: 'id' });
+  const status = useWatch({ control: form.control, name: 'status' });
+  const gymId = useWatch({ control: form.control, name: 'gymId' });
+  const startTime = useWatch({ control: form.control, name: 'startTime' });
+  const totalDurationMs = useWatch({
     control: form.control,
-    defaultValue: initialValues,
+    name: 'totalDurationMs',
   });
-  const sessionId = values.id ?? initialValues.id;
-  const status = values.status ?? initialValues.status;
-  const gymId = values.gymId ?? initialValues.gymId;
-  const startTime = values.startTime ?? initialValues.startTime;
-  const totalDurationMs =
-    values.totalDurationMs ?? initialValues.totalDurationMs;
-  const notes = values.notes ?? initialValues.notes;
-  const entries = (values.entries ??
-    initialValues.entries) as SessionFormEntry[];
+  const notes = useWatch({ control: form.control, name: 'notes' });
+  const entries = useWatch({
+    control: form.control,
+    name: 'entries',
+  });
+
   const canStart = status === 'not_started' && gymId !== null;
   const canStop = status === 'active';
   const isFinalized = status === 'stopped';
@@ -90,14 +84,19 @@ export const SessionForm = ({
       return;
     }
 
-    const timeoutId = window.setTimeout(() => {
-      void autosaveActiveDraft(form.getValues());
-    }, 300);
+    let timeoutId: number;
+    const { unsubscribe } = form.watch(() => {
+      window.clearTimeout(timeoutId);
+      timeoutId = window.setTimeout(() => {
+        void autosaveActiveDraft(form.getValues());
+      }, 300);
+    });
 
     return () => {
+      unsubscribe();
       window.clearTimeout(timeoutId);
     };
-  }, [form, status, values]);
+  }, [form, status]);
 
   const gymOptions =
     gymsQuery.data?.map((gym) => ({
@@ -133,8 +132,9 @@ export const SessionForm = ({
   const handleAddClimb = () => {
     const currentEntries = form.getValues('entries');
     const climbNumber = countClimbsInEntries(currentEntries);
-    const name = defaultClimbName(currentEntries, climbNumber);
-    entriesField.append(createClimbEntry(currentEntries.length, name));
+    entriesField.append(
+      createClimbEntry(currentEntries.length, defaultClimbName(climbNumber)),
+    );
   };
 
   const handleAddBreak = () => {
@@ -253,7 +253,7 @@ export const SessionForm = ({
               );
             }
 
-            const defaultName = defaultClimbName(entries, climbOrdinal);
+            const defaultName = defaultClimbName(climbOrdinal);
             climbOrdinal += 1;
 
             return (

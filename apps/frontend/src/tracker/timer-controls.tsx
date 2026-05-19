@@ -5,6 +5,7 @@ export interface TimerControlsProps {
   timer: TimerState;
   disabled?: boolean;
   onStart: () => void;
+  onResume: () => void;
   onPause: () => void;
   onStop: () => void;
 }
@@ -13,6 +14,7 @@ export const TimerControls = ({
   timer,
   disabled = false,
   onStart,
+  onResume,
   onPause,
   onStop,
 }: TimerControlsProps) => {
@@ -33,7 +35,7 @@ export const TimerControls = ({
         </Button>
       ) : null}
       {timer.status === 'paused' ? (
-        <Button size="compact-xs" variant="light" onClick={onStart}>
+        <Button size="compact-xs" variant="light" onClick={onResume}>
           Resume
         </Button>
       ) : null}

@@ -111,11 +111,10 @@ export const ClimbRow = ({
               <TimerControls
                 timer={climb.timer}
                 onStart={() => {
-                  updateClimbTimer(
-                    climb.timer.status === 'paused'
-                      ? resumeTimer(climb.timer)
-                      : startTimer(climb.timer),
-                  );
+                  updateClimbTimer(startTimer(climb.timer));
+                }}
+                onResume={() => {
+                  updateClimbTimer(resumeTimer(climb.timer));
                 }}
                 onPause={() => {
                   updateClimbTimer(pauseTimer(climb.timer));
@@ -187,7 +186,7 @@ export const ClimbRow = ({
             Attempts
           </Text>
           {climb.climbAttempts.map((attempt, attemptIndex) => (
-            <Paper key={attempt.sequenceOrder} p="sm" withBorder>
+            <Paper key={attemptIndex} p="sm" withBorder>
               <Stack gap="xs">
                 <Group justify="space-between">
                   <Text size="sm">Attempt {attemptIndex + 1}</Text>
@@ -199,9 +198,13 @@ export const ClimbRow = ({
                         onStart={() => {
                           updateAttemptTimer(
                             attemptIndex,
-                            attempt.timer.status === 'paused'
-                              ? resumeTimer(attempt.timer)
-                              : startTimer(attempt.timer),
+                            startTimer(attempt.timer),
+                          );
+                        }}
+                        onResume={() => {
+                          updateAttemptTimer(
+                            attemptIndex,
+                            resumeTimer(attempt.timer),
                           );
                         }}
                         onPause={() => {

@@ -1,4 +1,6 @@
-import { Container, Loader, Stack, Text, Title } from '@mantine/core';
+import { Container, Stack, Text, Title } from '@mantine/core';
+import { PageError } from '../components/page-error.js';
+import { PageLoading } from '../components/page-loading.js';
 import { HistoryListItem } from '../history/history-list-item.js';
 import { shouldShowLocalPendingSeparator } from '../history/merge-session-history.js';
 import { useMergedSessionHistory } from '../history/use-merged-session-history.js';
@@ -7,30 +9,19 @@ export const HistoryPage = () => {
   const { items, historyQuery } = useMergedSessionHistory();
 
   if (historyQuery.isPending) {
-    return (
-      <Container py="xl" size="sm">
-        <Stack align="center" gap="sm">
-          <Loader size="sm" />
-          <Text c="dimmed" size="sm">
-            Loading history...
-          </Text>
-        </Stack>
-      </Container>
-    );
+    return <PageLoading message="Loading history..." />;
   }
 
   if (historyQuery.isError) {
     return (
-      <Container py="xl" size="sm">
-        <Stack gap="sm">
-          <Title order={1}>History</Title>
-          <Text c="red" size="sm">
-            {historyQuery.error instanceof Error
-              ? historyQuery.error.message
-              : 'Unable to load history'}
-          </Text>
-        </Stack>
-      </Container>
+      <PageError
+        title="History"
+        message={
+          historyQuery.error instanceof Error
+            ? historyQuery.error.message
+            : 'Unable to load history'
+        }
+      />
     );
   }
 

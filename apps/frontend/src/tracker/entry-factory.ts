@@ -9,10 +9,8 @@ import type {
 export const countClimbsInEntries = (entries: SessionFormEntry[]): number =>
   entries.filter((entry) => entry.type === 'climb').length;
 
-export const defaultClimbName = (
-  _entries: SessionFormEntry[],
-  climbIndex: number,
-): string => `Climb ${climbIndex + 1}`;
+export const defaultClimbName = (climbIndex: number): string =>
+  `Climb ${climbIndex + 1}`;
 
 export const createClimbAttempt = (
   sequenceOrder: number,
