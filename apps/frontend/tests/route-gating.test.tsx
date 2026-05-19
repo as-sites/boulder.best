@@ -41,6 +41,18 @@ vi.mock(
               json: async () => ({ message: 'Hello from the API.' }),
             }),
           },
+          sessions: {
+            $get: vi.fn().mockResolvedValue({
+              ok: true,
+              json: async () => ({ items: [], nextCursor: null }),
+            }),
+            ':id': {
+              $get: vi.fn().mockResolvedValue({
+                ok: false,
+                status: 404,
+              }),
+            },
+          },
         },
       },
     }) as unknown as typeof apiClientType,
@@ -154,7 +166,7 @@ describe('route shell smoke tests', () => {
     );
   });
 
-  it('renders the history route placeholder', async () => {
+  it('renders the history route', async () => {
     mockSession({
       data: { user: { email: 'ally@example.com' } },
       isPending: false,
