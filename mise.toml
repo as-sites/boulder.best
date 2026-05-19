@@ -8,10 +8,15 @@ task_output = "quiet"
 [tools]
 node = "24.15.0"
 pnpm = "11.1.2"
+# Graphite stacked PRs (`gt`); run via `mise exec -- gt …` or `mise run gt -- …`
+gt = "1.8.6"
 # this is needed for tab completions of mise tasks and some other binaries
 usage = "3.3.0"
 hk = "1.45.0"
 pkl = "0.31.1"
+
+[tool_alias]
+gt = "npm:@withgraphite/graphite-cli"
 
 [monorepo]
 config_roots = ["apps/*", "packages/*"]
