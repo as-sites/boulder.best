@@ -4,6 +4,7 @@ import type {
   SyncSessionPayload,
 } from '@boulder/api-contract';
 import { elapsedDurationMs, type TimerNow } from '../../lib/timer/index.js';
+import { db } from '../db/database.js';
 import type {
   ClimbFormEntry,
   SessionFormEntry,
@@ -100,8 +101,10 @@ export const finalizeStoppedSession = async (
     updatedAt: timestamp,
   };
 
-  await syncQueueRepository.put(queueItem);
-  await draftSessionRepository.clearActive();
+  await db.transaction('rw', [db.syncQueue, db.draftSession], async () => {
+    await syncQueueRepository.put(queueItem);
+    await draftSessionRepository.clearActive();
+  });
 
   return queueItem;
 };
