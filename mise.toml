@@ -12,6 +12,7 @@ pnpm = "11.1.2"
 usage = "3.3.0"
 hk = "1.45.0"
 pkl = "0.31.1"
+"npm:@withgraphite/graphite-cli" = "latest"
 
 [monorepo]
 config_roots = ["apps/*", "packages/*"]
