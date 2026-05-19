@@ -47,19 +47,29 @@ export const loadSessionDetail = async (
   sessionId: string,
   gymNamesById: Readonly<Record<string, string>> = {},
 ): Promise<LoadedSessionDetail | null> => {
-  const response = await apiClient.api.sessions[':id'].$get({
-    param: { id: sessionId },
-  });
+  let response: Awaited<
+    ReturnType<(typeof apiClient.api.sessions)[':id']['$get']>
+  > | null = null;
 
-  if (response.ok) {
-    return {
-      source: 'server',
-      session: await response.json(),
-    };
+  try {
+    response = await apiClient.api.sessions[':id'].$get({
+      param: { id: sessionId },
+    });
+  } catch {
+    // Network error (e.g. device is offline) – fall through to local queue.
   }
 
-  if (response.status !== 404) {
-    throw new Error(`Failed to load session detail (${response.status})`);
+  if (response !== null) {
+    if (response.ok) {
+      return {
+        source: 'server',
+        session: await response.json(),
+      };
+    }
+
+    if (response.status !== 404) {
+      throw new Error(`Failed to load session detail (${response.status})`);
+    }
   }
 
   const queueItem = await syncQueueRepository.get(sessionId);

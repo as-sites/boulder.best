@@ -24,7 +24,12 @@ export const TimerDisplay = ({ timer, ...textProps }: TimerDisplayProps) => {
     let frameId = 0;
 
     const tick = () => {
-      setDisplayMs(readElapsedMs());
+      const newMs = readElapsedMs();
+      // Only trigger a re-render when the displayed second changes; the text
+      // output of formatDurationMs is identical within the same second.
+      setDisplayMs((prev) =>
+        Math.floor(newMs / 1000) !== Math.floor(prev / 1000) ? newMs : prev,
+      );
       frameId = requestAnimationFrame(tick);
     };
 
