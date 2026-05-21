@@ -1,4 +1,9 @@
-import { createMemoryHistory, createRouter } from '@tanstack/react-router';
+import {
+  type AnyRoute,
+  createMemoryHistory,
+  createRouter,
+} from '@tanstack/react-router';
+import { RouteError } from './components/route-error.js';
 import { accountRoute } from './routes/account.js';
 import { historyDetailRoute } from './routes/history-detail.js';
 import { historyRoute } from './routes/history.js';
@@ -7,24 +12,29 @@ import { rootRoute } from './routes/root.js';
 import { settingsRoute } from './routes/settings.js';
 import { trackerRoute } from './routes/tracker.js';
 
-const routeTree = rootRoute.addChildren([
+const appRouteChildren = [
   homeRoute,
   trackerRoute,
   historyRoute,
   historyDetailRoute,
   settingsRoute,
   accountRoute,
-]);
+] as const;
+
+export const createAppRouteTree = (extraRoutes: AnyRoute[] = []) =>
+  rootRoute.addChildren([...appRouteChildren, ...extraRoutes]);
 
 export interface CreateAppRouterOptions {
+  extraRoutes?: AnyRoute[];
   initialEntries?: string[];
 }
 
 export const createAppRouter = (options: CreateAppRouterOptions = {}) => {
-  const { initialEntries } = options;
+  const { extraRoutes = [], initialEntries } = options;
 
   return createRouter({
-    routeTree,
+    defaultErrorComponent: RouteError,
+    routeTree: createAppRouteTree(extraRoutes),
     ...(initialEntries
       ? {
           history: createMemoryHistory({ initialEntries }),
