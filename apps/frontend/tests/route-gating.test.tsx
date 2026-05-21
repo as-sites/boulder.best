@@ -35,12 +35,6 @@ vi.mock(
     ({
       apiClient: {
         api: {
-          hello: {
-            $get: vi.fn().mockResolvedValue({
-              ok: true,
-              json: async () => ({ message: 'Hello from the API.' }),
-            }),
-          },
           sessions: {
             $get: vi.fn().mockResolvedValue({
               ok: true,
@@ -120,12 +114,9 @@ describe('protected route gating', () => {
     } as ReturnType<typeof authClient.useSession>);
     await renderAt('/tracker');
 
-    await waitFor(() => {
-      expect(
-        screen.getByRole('heading', { name: 'Tracker' }),
-      ).toBeInTheDocument();
-    });
-    expect(screen.queryByText('Loading API message...')).toBeNull();
+    await expect(
+      screen.findByRole('heading', { name: 'Tracker' }),
+    ).resolves.toBeInTheDocument();
   });
 
   it('allows signed-in users to view history', async () => {
@@ -135,12 +126,9 @@ describe('protected route gating', () => {
     } as ReturnType<typeof authClient.useSession>);
     await renderAt('/history');
 
-    await waitFor(() => {
-      expect(
-        screen.getByRole('heading', { name: 'History' }),
-      ).toBeInTheDocument();
-    });
-    expect(screen.queryByText('Loading API message...')).toBeNull();
+    await expect(
+      screen.findByRole('heading', { name: 'History' }),
+    ).resolves.toBeInTheDocument();
   });
 });
 
