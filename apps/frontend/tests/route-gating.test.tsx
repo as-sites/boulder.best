@@ -4,11 +4,53 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { AppProviders } from '../src/app.js';
 import type * as apiClientType from '../src/lib/api-client.js';
 import type { authClient } from '../src/lib/auth-client.js';
+import type { SyncQueueItem } from '../src/offline/db/types.js';
 import { createAppRouter } from '../src/router.js';
 
 const authMocks = vi.hoisted(() => ({
   useSession: vi.fn(),
 }));
+
+const sessionsGet = vi.hoisted(() =>
+  vi.fn().mockResolvedValue({
+    ok: true,
+    json: async () => ({
+      items: [
+        {
+          id: 'server-1',
+          gymId: 'gym-1',
+          gymName: 'Cloud Gym',
+          startTime: '2026-05-20T12:00:00.000Z',
+          endTime: '2026-05-20T13:00:00.000Z',
+          totalDurationMs: 3_600_000,
+          entryCount: 1,
+        },
+      ],
+      nextCursor: null,
+    }),
+  }),
+);
+
+const localQueueItem = vi.hoisted(
+  (): SyncQueueItem => ({
+    id: 'local-session-1',
+    sessionId: 'local-session-1',
+    payload: {
+      id: 'local-session-1',
+      gymId: 'gym-local',
+      startTime: '2026-05-21T10:00:00.000Z',
+      endTime: '2026-05-21T11:00:00.000Z',
+      totalDurationMs: 3_600_000,
+      entries: [
+        { id: 'entry-1', sequenceOrder: 0, type: 'break', durationMs: 1000 },
+      ],
+    },
+    status: 'pending',
+    retryCount: 0,
+    createdAt: 1_700_000_000_000,
+    updatedAt: 1_700_000_000_000,
+  }),
+);
 
 vi.mock(import('../src/lib/auth-client.js'), () => ({
   authClient: {
@@ -29,6 +71,11 @@ vi.mock(import('../src/lib/auth-client.js'), () => ({
   },
 }));
 
+vi.mock(import('../src/offline/index.js'), async (importOriginal) => ({
+  ...(await importOriginal()),
+  useSyncQueueList: () => [localQueueItem],
+}));
+
 vi.mock(
   import('../src/lib/api-client.js'),
   () =>
@@ -36,10 +83,7 @@ vi.mock(
       apiClient: {
         api: {
           sessions: {
-            $get: vi.fn().mockResolvedValue({
-              ok: true,
-              json: async () => ({ items: [], nextCursor: null }),
-            }),
+            $get: sessionsGet,
             ':id': {
               $get: vi.fn().mockResolvedValue({
                 ok: false,
@@ -74,37 +118,35 @@ const mockSession = (
   } as ReturnType<typeof authClient.useSession>);
 };
 
-describe('protected route gating', () => {
+describe('offline-first route access', () => {
   beforeEach(() => {
+    sessionsGet.mockClear();
     mockSession({ data: null, isPending: false });
   });
 
-  it('redirects signed-out users away from tracker', async () => {
+  it('renders tracker for signed-out users without redirecting home', async () => {
     await renderAt('/tracker');
 
-    await waitFor(() => {
-      expect(screen.getByText('Boulder Best')).toBeInTheDocument();
-    });
-    expect(screen.queryByRole('heading', { name: 'Tracker' })).toBeNull();
+    await expect(
+      screen.findByRole('heading', { name: 'Tracker' }),
+    ).resolves.toBeInTheDocument();
   });
 
-  it('redirects signed-out users away from history', async () => {
+  it('renders history for signed-out users without redirecting home', async () => {
     await renderAt('/history');
 
-    await waitFor(() => {
-      expect(screen.getByText('Boulder Best')).toBeInTheDocument();
-    });
-    expect(screen.queryByRole('heading', { name: 'History' })).toBeNull();
+    await expect(
+      screen.findByRole('heading', { name: 'History' }),
+    ).resolves.toBeInTheDocument();
+    expect(screen.getByText(/saved on this device only/i)).toBeInTheDocument();
   });
 
-  it('shows session restoration while tracker auth is pending', async () => {
-    mockSession({ data: null, isPending: true });
-    await renderAt('/tracker');
+  it('shows only local history items when signed out', async () => {
+    await renderAt('/history');
 
-    await waitFor(() => {
-      expect(screen.getByText('Restoring session...')).toBeInTheDocument();
-    });
-    expect(screen.queryByRole('heading', { name: 'Tracker' })).toBeNull();
+    await expect(screen.findByText('Unknown gym')).resolves.toBeInTheDocument();
+    expect(screen.queryByText('Cloud Gym')).toBeNull();
+    expect(sessionsGet).not.toHaveBeenCalled();
   });
 
   it('allows signed-in users to view tracker', async () => {
@@ -119,7 +161,7 @@ describe('protected route gating', () => {
     ).resolves.toBeInTheDocument();
   });
 
-  it('allows signed-in users to view history', async () => {
+  it('allows signed-in users to view history and load cloud sessions', async () => {
     mockSession({
       data: { user: { email: 'ally@example.com' } },
       isPending: false,
@@ -129,6 +171,10 @@ describe('protected route gating', () => {
     await expect(
       screen.findByRole('heading', { name: 'History' }),
     ).resolves.toBeInTheDocument();
+    await waitFor(() => {
+      expect(sessionsGet).toHaveBeenCalled();
+    });
+    await expect(screen.findByText('Cloud Gym')).resolves.toBeInTheDocument();
   });
 });
 

@@ -46,17 +46,20 @@ const toLocalSessionDetail = (
 export const loadSessionDetail = async (
   sessionId: string,
   gymNamesById: Readonly<Record<string, string>> = {},
+  options?: { localOnly?: boolean },
 ): Promise<LoadedSessionDetail | null> => {
   let response: Awaited<
     ReturnType<(typeof apiClient.api.sessions)[':id']['$get']>
   > | null = null;
 
-  try {
-    response = await apiClient.api.sessions[':id'].$get({
-      param: { id: sessionId },
-    });
-  } catch {
-    // Network error (e.g. device is offline) – fall through to local queue.
+  if (!options?.localOnly) {
+    try {
+      response = await apiClient.api.sessions[':id'].$get({
+        param: { id: sessionId },
+      });
+    } catch {
+      // Network error (e.g. device is offline) – fall through to local queue.
+    }
   }
 
   if (response !== null) {

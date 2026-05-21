@@ -3,6 +3,10 @@ import { Center, Loader, Stack, Text } from '@mantine/core';
 import { useNavigate } from '@tanstack/react-router';
 import { authClient } from '../lib/auth-client.js';
 
+/**
+ * Redirects signed-out users to home. Use only for account-specific routes, not
+ * offline-first features.
+ */
 export const RequireAuth = ({ children }: { children: ReactElement }) => {
   const session = authClient.useSession();
   const navigate = useNavigate();

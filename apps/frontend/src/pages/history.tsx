@@ -6,7 +6,7 @@ import { shouldShowLocalPendingSeparator } from '../history/merge-session-histor
 import { useMergedSessionHistory } from '../history/use-merged-session-history.js';
 
 export const HistoryPage = () => {
-  const { items, historyQuery } = useMergedSessionHistory();
+  const { items, historyQuery, isAuthenticated } = useMergedSessionHistory();
 
   if (historyQuery.isPending) {
     return <PageLoading message="Loading history..." />;
@@ -31,8 +31,9 @@ export const HistoryPage = () => {
         <Stack gap={4}>
           <Title order={1}>History</Title>
           <Text c="dimmed" size="sm">
-            Past sessions from your account and anything still waiting to sync
-            on this device.
+            {isAuthenticated
+              ? 'Past sessions from your account and anything still waiting to sync on this device.'
+              : 'Sessions saved on this device only. Sign in to sync them and see your cloud history.'}
           </Text>
         </Stack>
 

@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import type { Gym } from '@boulder/api-contract';
+import { authClient } from '../lib/auth-client.js';
 import { useSyncQueueList } from '../offline/index.js';
 import { useCachedGymsQuery } from '../tracker/use-cached-gyms-query.js';
 import {
@@ -12,25 +13,32 @@ const toGymNamesById = (gyms: Gym[]): Record<string, string> =>
   Object.fromEntries(gyms.map((gym) => [gym.id, gym.name]));
 
 export const useMergedSessionHistory = () => {
+  const session = authClient.useSession();
+  const isAuthenticated = Boolean(session.data?.user);
   const historyQuery = useSessionHistoryQuery();
   const gymsQuery = useCachedGymsQuery();
   const queueItems = useSyncQueueList();
 
   const items = useMemo((): MergedHistoryItem[] => {
-    if (!historyQuery.data) {
-      return [];
-    }
+    const serverItems = isAuthenticated ? (historyQuery.data?.items ?? []) : [];
 
     return mergeSessionHistory(
-      historyQuery.data.items,
+      serverItems,
       queueItems,
       toGymNamesById(gymsQuery.data ?? []),
     );
-  }, [gymsQuery.data, historyQuery.data, queueItems]);
+  }, [gymsQuery.data, historyQuery.data, isAuthenticated, queueItems]);
+
+  const isHistoryLoading = isAuthenticated && historyQuery.isPending;
 
   return {
     items,
-    historyQuery,
+    historyQuery: {
+      ...historyQuery,
+      isPending: isHistoryLoading,
+      isError: isAuthenticated && historyQuery.isError,
+    },
     gymsQuery,
+    isAuthenticated,
   };
 };
