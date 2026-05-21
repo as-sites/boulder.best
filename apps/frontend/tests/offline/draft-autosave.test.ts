@@ -11,6 +11,7 @@ import {
 const sessionFormFixture = (): SessionFormValues => ({
   id: 'session-1',
   gymId: 'a1b2c3d4-e5f6-4789-a234-56789abcdef0',
+  location: null,
   startTime: '2026-05-18T10:00:00Z',
   endTime: null,
   totalDurationMs: 0,

@@ -43,6 +43,7 @@ const sessionFixture = {
   id: '987fcdeb-51a2-43d7-9012-345678901234',
   gymId: 'a1b2c3d4-e5f6-4789-a234-56789abcdef0',
   gymName: 'Boulder Central',
+  location: 'Main Wall',
   startTime: '2026-05-13T10:00:00.000Z',
   endTime: '2026-05-13T12:00:00.000Z',
   totalDurationMs: 7_200_000,
@@ -53,6 +54,16 @@ const sessionFixture = {
 describe('session detail view', () => {
   beforeEach(async () => {
     await resetOfflineDatabase();
+  });
+
+  it('shows the session location under the gym name', () => {
+    render(
+      <MantineProvider>
+        <SessionDetailView session={sessionFixture} source="server" />
+      </MantineProvider>,
+    );
+
+    expect(screen.getByText('Main Wall')).toBeDefined();
   });
 
   it('renders server entries and images in sequence order', () => {

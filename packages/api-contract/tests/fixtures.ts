@@ -37,6 +37,7 @@ export const gymFixture = {
 export const syncSessionPayloadFixture = {
   id: sessionId,
   gymId,
+  location: 'Main Wall',
   startTime: '2026-05-13T10:00:00.000Z',
   endTime: '2026-05-13T12:00:00.000Z',
   totalDurationMs: 7_200_000,
@@ -86,6 +87,7 @@ export const sessionHistoryListItemFixture = {
   id: sessionId,
   gymId,
   gymName: 'Boulder Central',
+  location: 'Main Wall',
   startTime: '2026-05-13T10:00:00.000Z',
   endTime: '2026-05-13T12:00:00.000Z',
   totalDurationMs: 7_200_000,
@@ -101,6 +103,7 @@ export const sessionDetailResponseFixture = {
   id: sessionId,
   gymId,
   gymName: 'Boulder Central',
+  location: 'Main Wall',
   startTime: '2026-05-13T10:00:00.000Z',
   endTime: '2026-05-13T12:00:00.000Z',
   totalDurationMs: 7_200_000,

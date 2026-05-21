@@ -24,6 +24,7 @@ const gymFixture = (): Gym => ({
 const sessionFormFixture = (): SessionFormValues => ({
   id: 'session-1',
   gymId: 'gym-1',
+  location: null,
   startTime: '2026-05-18T10:00:00Z',
   endTime: null,
   totalDurationMs: 0,

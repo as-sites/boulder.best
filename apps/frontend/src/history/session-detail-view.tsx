@@ -116,6 +116,11 @@ export const SessionDetailView = ({
     <Stack gap="md">
       <Stack gap={4}>
         <Title order={2}>{session.gymName}</Title>
+        {session.location ? (
+          <Text c="dimmed" size="sm">
+            {session.location}
+          </Text>
+        ) : null}
         <Text c="dimmed" size="sm">
           {formatSessionDate(session.startTime)} –{' '}
           {formatSessionDate(session.endTime)}

@@ -19,6 +19,7 @@ const toLocalSessionDetail = (
   id: payload.id,
   gymId: payload.gymId,
   gymName,
+  location: payload.location,
   startTime: payload.startTime,
   endTime: payload.endTime,
   totalDurationMs: payload.totalDurationMs,

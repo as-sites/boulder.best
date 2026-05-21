@@ -77,6 +77,7 @@ export const buildSyncSessionPayload = (
   return {
     id: form.id,
     gymId: form.gymId,
+    location: form.location ?? undefined,
     startTime: form.startTime,
     endTime: form.endTime,
     totalDurationMs: form.totalDurationMs,

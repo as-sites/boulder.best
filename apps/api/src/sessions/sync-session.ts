@@ -7,6 +7,7 @@ import { eq } from 'drizzle-orm';
 import type { AppDb } from '../db/index.js';
 import {
   climbAttempts,
+  gyms,
   sessionEntries,
   sessionEntryImages,
   sessions,
@@ -20,6 +21,28 @@ export class SyncSessionForbiddenError extends Error {
     super('Session belongs to another user');
   }
 }
+
+export class SyncSessionInvalidLocationError extends Error {
+  public readonly name = 'SyncSessionInvalidLocationError';
+  public readonly status = 400;
+
+  constructor() {
+    super('Location must be null or one of the selected gym locations');
+  }
+}
+
+const assertValidSessionLocation = (
+  location: string | null | undefined,
+  gymLocations: ReadonlyArray<string>,
+): void => {
+  if (location === null || location === undefined) {
+    return;
+  }
+
+  if (!gymLocations.includes(location)) {
+    throw new SyncSessionInvalidLocationError();
+  }
+};
 
 export const syncSession = async (
   db: AppDb,
@@ -37,6 +60,19 @@ export const syncSession = async (
       throw new SyncSessionForbiddenError();
     }
 
+    const [gym] = await tx
+      .select({ locations: gyms.locations })
+      .from(gyms)
+      .where(eq(gyms.id, payload.gymId))
+      .limit(1);
+
+    if (!gym) {
+      throw new SyncSessionInvalidLocationError();
+    }
+
+    assertValidSessionLocation(payload.location, gym.locations);
+
+    const sessionLocation = payload.location ?? null;
     const startTime = new Date(payload.startTime);
     const endTime = new Date(payload.endTime);
     const now = new Date();
@@ -47,6 +83,7 @@ export const syncSession = async (
         id: payload.id,
         userId,
         gymId: payload.gymId,
+        location: sessionLocation,
         startTime,
         endTime,
         totalDurationMs: payload.totalDurationMs,
@@ -57,6 +94,7 @@ export const syncSession = async (
         target: sessions.id,
         set: {
           gymId: payload.gymId,
+          location: sessionLocation,
           startTime,
           endTime,
           totalDurationMs: payload.totalDurationMs,

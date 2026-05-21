@@ -17,6 +17,7 @@ describe('session form state', () => {
 
     expect(form.status).toBe('not_started');
     expect(form.gymId).toBeNull();
+    expect(form.location).toBeNull();
     expect(form.entries).toEqual([]);
     expect(form.id).toMatch(
       /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
@@ -42,6 +43,20 @@ describe('session form state', () => {
     expect(() => startSession(createEmptySessionForm(), fixedNow(0))).toThrow(
       'Select a gym before starting the session',
     );
+  });
+
+  it('requires a location when the gym has catalog locations', () => {
+    expect(() =>
+      startSession(
+        {
+          ...createEmptySessionForm(),
+          gymId: 'a1b2c3d4-e5f6-4789-a234-56789abcdef0',
+          location: null,
+        },
+        fixedNow(0),
+        { gymLocations: ['Main Wall'] },
+      ),
+    ).toThrow('Select a location before starting the session');
   });
 
   it('stops an active session with final timestamps and duration', () => {

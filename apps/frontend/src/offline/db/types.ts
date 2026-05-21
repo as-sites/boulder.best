@@ -59,6 +59,7 @@ export interface SessionFormValues extends Pick<
   'id' | 'totalDurationMs' | 'notes'
 > {
   gymId: string | null;
+  location: string | null;
   startTime: string | null;
   endTime: string | null;
   status: 'not_started' | 'active' | 'stopped';

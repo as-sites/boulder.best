@@ -14,6 +14,7 @@ import {
 } from './sessions/session-history.js';
 import {
   SyncSessionForbiddenError,
+  SyncSessionInvalidLocationError,
   syncSession as persistSyncedSession,
 } from './sessions/sync-session.js';
 import { createPresignedUpload as generatePresignedUpload } from './uploads/create-presigned-upload.js';
@@ -98,6 +99,10 @@ export const createApiApp = (options: CreateApiAppOptions = {}) => {
   app.onError((error, c) => {
     if (error instanceof SyncSessionForbiddenError) {
       return c.body(null, 403);
+    }
+
+    if (error instanceof SyncSessionInvalidLocationError) {
+      return c.body(null, 400);
     }
 
     throw error;

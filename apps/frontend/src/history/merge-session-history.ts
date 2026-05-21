@@ -7,6 +7,7 @@ export interface MergedHistoryItem {
   id: string;
   gymId: string;
   gymName: string;
+  location?: string | null | undefined;
   startTime: string;
   endTime: string;
   totalDurationMs: number;
@@ -28,6 +29,7 @@ const toLocalHistoryItem = (
     id: payload.id,
     gymId: payload.gymId,
     gymName: gymNamesById[payload.gymId] ?? 'Unknown gym',
+    location: payload.location,
     startTime: payload.startTime,
     endTime: payload.endTime,
     totalDurationMs: payload.totalDurationMs,
@@ -60,6 +62,7 @@ export const mergeSessionHistory = (
       id: item.id,
       gymId: item.gymId,
       gymName: item.gymName,
+      location: item.location,
       startTime: item.startTime,
       endTime: item.endTime,
       totalDurationMs: item.totalDurationMs,

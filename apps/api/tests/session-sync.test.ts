@@ -3,7 +3,10 @@ import { getTableName } from 'drizzle-orm';
 import type { AppDb } from '../src/db/index.js';
 import { createApiApp } from '../src/index.js';
 import type * as SyncSessionModule from '../src/sessions/sync-session.js';
-import { SyncSessionForbiddenError } from '../src/sessions/sync-session.js';
+import {
+  SyncSessionForbiddenError,
+  SyncSessionInvalidLocationError,
+} from '../src/sessions/sync-session.js';
 
 const syncMocks = vi.hoisted(() => ({
   syncSession: vi.fn(),
@@ -25,9 +28,12 @@ vi.mock(import('../src/db/index.js'), () => ({
   getDb: mockCreateDb,
 }));
 
+const gymId = 'a1b2c3d4-e5f6-4789-a234-56789abcdef0';
+
 const syncSessionPayloadFixture = {
   id: '987fcdeb-51a2-43d7-9012-345678901234',
-  gymId: 'a1b2c3d4-e5f6-4789-a234-56789abcdef0',
+  gymId,
+  location: 'Main Wall',
   startTime: '2026-05-13T10:00:00.000Z',
   endTime: '2026-05-13T12:00:00.000Z',
   totalDurationMs: 7_200_000,
@@ -66,7 +72,9 @@ const syncSessionPayloadFixture = {
   ],
 } as const;
 
-const createMockDb = (options: { existingUserId?: string } = {}) => {
+const createMockDb = (
+  options: { existingUserId?: string; gymLocations?: string[] } = {},
+) => {
   const sessionUpserts: unknown[] = [];
   const entryUpserts: unknown[] = [];
   const imageUpserts: unknown[] = [];
@@ -84,6 +92,10 @@ const createMockDb = (options: { existingUserId?: string } = {}) => {
               return options.existingUserId
                 ? [{ userId: options.existingUserId }]
                 : [];
+            }
+
+            if (tableName === 'gyms') {
+              return [{ locations: options.gymLocations ?? ['Main Wall'] }];
             }
 
             return [];
@@ -164,6 +176,7 @@ describe('syncSession persistence', () => {
     expect(sessionUpserts[0]).toMatchObject({
       id: syncSessionPayloadFixture.id,
       userId: 'user_123',
+      location: 'Main Wall',
     });
     expect(entryUpserts).toHaveLength(2);
     expect(imageUpserts).toHaveLength(1);
@@ -195,6 +208,29 @@ describe('syncSession persistence', () => {
 
     expect(mock.attemptInserts).toHaveLength(4);
     expect(mock.attemptConflictUpdates).toHaveLength(4);
+  });
+
+  it('rejects invalid locations for the selected gym', async () => {
+    const mock = createMockDb({ gymLocations: ['Annex'] });
+
+    await expect(
+      syncMocks.syncSession(
+        mock.db as never,
+        'user_123',
+        syncSessionPayloadFixture,
+      ),
+    ).rejects.toBeInstanceOf(SyncSessionInvalidLocationError);
+  });
+
+  it('accepts null location when the gym has catalog locations', async () => {
+    const mock = createMockDb();
+
+    await syncMocks.syncSession(mock.db as never, 'user_123', {
+      ...syncSessionPayloadFixture,
+      location: null,
+    });
+
+    expect(mock.sessionUpserts[0]).toMatchObject({ location: null });
   });
 
   it('rejects syncing a session owned by another user', async () => {

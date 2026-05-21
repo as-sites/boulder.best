@@ -36,6 +36,7 @@ export const sessions = pgTable(
     gymId: uuid('gym_id')
       .references(() => gyms.id)
       .notNull(),
+    location: text('location'),
     startTime: timestamp('start_time', { withTimezone: true }).notNull(),
     endTime: timestamp('end_time', { withTimezone: true }).notNull(),
     totalDurationMs: integer('total_duration_ms').notNull(),

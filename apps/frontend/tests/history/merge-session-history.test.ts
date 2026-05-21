@@ -15,6 +15,7 @@ const serverItem = (
   id: 'server-1',
   gymId: 'gym-1',
   gymName: 'Main Gym',
+  location: 'Main Wall',
   startTime: '2026-05-20T12:00:00.000Z',
   endTime: '2026-05-20T13:00:00.000Z',
   totalDurationMs: 3_600_000,
@@ -27,6 +28,7 @@ const payloadFixture = (
 ): SyncSessionPayload => ({
   id: 'local-1',
   gymId: 'gym-2',
+  location: 'Annex',
   startTime: '2026-05-21T10:00:00.000Z',
   endTime: '2026-05-21T11:00:00.000Z',
   totalDurationMs: 3_600_000,
@@ -79,6 +81,7 @@ describe('session history merge', () => {
       isLocalOnly: true,
       syncStatus: 'pending',
       gymName: 'Annex',
+      location: 'Annex',
     });
     expect(merged[2]?.syncStatus).toBe('error');
   });

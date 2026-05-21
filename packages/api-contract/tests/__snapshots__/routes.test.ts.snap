@@ -288,6 +288,11 @@ exports[`OpenAPI document > serves OpenAPI JSON at /openapi.json > openapi-docum
             "format": "uuid",
             "type": "string",
           },
+          "location": {
+            "minLength": 1,
+            "nullable": true,
+            "type": "string",
+          },
           "notes": {
             "nullable": true,
             "type": "string",
@@ -332,6 +337,11 @@ exports[`OpenAPI document > serves OpenAPI JSON at /openapi.json > openapi-docum
           },
           "id": {
             "format": "uuid",
+            "type": "string",
+          },
+          "location": {
+            "minLength": 1,
+            "nullable": true,
             "type": "string",
           },
           "startTime": {
@@ -547,6 +557,13 @@ exports[`OpenAPI document > serves OpenAPI JSON at /openapi.json > openapi-docum
           "id": {
             "example": "987fcdeb-51a2-43d7-9012-345678901234",
             "format": "uuid",
+            "type": "string",
+          },
+          "location": {
+            "description": "Wall or area label from the selected gym catalog; null when omitted or gym has no locations",
+            "example": "Main Wall",
+            "minLength": 1,
+            "nullable": true,
             "type": "string",
           },
           "notes": {

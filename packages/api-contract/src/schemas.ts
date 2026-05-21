@@ -180,6 +180,11 @@ export const syncSessionPayloadSchema = z
       example: '987fcdeb-51a2-43d7-9012-345678901234',
     }),
     gymId: z.uuid(),
+    location: z.string().min(1).nullable().optional().openapi({
+      description:
+        'Wall or area label from the selected gym catalog; null when omitted or gym has no locations',
+      example: 'Main Wall',
+    }),
     startTime: isoDateTimeSchema.openapi({
       example: '2026-05-13T10:00:00.000Z',
     }),
@@ -216,6 +221,7 @@ export const sessionHistoryListItemSchema = z
     id: z.uuid(),
     gymId: z.uuid(),
     gymName: z.string().min(1),
+    location: z.string().min(1).nullable().optional(),
     startTime: isoDateTimeSchema,
     endTime: isoDateTimeSchema,
     totalDurationMs: z.number().int().nonnegative(),
@@ -274,6 +280,7 @@ export const sessionDetailResponseSchema = z
     id: z.uuid(),
     gymId: z.uuid(),
     gymName: z.string().min(1),
+    location: z.string().min(1).nullable().optional(),
     startTime: isoDateTimeSchema,
     endTime: isoDateTimeSchema,
     totalDurationMs: z.number().int().nonnegative(),

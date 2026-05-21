@@ -192,6 +192,22 @@ describe('sync session payload schema', () => {
     ).toBe(false);
   });
 
+  it('accepts null location and rejects empty location strings', () => {
+    expect(
+      syncSessionPayloadSchema.safeParse({
+        ...syncSessionPayloadFixture,
+        location: null,
+      }).success,
+    ).toBe(true);
+
+    expect(
+      syncSessionPayloadSchema.safeParse({
+        ...syncSessionPayloadFixture,
+        location: '',
+      }).success,
+    ).toBe(false);
+  });
+
   it('rejects break rows that include climb-only fields', () => {
     expect(
       syncSessionPayloadSchema.safeParse({

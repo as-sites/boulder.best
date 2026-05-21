@@ -19,6 +19,7 @@ const mergedItems: MergedHistoryItem[] = [
     id: 'local-1',
     gymId: 'gym-1',
     gymName: 'Local Gym',
+    location: 'Main Wall',
     startTime: '2026-05-22T10:00:00.000Z',
     endTime: '2026-05-22T11:00:00.000Z',
     totalDurationMs: 3_600_000,
@@ -89,6 +90,7 @@ describe('history page', () => {
     await renderWithRouter(<HistoryPage />);
 
     expect(screen.getByText('Local Gym')).toBeDefined();
+    expect(screen.getByText('Main Wall')).toBeDefined();
     expect(screen.getByText('Server Gym')).toBeDefined();
     expect(screen.getByText(/pending sync/i)).toBeDefined();
     expect(screen.getByText('On this device')).toBeDefined();

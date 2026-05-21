@@ -27,7 +27,14 @@ export const HistoryListItem = ({
     >
       <Stack gap="xs">
         <Group justify="space-between">
-          <Text fw={600}>{item.gymName}</Text>
+          <Stack gap={0}>
+            <Text fw={600}>{item.gymName}</Text>
+            {item.location ? (
+              <Text c="dimmed" size="sm">
+                {item.location}
+              </Text>
+            ) : null}
+          </Stack>
           {item.syncStatus === 'pending' ? (
             <Badge color="yellow" variant="light">
               Pending sync

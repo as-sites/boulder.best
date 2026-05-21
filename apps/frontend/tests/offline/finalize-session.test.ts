@@ -12,6 +12,7 @@ import {
 const stoppedSessionFixture = (): SessionFormValues => ({
   id: '987fcdeb-51a2-43d7-9012-345678901234',
   gymId: 'a1b2c3d4-e5f6-4789-a234-56789abcdef0',
+  location: 'Main Wall',
   startTime: '2026-05-18T10:00:00Z',
   endTime: '2026-05-18T12:00:00Z',
   totalDurationMs: 7_200_000,
@@ -57,6 +58,7 @@ describe('finalize stopped session', () => {
     const queueItem = await finalizeStoppedSession(form);
 
     expect(queueItem.status).toBe('pending');
+    expect(queueItem.payload.location).toBe('Main Wall');
     expect(queueItem.payload.entries[0]).toMatchObject({
       type: 'climb',
       durationMs: 30_000,

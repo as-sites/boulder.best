@@ -49,6 +49,7 @@ export const sessionFormEntrySchema = z.discriminatedUnion('type', [
 export const sessionFormSchema = z.object({
   id: z.uuid(),
   gymId: z.uuid().nullable(),
+  location: z.string().nullable(),
   startTime: z.string().nullable(),
   endTime: z.string().nullable(),
   totalDurationMs: z.number().int().nonnegative(),

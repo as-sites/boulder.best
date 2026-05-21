@@ -52,6 +52,7 @@ export const SessionForm = ({ initialValues, onStopped }: SessionFormProps) => {
   const sessionId = useWatch({ control: form.control, name: 'id' });
   const status = useWatch({ control: form.control, name: 'status' });
   const gymId = useWatch({ control: form.control, name: 'gymId' });
+  const location = useWatch({ control: form.control, name: 'location' });
   const startTime = useWatch({ control: form.control, name: 'startTime' });
   const totalDurationMs = useWatch({
     control: form.control,
@@ -63,7 +64,29 @@ export const SessionForm = ({ initialValues, onStopped }: SessionFormProps) => {
     name: 'entries',
   });
 
-  const canStart = status === 'not_started' && gymId !== null;
+  const selectedGym = useMemo(
+    () => gymsQuery.data?.find((gym) => gym.id === gymId),
+    [gymId, gymsQuery.data],
+  );
+  const grades = selectedGym?.grades ?? [];
+  const locationOptions =
+    selectedGym?.locations.map((label) => ({
+      value: label,
+      label,
+    })) ?? [];
+  const requiresLocation = (selectedGym?.locations.length ?? 0) > 0;
+  const canEditLocation =
+    status === 'not_started' && gymId !== null && requiresLocation;
+  const locationPlaceholder =
+    gymId === null
+      ? 'Select a gym first'
+      : requiresLocation
+        ? 'Select a location'
+        : 'No locations for this gym';
+  const canStart =
+    status === 'not_started' &&
+    gymId !== null &&
+    (!requiresLocation || location !== null);
   const canStop = status === 'active';
   const isFinalized = status === 'stopped';
   const canEditEntries = status === 'active';
@@ -72,12 +95,6 @@ export const SessionForm = ({ initialValues, onStopped }: SessionFormProps) => {
     control: form.control,
     name: 'entries',
   });
-
-  const selectedGym = useMemo(
-    () => gymsQuery.data?.find((gym) => gym.id === gymId),
-    [gymId, gymsQuery.data],
-  );
-  const grades = selectedGym?.grades ?? [];
 
   useEffect(() => {
     if (status === 'not_started') {
@@ -106,13 +123,20 @@ export const SessionForm = ({ initialValues, onStopped }: SessionFormProps) => {
 
   const handleStart = () => {
     try {
-      const next = startSession(form.getValues());
+      const next = startSession(
+        form.getValues(),
+        Temporal.Now.instant,
+        selectedGym ? { gymLocations: selectedGym.locations } : {},
+      );
       form.reset(next);
     } catch (error) {
-      form.setError('gymId', {
-        message:
-          error instanceof Error ? error.message : 'Unable to start session',
-      });
+      const message =
+        error instanceof Error ? error.message : 'Unable to start session';
+      const field =
+        message === 'Select a location before starting the session'
+          ? 'location'
+          : 'gymId';
+      form.setError(field, { message });
     }
   };
 
@@ -204,10 +228,30 @@ export const SessionForm = ({ initialValues, onStopped }: SessionFormProps) => {
               typeof selectedGymId === 'string' ? selectedGymId : null,
               { shouldDirty: true },
             );
+            form.setValue('location', null, { shouldDirty: true });
           }}
           error={form.formState.errors.gymId?.message}
           searchable
           nothingFoundMessage="No gyms found"
+        />
+
+        <Select
+          label="Location"
+          comboboxProps={{ withinPortal: false }}
+          placeholder={locationPlaceholder}
+          data={locationOptions}
+          disabled={!canEditLocation}
+          value={location}
+          onChange={(selectedLocation) => {
+            form.setValue(
+              'location',
+              typeof selectedLocation === 'string' ? selectedLocation : null,
+              { shouldDirty: true },
+            );
+          }}
+          error={form.formState.errors.location?.message}
+          searchable={canEditLocation}
+          nothingFoundMessage="No locations found"
         />
 
         <Textarea

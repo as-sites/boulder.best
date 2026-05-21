@@ -6,7 +6,10 @@ import {
   finalizeStoppedSession,
   restoreActiveDraft,
 } from '../offline/index.js';
-import { createEmptySessionForm } from '../tracker/session-form-state.js';
+import {
+  createEmptySessionForm,
+  hydrateSessionForm,
+} from '../tracker/session-form-state.js';
 import { SessionForm } from '../tracker/session-form.js';
 
 export const TrackerPage = () => {
@@ -24,7 +27,9 @@ export const TrackerPage = () => {
         return;
       }
 
-      setInitialValues(draft?.formData ?? createEmptySessionForm());
+      setInitialValues(
+        draft ? hydrateSessionForm(draft.formData) : createEmptySessionForm(),
+      );
     };
 
     void loadDraft();

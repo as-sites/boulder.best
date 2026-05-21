@@ -57,6 +57,42 @@ describe(SessionForm, () => {
     expect(
       screen.getByRole('button', { name: /start session/i }),
     ).toBeDisabled();
+
+    const locationField = screen.getByRole('combobox', { name: /location/i });
+    expect(locationField).toBeDisabled();
+    expect(locationField).toHaveAttribute('placeholder', 'Select a gym first');
+  });
+
+  it('disables start until a location is selected when the gym has locations', async () => {
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MantineProvider>
+          <SessionForm
+            initialValues={{
+              ...createEmptySessionForm(),
+              gymId: gymFixture[0].id,
+            }}
+          />
+        </MantineProvider>
+      </QueryClientProvider>,
+    );
+
+    const startButton = screen.getByRole('button', { name: /start session/i });
+
+    await waitFor(() => {
+      expect(screen.getByRole('combobox', { name: /location/i })).toBeDefined();
+      expect(startButton).toBeDisabled();
+    });
+
+    fireEvent.click(screen.getByRole('combobox', { name: /location/i }));
+    fireEvent.click(screen.getByText('Main Wall'));
+
+    await waitFor(() => expect(startButton).not.toBeDisabled());
+    expect(startButton).not.toBeDisabled();
   });
 
   it('starts and stops a session', async () => {
@@ -71,6 +107,7 @@ describe(SessionForm, () => {
             initialValues={{
               ...createEmptySessionForm(),
               gymId: gymFixture[0].id,
+              location: 'Main Wall',
             }}
           />
         </MantineProvider>
