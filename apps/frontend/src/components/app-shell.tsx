@@ -1,102 +1,97 @@
-import type { ComponentType } from 'react';
+import { useEffect } from 'react';
 import {
-  Anchor,
   AppShell as MantineAppShell,
-  Container,
-  Group,
-  Stack,
-  Text,
-  ThemeIcon,
+  Burger,
+  Flex,
+  ScrollArea,
 } from '@mantine/core';
-import {
-  ClockCounterClockwiseIcon,
-  GearSixIcon,
-  TimerIcon,
-  UserCircleIcon,
-} from '@phosphor-icons/react';
-import { Link, Outlet, useLocation } from '@tanstack/react-router';
+import { useDisclosure, useMediaQuery } from '@mantine/hooks';
+import { Outlet, useLocation } from '@tanstack/react-router';
+import { AppBrand } from './app-brand.js';
+import { APP_SHELL_DESKTOP_NAV_QUERY } from './app-nav-items.js';
+import { AppShellMainNavLinks } from './app-shell-nav.js';
+import { AppUserMenu } from './app-user-menu.js';
 
-interface NavItem {
-  label: string;
-  to: '/tracker' | '/history' | '/settings' | '/auth/account';
-  Icon: ComponentType<{ size: number }>;
-}
+const HEADER_HEIGHT = 56;
+const NAVBAR_WIDTH = 280;
 
-const navItems: NavItem[] = [
-  { label: 'Tracker', to: '/tracker', Icon: TimerIcon },
-  { label: 'History', to: '/history', Icon: ClockCounterClockwiseIcon },
-  { label: 'Settings', to: '/settings', Icon: GearSixIcon },
-  { label: 'Account', to: '/auth/account', Icon: UserCircleIcon },
-];
+const safeAreaTop = 'env(safe-area-inset-top, 0px)';
+const safeAreaBottom = 'env(safe-area-inset-bottom, 0px)';
 
 export const AppShell = () => {
   const location = useLocation();
+  const isDesktopNav = useMediaQuery(APP_SHELL_DESKTOP_NAV_QUERY, false, {
+    getInitialValueInEffect: false,
+  });
+  const [mobileNavOpened, { toggle: toggleMobileNav, close: closeMobileNav }] =
+    useDisclosure(false);
+  const [desktopNavOpened, { toggle: toggleDesktopNav }] = useDisclosure(true);
+
+  const navOpened = isDesktopNav ? desktopNavOpened : mobileNavOpened;
+  const toggleNav = isDesktopNav ? toggleDesktopNav : toggleMobileNav;
+  const navToggleLabel = navOpened
+    ? 'Close navigation menu'
+    : 'Open navigation menu';
+
+  useEffect(() => {
+    closeMobileNav();
+  }, [location.pathname, closeMobileNav]);
 
   return (
     <MantineAppShell
-      footer={{ height: 72 }}
-      header={{ height: 56 }}
+      header={{ height: `calc(${HEADER_HEIGHT}px + ${safeAreaTop})` }}
+      navbar={{
+        width: NAVBAR_WIDTH,
+        breakpoint: 'sm',
+        collapsed: {
+          mobile: !mobileNavOpened,
+          desktop: !desktopNavOpened,
+        },
+      }}
       padding="md"
+      styles={{
+        header: {
+          paddingTop: safeAreaTop,
+        },
+        main: {
+          paddingBottom: `calc(var(--mantine-spacing-md) + ${safeAreaBottom})`,
+        },
+      }}
     >
       <MantineAppShell.Header>
-        <Container h="100%" size="sm">
-          <Group h="100%" justify="space-between" wrap="nowrap">
-            <Anchor
-              c="inherit"
-              component={Link}
-              fw={700}
-              size="lg"
-              to="/"
-              underline="never"
-            >
-              Boulder Best
-            </Anchor>
-            <Text c="dimmed" size="xs">
-              Offline-ready tracker
-            </Text>
-          </Group>
-        </Container>
+        <Flex
+          align="center"
+          h="100%"
+          justify="space-between"
+          px="md"
+          wrap="nowrap"
+        >
+          <Flex align="center" gap="sm" wrap="nowrap">
+            <Burger
+              aria-controls="app-shell-navbar"
+              aria-expanded={navOpened}
+              aria-haspopup={isDesktopNav ? undefined : 'dialog'}
+              aria-label={navToggleLabel}
+              onClick={toggleNav}
+              opened={navOpened}
+              size="sm"
+            />
+            <AppBrand onNavigate={closeMobileNav} size="lg" />
+          </Flex>
+
+          <AppUserMenu />
+        </Flex>
       </MantineAppShell.Header>
+
+      <MantineAppShell.Navbar id="app-shell-navbar" p="md">
+        <MantineAppShell.Section grow component={ScrollArea} type="auto">
+          <AppShellMainNavLinks onNavigate={closeMobileNav} />
+        </MantineAppShell.Section>
+      </MantineAppShell.Navbar>
 
       <MantineAppShell.Main>
         <Outlet />
       </MantineAppShell.Main>
-
-      <MantineAppShell.Footer>
-        <Container h="100%" size="sm">
-          <Group align="stretch" grow h="100%" gap="xs" wrap="nowrap">
-            {navItems.map((item) => {
-              const isActive = location.pathname === item.to;
-
-              return (
-                <Anchor
-                  aria-current={isActive ? 'page' : undefined}
-                  c={isActive ? 'blue' : 'dimmed'}
-                  component={Link}
-                  key={item.to}
-                  py="xs"
-                  ta="center"
-                  to={item.to}
-                  underline="never"
-                >
-                  <Stack align="center" gap={4}>
-                    <ThemeIcon
-                      radius="xl"
-                      size="sm"
-                      variant={isActive ? 'filled' : 'light'}
-                    >
-                      <item.Icon size={14} />
-                    </ThemeIcon>
-                    <Text fw={isActive ? 700 : 500} size="xs">
-                      {item.label}
-                    </Text>
-                  </Stack>
-                </Anchor>
-              );
-            })}
-          </Group>
-        </Container>
-      </MantineAppShell.Footer>
     </MantineAppShell>
   );
 };
