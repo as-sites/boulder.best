@@ -41,7 +41,6 @@ run = "drizzle-kit check"
 alias = ["api:db:studio"]
 description = "Open Drizzle Studio to browse the database"
 run = "drizzle-kit studio"
-
 [tasks."deploy:dry-run"]
 alias = ["api:deploy:dry-run"]
 description = "Validate wrangler config for the production Worker without deploying"

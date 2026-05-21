@@ -116,6 +116,10 @@ mise run api:deploy:dry-run
 mise run api:deploy
 ```
 
+Migration `0003_omniscient_landau` adds `locations` to `gyms` and upserts the
+Sydney catalog (Blochaus, 9 Degrees, Nomad) with stable ids, legacy grade
+labels, and branch names.
+
 Use the pooled Neon URL for runtime Worker traffic unless a migration tool or
 maintenance task explicitly needs a direct connection string.
 

@@ -30,6 +30,7 @@ export const gymFixture = {
   id: gymId,
   name: 'Boulder Central',
   grades: ['V0', 'V1', 'V2', 'V3'],
+  locations: ['Main Wall'],
   updatedAt: '2026-05-13T08:00:00.000Z',
 } as const;
 

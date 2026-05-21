@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { getTableColumns, getTableName, isTable } from 'drizzle-orm';
 import {
   climbAttempts,
+  gyms,
   sessionEntries,
   sessionEntryImages,
   sessions,
@@ -51,6 +52,14 @@ describe('app Drizzle schema', () => {
     expect(sessions.userId.name).toBe('user_id');
     expect(sessions.startTime.name).toBe('start_time');
   });
+
+  it('defines gyms with grades and locations arrays', () => {
+    const columns = getTableColumns(gyms);
+
+    expect(getTableName(gyms)).toBe('gyms');
+    expect(columns.grades).toBeDefined();
+    expect(columns.locations).toBeDefined();
+  });
 });
 
 describe('app Drizzle migrations', () => {
@@ -67,5 +76,24 @@ describe('app Drizzle migrations', () => {
     expect(sql).toContain('entry_images_entry_index_idx');
     expect(sql).toContain('climb_attempts_entry_id_idx');
     expect(sql).toContain('sessions_user_start_time_idx');
+  });
+
+  it('seeds the Sydney gym catalog with locations in migration 0003', () => {
+    const sql = readFileSync(
+      join(migrationsDir, '0003_omniscient_landau.sql'),
+      'utf8',
+    );
+
+    expect(sql).toContain('ADD COLUMN "locations"');
+    expect(sql).toContain("'b10c4a01-0001-4000-8000-000000000001'");
+    expect(sql).toContain("'Blochaus'");
+    expect(sql).toContain("ARRAY['Leichhardt', 'Marrickville']");
+    expect(sql).toContain("'9 Degrees'");
+    expect(sql).toContain(
+      "ARRAY['Alexandria', 'Lane Cove', 'Waterloo', 'Chatswood', 'Parramatta']",
+    );
+    expect(sql).toContain("'Nomad'");
+    expect(sql).toContain("ARRAY['Annandale', 'Gladesville']");
+    expect(sql).toContain('ON CONFLICT ("id") DO UPDATE');
   });
 });

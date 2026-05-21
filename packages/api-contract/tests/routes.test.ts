@@ -16,7 +16,13 @@ import {
 
 const stubHandlers: ApiContractHandlers = {
   hello: async () => ({ message: 'test' }),
-  getGyms: async () => [{ ...gymFixture, grades: [...gymFixture.grades] }],
+  getGyms: async () => [
+    {
+      ...gymFixture,
+      grades: [...gymFixture.grades],
+      locations: [...gymFixture.locations],
+    },
+  ],
   createPresignedUpload: async () => presignedUploadResponseFixture,
   syncSession: async () => ({
     success: true,

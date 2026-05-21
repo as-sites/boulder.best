@@ -19,6 +19,7 @@ export const gyms = pgTable('gyms', {
   id: uuid('id').defaultRandom().primaryKey(),
   name: varchar('name', { length: 255 }).notNull(),
   grades: text('grades').array().notNull(),
+  locations: text('locations').array().notNull(),
   createdAt: timestamp('created_at', { withTimezone: true })
     .defaultNow()
     .notNull(),

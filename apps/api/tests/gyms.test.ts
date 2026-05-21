@@ -63,6 +63,7 @@ describe('gyms list persistence', () => {
         id: gymId,
         name: 'Boulder Central',
         grades: ['V0', 'V1', 'V2', 'V3'],
+        locations: ['Main Wall'],
         updatedAt,
       },
     ]);
@@ -74,6 +75,7 @@ describe('gyms list persistence', () => {
         id: gymId,
         name: 'Boulder Central',
         grades: ['V0', 'V1', 'V2', 'V3'],
+        locations: ['Main Wall'],
         updatedAt: '2026-05-13T08:00:00.000Z',
       },
     ]);
@@ -123,6 +125,7 @@ describe('gyms routes', () => {
         id: gymId,
         name: 'Boulder Central',
         grades: ['V0', 'V1', 'V2', 'V3'],
+        locations: ['Main Wall'],
         updatedAt: '2026-05-13T08:00:00.000Z',
       },
     ];

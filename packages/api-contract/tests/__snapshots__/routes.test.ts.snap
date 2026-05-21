@@ -35,6 +35,12 @@ exports[`OpenAPI document > serves OpenAPI JSON at /openapi.json > openapi-docum
             "format": "uuid",
             "type": "string",
           },
+          "locations": {
+            "items": {
+              "type": "string",
+            },
+            "type": "array",
+          },
           "name": {
             "minLength": 1,
             "type": "string",
@@ -48,6 +54,7 @@ exports[`OpenAPI document > serves OpenAPI JSON at /openapi.json > openapi-docum
           "id",
           "name",
           "grades",
+          "locations",
           "updatedAt",
         ],
         "type": "object",

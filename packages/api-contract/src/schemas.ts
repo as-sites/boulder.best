@@ -61,6 +61,7 @@ export const gymSchema = z
     id: z.uuid(),
     name: z.string().min(1),
     grades: z.array(z.string()),
+    locations: z.array(z.string()),
     updatedAt: isoDateTimeSchema,
   })
   .openapi('Gym');

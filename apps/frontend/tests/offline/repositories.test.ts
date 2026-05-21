@@ -17,6 +17,7 @@ const gymFixture = (): Gym => ({
   id: 'a1b2c3d4-e5f6-4789-a234-56789abcdef0',
   name: 'Test Gym',
   grades: ['V0', 'V1'],
+  locations: ['Main Wall'],
   updatedAt: '2026-05-13T08:00:00.000Z',
 });
 
@@ -95,6 +96,7 @@ describe('offline repositories', () => {
         ...gym,
         name: 'Updated Gym',
         grades: ['V2', 'V3'],
+        locations: ['Annex'],
         updatedAt: '2026-05-13T09:00:00.000Z',
       };
       await cachedGymsRepository.put(updated);

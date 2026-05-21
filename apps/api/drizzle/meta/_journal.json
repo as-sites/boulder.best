@@ -22,6 +22,13 @@
       "when": 1779201845086,
       "tag": "0002_climb_attempts_entry_sequence_unique",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1779369732129,
+      "tag": "0003_omniscient_landau",
+      "breakpoints": true
     }
   ]
 }

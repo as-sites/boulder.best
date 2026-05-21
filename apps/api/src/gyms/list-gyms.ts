@@ -9,6 +9,7 @@ export const listGyms = async (db: AppDb): Promise<GymsResponse> => {
       id: gyms.id,
       name: gyms.name,
       grades: gyms.grades,
+      locations: gyms.locations,
       updatedAt: gyms.updatedAt,
     })
     .from(gyms)
@@ -18,6 +19,7 @@ export const listGyms = async (db: AppDb): Promise<GymsResponse> => {
     id: row.id,
     name: row.name,
     grades: [...row.grades],
+    locations: [...row.locations],
     updatedAt: row.updatedAt.toISOString(),
   }));
 };
