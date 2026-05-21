@@ -71,7 +71,7 @@ export const AppShell = () => {
               return (
                 <Anchor
                   aria-current={isActive ? 'page' : undefined}
-                  c={isActive ? 'blue.7' : 'dimmed'}
+                  c={isActive ? 'blue' : 'dimmed'}
                   component={Link}
                   key={item.to}
                   py="xs"

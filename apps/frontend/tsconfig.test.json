@@ -5,6 +5,6 @@
     "rootDir": ".",
     "types": ["vite/client", "vitest/globals", "@testing-library/jest-dom"]
   },
-  "include": ["src", "tests", "vite.config.ts"],
+  "include": ["src", "tests", "vite", "vite.config.ts"],
   "references": [{ "path": "../../packages/api-contract" }]
 }

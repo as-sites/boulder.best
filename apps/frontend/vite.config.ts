@@ -1,10 +1,18 @@
 import { cloudflare } from '@cloudflare/vite-plugin';
 import react from '@vitejs/plugin-react';
-import { defineConfig } from 'vite';
+import { defineConfig, type Plugin } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
+import { renderColorSchemeScriptMarkup } from './vite/render-color-scheme-script.js';
+
+const colorSchemeBootstrapPlugin = (): Plugin => ({
+  name: 'color-scheme-bootstrap',
+  transformIndexHtml: (html) =>
+    html.replace('</head>', `\n ${renderColorSchemeScriptMarkup()} \n </head>`),
+});
 
 export default defineConfig({
   plugins: [
+    colorSchemeBootstrapPlugin(),
     react(),
     VitePWA({
       registerType: 'prompt',

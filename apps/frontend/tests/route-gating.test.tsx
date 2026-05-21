@@ -179,12 +179,16 @@ describe('route shell smoke tests', () => {
     ).resolves.toBeInTheDocument();
   });
 
-  it('renders the settings route placeholder', async () => {
+  it('renders the settings route with appearance and offline controls', async () => {
     await renderAt('/settings');
 
     await expect(
       screen.findByRole('heading', { name: 'Settings' }),
     ).resolves.toBeInTheDocument();
+    expect(screen.getByText(/Appearance/i)).toBeInTheDocument();
+    expect(
+      screen.getByRole('radiogroup', { name: /color scheme/i }),
+    ).toBeInTheDocument();
     expect(screen.getByText(/Manual offline mode/i)).toBeInTheDocument();
   });
 

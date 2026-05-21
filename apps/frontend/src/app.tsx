@@ -5,6 +5,7 @@ import {
   type QueryClient as QueryClientType,
 } from '@tanstack/react-query';
 import { RouterProvider } from '@tanstack/react-router';
+import { appMantineProviderProps } from './lib/theme/index.js';
 import { createAppRouter, type AppRouter } from './router.js';
 
 const queryClient = new QueryClient();
@@ -17,7 +18,7 @@ export const AppProviders = ({
   queryClient: QueryClientType;
   router: AppRouter;
 }) => (
-  <MantineProvider>
+  <MantineProvider {...appMantineProviderProps}>
     <QueryClientProvider client={providerQueryClient}>
       <RouterProvider router={providerRouter} />
     </QueryClientProvider>

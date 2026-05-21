@@ -8,6 +8,7 @@ import {
   Title,
 } from '@mantine/core';
 import { SyncQueuePanel } from '../components/sync-queue-panel.js';
+import { ThemeSwitcher } from '../components/theme-switcher.js';
 import {
   useBrowserOnline,
   useManualOfflineMode,
@@ -31,6 +32,15 @@ export const SettingsPage = () => {
         </Stack>
 
         <Stack gap="sm">
+          <Stack gap="xs">
+            <Text fw={600}>Appearance</Text>
+            <Text c="dimmed" size="sm">
+              Choose light, dark, or match your device setting. Your choice is
+              saved on this device.
+            </Text>
+            <ThemeSwitcher />
+          </Stack>
+
           <Group justify="space-between">
             <div>
               <Text fw={600}>Manual offline mode</Text>
