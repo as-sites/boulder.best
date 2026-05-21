@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { QueryClient } from '@tanstack/react-query';
 import {
   fireEvent,
@@ -10,10 +10,19 @@ import {
 import { AppProviders } from '../../src/app.js';
 import { APP_SHELL_DESKTOP_NAV_QUERY } from '../../src/components/app-nav-items.js';
 import type * as apiClientType from '../../src/lib/api-client.js';
+import {
+  ACTIVE_DRAFT_SESSION_ID,
+  type DraftSession,
+} from '../../src/offline/db/types.js';
 import { createAppRouter } from '../../src/router.js';
+import { createEmptySessionForm } from '../../src/tracker/session-form-state.js';
 
 const authMocks = vi.hoisted(() => ({
   useSession: vi.fn(),
+}));
+
+const activeDraftMocks = vi.hoisted(() => ({
+  useActiveDraftSession: vi.fn<() => DraftSession | undefined>(),
 }));
 
 vi.mock(import('../../src/lib/auth-client.js'), () => ({
@@ -48,6 +57,10 @@ vi.mock(
 vi.mock(import('../../src/offline/index.js'), async (importOriginal) => ({
   ...(await importOriginal()),
   useSyncQueueList: () => [],
+}));
+
+vi.mock(import('../../src/offline/hooks/use-active-draft-session.js'), () => ({
+  useActiveDraftSession: activeDraftMocks.useActiveDraftSession,
 }));
 
 const signedOutSession = () => ({
@@ -115,6 +128,14 @@ const renderShellAt = async (path: string, isDesktop: boolean) => {
 const sideNav = () =>
   screen.getByRole('navigation', { name: 'Main navigation' });
 
+const shellNavbar = (): HTMLElement => {
+  const navbar = document.querySelector<HTMLElement>('#app-shell-navbar');
+  if (!navbar) {
+    throw new Error('Expected app shell navbar');
+  }
+  return navbar;
+};
+
 const navToggle = () =>
   screen.getByRole('button', { name: /navigation menu/i });
 
@@ -123,9 +144,98 @@ const accountMenuTrigger = () =>
 
 const brandLink = () => screen.getByRole('link', { name: 'boulder.best' });
 
+const sessionTimer = () => screen.getByTestId('app-shell-session-timer');
+
+const activeDraftFixture = (
+  status: 'not_started' | 'active' | 'stopped' = 'active',
+): DraftSession => ({
+  id: ACTIVE_DRAFT_SESSION_ID,
+  lastSavedAt: Date.now(),
+  formData: {
+    ...createEmptySessionForm(),
+    gymId: 'a1b2c3d4-e5f6-4789-a234-56789abcdef0',
+    location: 'Main Wall',
+    status,
+    startTime: status === 'active' ? Temporal.Now.instant().toString() : null,
+  },
+});
+
+describe('AppShell active session timer', () => {
+  beforeEach(() => {
+    authMocks.useSession.mockReturnValue(signedOutSession());
+    activeDraftMocks.useActiveDraftSession.mockReturnValue(undefined);
+    vi.unstubAllGlobals();
+    vi.stubGlobal('matchMedia', createViewportMatchMedia(false));
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('hides the session timer when there is no active draft', async () => {
+    await renderShellAt('/history', false);
+
+    expect(screen.queryByTestId('app-shell-session-timer')).toBeNull();
+  });
+
+  it('hides the session timer when the draft is not active', async () => {
+    activeDraftMocks.useActiveDraftSession.mockReturnValue(
+      activeDraftFixture('not_started'),
+    );
+
+    await renderShellAt('/history', false);
+
+    expect(screen.queryByTestId('app-shell-session-timer')).toBeNull();
+  });
+
+  it('shows the session timer in the side nav when a session is active and the nav is open', async () => {
+    activeDraftMocks.useActiveDraftSession.mockReturnValue(
+      activeDraftFixture(),
+    );
+
+    await renderShellAt('/history', true);
+
+    await waitFor(() => {
+      expect(
+        within(shellNavbar()).getByTestId('app-shell-session-timer'),
+      ).toBeVisible();
+    });
+    expect(screen.queryAllByTestId('app-shell-session-timer')).toHaveLength(1);
+  });
+
+  it('shows a compact session timer in the header when the nav is collapsed', async () => {
+    activeDraftMocks.useActiveDraftSession.mockReturnValue(
+      activeDraftFixture(),
+    );
+
+    await renderShellAt('/history', false);
+
+    await waitFor(() => {
+      expect(sessionTimer()).toBeVisible();
+    });
+    expect(shellNavbar()).not.toContainElement(sessionTimer());
+  });
+
+  it('ticks via requestAnimationFrame without per-second form updates', async () => {
+    const raf = vi.spyOn(globalThis, 'requestAnimationFrame');
+    activeDraftMocks.useActiveDraftSession.mockReturnValue(
+      activeDraftFixture(),
+    );
+
+    await renderShellAt('/history', false);
+
+    await waitFor(() => {
+      expect(sessionTimer()).toBeVisible();
+    });
+
+    expect(raf).toHaveBeenCalled();
+  });
+});
+
 describe('AppShell navigation', () => {
   beforeEach(() => {
     authMocks.useSession.mockReturnValue(signedOutSession());
+    activeDraftMocks.useActiveDraftSession.mockReturnValue(undefined);
     vi.unstubAllGlobals();
   });
 

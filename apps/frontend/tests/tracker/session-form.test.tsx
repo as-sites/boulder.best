@@ -95,6 +95,33 @@ describe(SessionForm, () => {
     expect(startButton).not.toBeDisabled();
   });
 
+  it('does not render a session-level timer in the form header', async () => {
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MantineProvider>
+          <SessionForm
+            initialValues={{
+              ...createEmptySessionForm(),
+              gymId: gymFixture[0].id,
+              location: 'Main Wall',
+              status: 'active',
+              startTime: Temporal.Now.instant().toString(),
+            }}
+          />
+        </MantineProvider>
+      </QueryClientProvider>,
+    );
+
+    expect(screen.queryByLabelText('Active session duration')).toBeNull();
+    expect(
+      screen.getByRole('heading', { name: /session/i }),
+    ).toBeInTheDocument();
+  });
+
   it('starts and stops a session', async () => {
     const queryClient = new QueryClient({
       defaultOptions: { queries: { retry: false } },

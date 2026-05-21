@@ -46,6 +46,7 @@ export {
   type CrudRepository,
 } from './repositories/index.js';
 export {
+  useActiveDraftSession,
   useSyncNow,
   useSyncQueueErrorCount,
   useSyncQueueLastError,

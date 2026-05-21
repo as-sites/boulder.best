@@ -15,7 +15,6 @@ import {
   useForm,
   useWatch,
 } from 'react-hook-form';
-import { TimerDisplay } from '../components/timer/timer-display.js';
 import type { SessionFormValues } from '../offline/db/types.js';
 import { autosaveActiveDraft } from '../offline/draft/draft-autosave.js';
 import { BreakRow } from './break-row.js';
@@ -29,11 +28,7 @@ import {
   resequenceEntries,
 } from './entry-factory.js';
 import { sessionFormSchema } from './session-form-schema.js';
-import {
-  sessionDisplayTimer,
-  startSession,
-  stopSession,
-} from './session-form-state.js';
+import { startSession, stopSession } from './session-form-state.js';
 import { applyBreakEnd, applyBreakStart } from './timer-orchestration.js';
 import { useCachedGymsQuery } from './use-cached-gyms-query.js';
 
@@ -53,11 +48,6 @@ export const SessionForm = ({ initialValues, onStopped }: SessionFormProps) => {
   const status = useWatch({ control: form.control, name: 'status' });
   const gymId = useWatch({ control: form.control, name: 'gymId' });
   const location = useWatch({ control: form.control, name: 'location' });
-  const startTime = useWatch({ control: form.control, name: 'startTime' });
-  const totalDurationMs = useWatch({
-    control: form.control,
-    name: 'totalDurationMs',
-  });
   const notes = useWatch({ control: form.control, name: 'notes' });
   const entries = useWatch({
     control: form.control,
@@ -199,21 +189,12 @@ export const SessionForm = ({ initialValues, onStopped }: SessionFormProps) => {
     });
   };
 
-  const displayTimer = sessionDisplayTimer({
-    startTime: startTime ?? null,
-    status,
-    totalDurationMs,
-  });
-
   let climbOrdinal = 0;
 
   return (
     <FormProvider {...form}>
       <Stack gap="md">
-        <Group justify="space-between">
-          <Title order={2}>Session</Title>
-          <TimerDisplay timer={displayTimer} size="lg" fw={600} />
-        </Group>
+        <Title order={2}>Session</Title>
 
         <Select
           label="Gym"

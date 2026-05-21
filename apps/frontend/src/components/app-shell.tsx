@@ -7,9 +7,11 @@ import {
 } from '@mantine/core';
 import { useDisclosure, useMediaQuery } from '@mantine/hooks';
 import { Outlet, useLocation } from '@tanstack/react-router';
+import { useActiveDraftSession } from '../offline/hooks/use-active-draft-session.js';
 import { AppBrand } from './app-brand.js';
 import { APP_SHELL_DESKTOP_NAV_QUERY } from './app-nav-items.js';
 import { AppShellMainNavLinks } from './app-shell-nav.js';
+import { AppShellSessionTimer } from './app-shell-session-timer.js';
 import { AppUserMenu } from './app-user-menu.js';
 
 const HEADER_HEIGHT = 56;
@@ -32,6 +34,12 @@ export const AppShell = () => {
   const navToggleLabel = navOpened
     ? 'Close navigation menu'
     : 'Open navigation menu';
+
+  const activeDraft = useActiveDraftSession();
+  const activeFormData =
+    activeDraft?.formData.status === 'active' ? activeDraft.formData : null;
+  const showNavbarTimer = activeFormData !== null && navOpened;
+  const showHeaderTimer = activeFormData !== null && !navOpened;
 
   useEffect(() => {
     closeMobileNav();
@@ -77,6 +85,9 @@ export const AppShell = () => {
               size="sm"
             />
             <AppBrand onNavigate={closeMobileNav} size="lg" />
+            {showHeaderTimer ? (
+              <AppShellSessionTimer compact formData={activeFormData} />
+            ) : null}
           </Flex>
 
           <AppUserMenu />
@@ -84,6 +95,11 @@ export const AppShell = () => {
       </MantineAppShell.Header>
 
       <MantineAppShell.Navbar id="app-shell-navbar" p="md">
+        {showNavbarTimer ? (
+          <MantineAppShell.Section pb="md">
+            <AppShellSessionTimer formData={activeFormData} />
+          </MantineAppShell.Section>
+        ) : null}
         <MantineAppShell.Section grow component={ScrollArea} type="auto">
           <AppShellMainNavLinks onNavigate={closeMobileNav} />
         </MantineAppShell.Section>
