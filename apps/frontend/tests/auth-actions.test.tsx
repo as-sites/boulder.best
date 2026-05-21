@@ -88,7 +88,9 @@ describe(AuthActions, () => {
   it('signs up with name, email, and password', async () => {
     renderAuthActions();
 
-    fireEvent.click(screen.getByRole('button', { name: /^sign up$/i }));
+    fireEvent.click(
+      screen.getByRole('button', { name: /don't have an account\? sign up/i }),
+    );
 
     fireEvent.change(screen.getByLabelText('Name'), {
       target: { value: 'Ally' },
@@ -145,10 +147,24 @@ describe(AuthActions, () => {
     expect(authMocks.signOut).toHaveBeenCalled();
   });
 
+  it('exposes visible labels on provider buttons', () => {
+    renderAuthActions();
+
+    expect(
+      screen.getByRole('button', { name: /continue with google/i }),
+    ).toHaveAccessibleName(/continue with google/i);
+    expect(
+      screen.getByRole('button', { name: /continue with discord/i }),
+    ).toHaveAccessibleName(/continue with discord/i);
+    expect(
+      screen.getByRole('button', { name: /sign in with passkey/i }),
+    ).toHaveAccessibleName(/sign in with passkey/i);
+  });
+
   it('starts Google sign-in', async () => {
     renderAuthActions();
 
-    fireEvent.click(screen.getByRole('button', { name: /google/i }));
+    fireEvent.click(screen.getByTestId('auth-google'));
 
     await waitFor(() =>
       expect(authMocks.socialSignIn.mock.calls.length).toBeGreaterThan(0),
@@ -162,7 +178,7 @@ describe(AuthActions, () => {
   it('starts Discord sign-in', async () => {
     renderAuthActions();
 
-    fireEvent.click(screen.getByRole('button', { name: /discord/i }));
+    fireEvent.click(screen.getByTestId('auth-discord'));
 
     await waitFor(() =>
       expect(authMocks.socialSignIn.mock.calls.length).toBeGreaterThan(0),
@@ -176,9 +192,7 @@ describe(AuthActions, () => {
   it('starts explicit passkey sign-in without conditional UI', async () => {
     renderAuthActions();
 
-    fireEvent.click(
-      screen.getByRole('button', { name: /sign in with passkey/i }),
-    );
+    fireEvent.click(screen.getByTestId('auth-passkey'));
 
     await waitFor(() =>
       expect(authMocks.passkeySignIn.mock.calls.length).toBeGreaterThan(0),

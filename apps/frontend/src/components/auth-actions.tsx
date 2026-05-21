@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
+  Anchor,
   Button,
+  Divider,
   Group,
   Loader,
   Paper,
@@ -11,9 +13,11 @@ import {
   TextInput,
   Title,
 } from '@mantine/core';
+import { FingerprintIcon } from '@phosphor-icons/react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { authClient, type OAuthProvider } from '../lib/auth-client.js';
+import { DiscordIcon, GoogleIcon } from './auth-provider-icons.js';
 
 const authResult = (
   result: { error?: { message?: string | undefined } | null },
@@ -55,11 +59,12 @@ const SignInForm = ({
 
   return (
     <form noValidate onSubmit={(event) => void handleSubmit(onSubmit)(event)}>
-      <Stack gap="xs">
+      <Stack gap="sm">
         <TextInput
           disabled={disabled}
           label="Email"
           placeholder="you@example.com"
+          radius="md"
           type="email"
           {...register('email')}
           error={errors.email?.message}
@@ -67,6 +72,7 @@ const SignInForm = ({
         <PasswordInput
           disabled={disabled}
           label="Password"
+          radius="md"
           {...register('password')}
           error={errors.password?.message}
         />
@@ -74,6 +80,7 @@ const SignInForm = ({
           data-testid="auth-submit"
           disabled={disabled}
           loading={disabled}
+          radius="md"
           type="submit"
         >
           Sign in
@@ -101,11 +108,12 @@ const SignUpForm = ({
 
   return (
     <form noValidate onSubmit={(event) => void handleSubmit(onSubmit)(event)}>
-      <Stack gap="xs">
+      <Stack gap="sm">
         <TextInput
           disabled={disabled}
           label="Name"
           placeholder="Your name"
+          radius="md"
           {...register('name')}
           error={errors.name?.message}
         />
@@ -113,6 +121,7 @@ const SignUpForm = ({
           disabled={disabled}
           label="Email"
           placeholder="you@example.com"
+          radius="md"
           type="email"
           {...register('email')}
           error={errors.email?.message}
@@ -120,6 +129,7 @@ const SignUpForm = ({
         <PasswordInput
           disabled={disabled}
           label="Password"
+          radius="md"
           {...register('password')}
           error={errors.password?.message}
         />
@@ -127,6 +137,7 @@ const SignUpForm = ({
           data-testid="auth-submit"
           disabled={disabled}
           loading={disabled}
+          radius="md"
           type="submit"
         >
           Create account
@@ -227,7 +238,7 @@ export const AuthActions = () => {
 
   if (session.isPending) {
     return (
-      <Paper p="md" radius="sm" withBorder>
+      <Paper p="lg" radius="md" withBorder>
         <Stack align="center" gap="sm" py="sm">
           <Loader size="sm" />
           <Text c="dimmed" size="sm">
@@ -240,31 +251,40 @@ export const AuthActions = () => {
 
   if (isAuthenticated) {
     return (
-      <Paper p="md" radius="sm" withBorder>
-        <Stack gap="sm">
-          <Title order={2}>Account</Title>
-          <Text size="sm">Signed in as {session.data?.user.email}</Text>
+      <Paper p="lg" radius="md" withBorder>
+        <Stack gap="md">
+          <Text size="sm">
+            Signed in as{' '}
+            <Text component="span" fw={500} inherit>
+              {session.data?.user.email}
+            </Text>
+          </Text>
           <Group gap="sm">
             <Button
               disabled={isSubmitting}
               loading={isSubmitting}
               onClick={() => void signOut()}
+              radius="md"
               variant="default"
             >
               Sign out
             </Button>
           </Group>
-          <Stack gap="xs">
+          <Divider label="Passkeys" labelPosition="left" />
+          <Stack gap="sm">
             <TextInput
               disabled={isSubmitting}
               label="Passkey name"
               onChange={(event) => setPasskeyName(event.currentTarget.value)}
               placeholder="This device"
+              radius="md"
               value={passkeyName}
             />
             <Button
               disabled={isSubmitting}
+              leftSection={<FingerprintIcon aria-hidden size={18} />}
               onClick={() => void registerPasskey()}
+              radius="md"
               variant="light"
             >
               Register passkey
@@ -276,56 +296,77 @@ export const AuthActions = () => {
     );
   }
 
+  const isSignIn = mode === 'signin';
+
   return (
-    <Paper p="md" radius="sm" withBorder>
-      <Stack gap="sm">
-        <Group gap="xs">
+    <Paper p="lg" radius="md" withBorder>
+      <Stack gap="md">
+        <Stack gap={4}>
+          <Title order={2}>
+            {isSignIn ? 'Welcome back' : 'Create your account'}
+          </Title>
+          <Text c="dimmed" size="sm">
+            {isSignIn
+              ? 'Sign in to sync sessions across devices.'
+              : 'Create an account to back up your climbing history.'}
+          </Text>
+        </Stack>
+
+        <Group grow>
           <Button
-            onClick={() => switchMode('signin')}
-            size="compact-sm"
-            variant={mode === 'signin' ? 'filled' : 'subtle'}
-          >
-            Sign in
-          </Button>
-          <Button
-            onClick={() => switchMode('signup')}
-            size="compact-sm"
-            variant={mode === 'signup' ? 'filled' : 'subtle'}
-          >
-            Sign up
-          </Button>
-        </Group>
-        {mode === 'signin' ? (
-          <SignInForm disabled={isSubmitting} onSubmit={signInWithEmail} />
-        ) : (
-          <SignUpForm disabled={isSubmitting} onSubmit={signUpWithEmail} />
-        )}
-        <Text c="dimmed" size="xs">
-          Or continue with
-        </Text>
-        <Group gap="sm">
-          <Button
+            data-testid="auth-google"
             disabled={isSubmitting}
+            leftSection={<GoogleIcon />}
             onClick={() => void signInWithProvider('google')}
+            radius="md"
             variant="default"
           >
             Continue with Google
           </Button>
           <Button
+            data-testid="auth-discord"
             disabled={isSubmitting}
+            leftSection={<DiscordIcon />}
             onClick={() => void signInWithProvider('discord')}
+            radius="md"
             variant="default"
           >
             Continue with Discord
           </Button>
-          <Button
-            disabled={isSubmitting}
-            onClick={() => void signInWithPasskey()}
-            variant="default"
-          >
-            Sign in with passkey
-          </Button>
         </Group>
+
+        <Button
+          data-testid="auth-passkey"
+          disabled={isSubmitting}
+          fullWidth
+          leftSection={<FingerprintIcon aria-hidden size={18} />}
+          onClick={() => void signInWithPasskey()}
+          radius="md"
+          variant="default"
+        >
+          Sign in with passkey
+        </Button>
+
+        <Divider label="Or continue with email" labelPosition="center" />
+
+        {isSignIn ? (
+          <SignInForm disabled={isSubmitting} onSubmit={signInWithEmail} />
+        ) : (
+          <SignUpForm disabled={isSubmitting} onSubmit={signUpWithEmail} />
+        )}
+
+        <Anchor
+          c="dimmed"
+          component="button"
+          onClick={() => switchMode(isSignIn ? 'signup' : 'signin')}
+          size="sm"
+          type="button"
+        >
+          {isSignIn
+            ? "Don't have an account? Sign up"
+            : 'Already have an account? Sign in'}
+        </Anchor>
+
         {statusEl}
       </Stack>
     </Paper>
