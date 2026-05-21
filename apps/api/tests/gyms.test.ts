@@ -81,6 +81,23 @@ describe('gyms list persistence', () => {
   });
 });
 
+const createAuthedApp = (userIdForSession: string | null) =>
+  createApiApp({
+    createAuthServer: () => ({
+      handler: () => new Response(null),
+      api: {
+        getSession: vi.fn().mockResolvedValue(
+          userIdForSession
+            ? {
+                user: { id: userIdForSession },
+                session: { id: 'auth_session' },
+              }
+            : null,
+        ),
+      },
+    }),
+  });
+
 describe('gyms routes', () => {
   beforeEach(() => {
     gymMocks.listGyms.mockClear();
@@ -91,23 +108,6 @@ describe('gyms routes', () => {
   afterEach(() => {
     gymMocks.restoreImplementations();
   });
-
-  const createAuthedApp = (userIdForSession: string | null) =>
-    createApiApp({
-      createAuthServer: () => ({
-        handler: () => new Response(null),
-        api: {
-          getSession: vi.fn().mockResolvedValue(
-            userIdForSession
-              ? {
-                  user: { id: userIdForSession },
-                  session: { id: 'auth_session' },
-                }
-              : null,
-          ),
-        },
-      }),
-    });
 
   it('returns 401 without an authenticated session', async () => {
     const app = createAuthedApp(null);

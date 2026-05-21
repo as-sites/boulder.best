@@ -5,16 +5,16 @@ packages:
 catalog:
   react: 19.2.6
   react-dom: 19.2.6
-  '@types/react': 19.2.14
+  '@types/react': 19.2.15
   '@types/react-dom': 19.2.3
   '@types/node': 24.12.3
   zod: 4.4.3
-  wrangler: 4.92.0
-  hono: 4.12.19
+  wrangler: 4.93.0
+  hono: 4.12.21
 
 catalogs:
   vitest:
-    vitest: &vitest_version 4.1.6
+    vitest: &vitest_version 4.1.7
     '@vitest/ui': *vitest_version
     '@vitest/coverage-v8': *vitest_version
   better-auth:

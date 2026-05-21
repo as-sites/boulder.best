@@ -38,6 +38,10 @@ const ClimbPhotoPreview = ({ blob }: { blob: Blob }) => {
   );
 };
 
+const handleDelete = async (imageId: string) => {
+  await offlineImagesRepository.delete(imageId);
+};
+
 export const ClimbPhotoAttachments = ({
   sessionId,
   entryId,
@@ -82,10 +86,6 @@ export const ClimbPhotoAttachments = ({
     if (inputRef.current) {
       inputRef.current.value = '';
     }
-  };
-
-  const handleDelete = async (imageId: string) => {
-    await offlineImagesRepository.delete(imageId);
   };
 
   return (

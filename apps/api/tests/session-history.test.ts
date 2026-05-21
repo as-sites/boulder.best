@@ -137,6 +137,23 @@ const createDetailDb = (options: {
   return { db: db as never };
 };
 
+const createAuthedApp = (userIdForSession: string | null) =>
+  createApiApp({
+    createAuthServer: () => ({
+      handler: () => new Response(null),
+      api: {
+        getSession: vi.fn().mockResolvedValue(
+          userIdForSession
+            ? {
+                user: { id: userIdForSession },
+                session: { id: 'auth_session' },
+              }
+            : null,
+        ),
+      },
+    }),
+  });
+
 describe('session history list persistence', () => {
   beforeEach(() => {
     historyMocks.restoreImplementations();
@@ -346,23 +363,6 @@ describe('session history routes', () => {
   afterEach(() => {
     historyMocks.restoreImplementations();
   });
-
-  const createAuthedApp = (userIdForSession: string | null) =>
-    createApiApp({
-      createAuthServer: () => ({
-        handler: () => new Response(null),
-        api: {
-          getSession: vi.fn().mockResolvedValue(
-            userIdForSession
-              ? {
-                  user: { id: userIdForSession },
-                  session: { id: 'auth_session' },
-                }
-              : null,
-          ),
-        },
-      }),
-    });
 
   it('returns 401 without an authenticated session for list and detail', async () => {
     const app = createAuthedApp(null);
