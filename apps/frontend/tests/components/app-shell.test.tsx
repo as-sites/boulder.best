@@ -25,6 +25,13 @@ const activeDraftMocks = vi.hoisted(() => ({
   useActiveDraftSession: vi.fn<() => DraftSession | undefined>(),
 }));
 
+const syncQueueMocks = vi.hoisted(() => ({
+  useSyncQueueList: vi.fn(),
+  useSyncQueuePendingCount: vi.fn(),
+  useSyncQueueErrorCount: vi.fn(),
+  useSyncNow: vi.fn(),
+}));
+
 vi.mock(import('../../src/lib/auth-client.js'), () => ({
   authClient: {
     useSession: authMocks.useSession,
@@ -56,7 +63,10 @@ vi.mock(
 
 vi.mock(import('../../src/offline/index.js'), async (importOriginal) => ({
   ...(await importOriginal()),
-  useSyncQueueList: () => [],
+  useSyncQueueList: syncQueueMocks.useSyncQueueList,
+  useSyncQueuePendingCount: syncQueueMocks.useSyncQueuePendingCount,
+  useSyncQueueErrorCount: syncQueueMocks.useSyncQueueErrorCount,
+  useSyncNow: syncQueueMocks.useSyncNow,
 }));
 
 vi.mock(import('../../src/offline/hooks/use-active-draft-session.js'), () => ({
@@ -145,6 +155,7 @@ const accountMenuTrigger = () =>
 const brandLink = () => screen.getByRole('link', { name: 'boulder.best' });
 
 const sessionTimer = () => screen.getByTestId('app-shell-session-timer');
+const syncControls = () => screen.getByTestId('app-shell-sync-controls');
 
 const activeDraftFixture = (
   status: 'not_started' | 'active' | 'stopped' = 'active',
@@ -164,6 +175,15 @@ describe('AppShell active session timer', () => {
   beforeEach(() => {
     authMocks.useSession.mockReturnValue(signedOutSession());
     activeDraftMocks.useActiveDraftSession.mockReturnValue(undefined);
+    syncQueueMocks.useSyncQueueList.mockReturnValue([]);
+    syncQueueMocks.useSyncQueuePendingCount.mockReturnValue(2);
+    syncQueueMocks.useSyncQueueErrorCount.mockReturnValue(1);
+    syncQueueMocks.useSyncNow.mockReturnValue({
+      canSyncNow: true,
+      disabledReason: undefined,
+      isSyncing: false,
+      syncNow: vi.fn(),
+    });
     vi.unstubAllGlobals();
     vi.stubGlobal('matchMedia', createViewportMatchMedia(false));
   });
@@ -216,7 +236,7 @@ describe('AppShell active session timer', () => {
     expect(shellNavbar()).not.toContainElement(sessionTimer());
   });
 
-  it('places the header timer immediately before the account menu trigger', async () => {
+  it('places sync controls between the header timer and account menu trigger', async () => {
     activeDraftMocks.useActiveDraftSession.mockReturnValue(
       activeDraftFixture(),
     );
@@ -228,9 +248,12 @@ describe('AppShell active session timer', () => {
     });
 
     const timer = sessionTimer();
+    const controls = syncControls();
     const accountTrigger = accountMenuTrigger();
     expect(timer.nextElementSibling).not.toBeNull();
-    expect(timer.nextElementSibling).toContainElement(accountTrigger);
+    expect(timer.nextElementSibling).toBe(controls);
+    expect(controls.nextElementSibling).not.toBeNull();
+    expect(controls.nextElementSibling).toContainElement(accountTrigger);
   });
 
   it('ticks via requestAnimationFrame without per-second form updates', async () => {
@@ -253,6 +276,15 @@ describe('AppShell navigation', () => {
   beforeEach(() => {
     authMocks.useSession.mockReturnValue(signedOutSession());
     activeDraftMocks.useActiveDraftSession.mockReturnValue(undefined);
+    syncQueueMocks.useSyncQueueList.mockReturnValue([]);
+    syncQueueMocks.useSyncQueuePendingCount.mockReturnValue(0);
+    syncQueueMocks.useSyncQueueErrorCount.mockReturnValue(0);
+    syncQueueMocks.useSyncNow.mockReturnValue({
+      canSyncNow: true,
+      disabledReason: undefined,
+      isSyncing: false,
+      syncNow: vi.fn(),
+    });
     vi.unstubAllGlobals();
   });
 
@@ -387,6 +419,20 @@ describe('AppShell navigation', () => {
         screen.getAllByRole('link', { name: 'boulder.best' }),
       ).toHaveLength(1);
       expect(sideNav()).not.toContainElement(brandLink());
+    });
+
+    it('shows sync status and sync button in the header', async () => {
+      syncQueueMocks.useSyncQueuePendingCount.mockReturnValue(2);
+      syncQueueMocks.useSyncQueueErrorCount.mockReturnValue(1);
+      await renderShellAt('/tracker', true);
+
+      expect(
+        within(syncControls()).getByText(/2 pending/i),
+      ).toBeInTheDocument();
+      expect(within(syncControls()).getByText(/1 failed/i)).toBeInTheDocument();
+      expect(
+        within(syncControls()).getByRole('button', { name: /sync now/i }),
+      ).toBeInTheDocument();
     });
 
     it('shows a persistent side nav and burger toggle without bottom tab bar', async () => {
