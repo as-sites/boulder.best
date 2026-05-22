@@ -129,6 +129,16 @@ describe('sync session payload schema', () => {
     expect(result.success).toBe(true);
   });
 
+  it('accepts Temporal nanosecond ISO timestamps', () => {
+    const result = syncSessionPayloadSchema.safeParse({
+      ...syncSessionPayloadFixture,
+      startTime: '2026-05-22T14:24:22.138850098Z',
+      endTime: '2026-05-22T14:24:23.571850098Z',
+      entries: [],
+    });
+    expect(result.success).toBe(true);
+  });
+
   it('rejects invalid session ids, timestamps, and negative durations', () => {
     expect(
       syncSessionPayloadSchema.safeParse({

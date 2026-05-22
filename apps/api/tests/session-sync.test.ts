@@ -142,13 +142,7 @@ const createMockDb = (
   };
 
   return {
-    db: {
-      transaction: vi.fn(
-        async (callback: (innerTx: typeof tx) => Promise<void>) => {
-          await callback(tx);
-        },
-      ),
-    },
+    db: tx,
     sessionUpserts,
     entryUpserts,
     imageUpserts,

@@ -11,9 +11,12 @@ const dbByUrl = new Map<string, AppDb>();
 
 /** Reuses one Drizzle client per database URL within a Worker isolate. */
 export const getDb = (databaseUrl: string): AppDb => {
-  const db = dbByUrl.getOrInsertComputed(databaseUrl, () =>
-    createDb(databaseUrl),
-  );
+  const cached = dbByUrl.get(databaseUrl);
+  if (cached) {
+    return cached;
+  }
 
+  const db = createDb(databaseUrl);
+  dbByUrl.set(databaseUrl, db);
   return db;
 };

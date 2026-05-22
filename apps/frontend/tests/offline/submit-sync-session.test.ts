@@ -125,4 +125,25 @@ describe('submit sync session', () => {
       }),
     });
   });
+
+  it('normalizes Temporal nanosecond timestamps to millisecond ISO strings', async () => {
+    sessionSyncPost.mockResolvedValue({ ok: true });
+
+    await submitSyncSession(
+      {
+        ...payloadFixture(),
+        startTime: '2026-05-22T14:24:22.138850098Z',
+        endTime: '2026-05-22T14:24:23.571850098Z',
+        entries: [],
+      },
+      [],
+    );
+
+    expect(sessionSyncPost).toHaveBeenCalledWith({
+      json: expect.objectContaining({
+        startTime: '2026-05-22T14:24:22.138Z',
+        endTime: '2026-05-22T14:24:23.571Z',
+      }),
+    });
+  });
 });

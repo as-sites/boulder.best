@@ -49,39 +49,49 @@ export const syncSession = async (
   userId: string,
   payload: SyncSessionPayload,
 ): Promise<SyncSessionSuccessResponse> => {
-  await db.transaction(async (tx) => {
-    const [existingSession] = await tx
-      .select({ userId: sessions.userId })
-      .from(sessions)
-      .where(eq(sessions.id, payload.id))
-      .limit(1);
+  const [existingSession] = await db
+    .select({ userId: sessions.userId })
+    .from(sessions)
+    .where(eq(sessions.id, payload.id))
+    .limit(1);
 
-    if (existingSession && existingSession.userId !== userId) {
-      throw new SyncSessionForbiddenError();
-    }
+  if (existingSession && existingSession.userId !== userId) {
+    throw new SyncSessionForbiddenError();
+  }
 
-    const [gym] = await tx
-      .select({ locations: gyms.locations })
-      .from(gyms)
-      .where(eq(gyms.id, payload.gymId))
-      .limit(1);
+  const [gym] = await db
+    .select({ locations: gyms.locations })
+    .from(gyms)
+    .where(eq(gyms.id, payload.gymId))
+    .limit(1);
 
-    if (!gym) {
-      throw new SyncSessionInvalidLocationError();
-    }
+  if (!gym) {
+    throw new SyncSessionInvalidLocationError();
+  }
 
-    assertValidSessionLocation(payload.location, gym.locations);
+  assertValidSessionLocation(payload.location, gym.locations);
 
-    const sessionLocation = payload.location ?? null;
-    const startTime = new Date(payload.startTime);
-    const endTime = new Date(payload.endTime);
-    const now = new Date();
+  const sessionLocation = payload.location ?? null;
+  const startTime = new Date(payload.startTime);
+  const endTime = new Date(payload.endTime);
+  const now = new Date();
 
-    await tx
-      .insert(sessions)
-      .values({
-        id: payload.id,
-        userId,
+  await db
+    .insert(sessions)
+    .values({
+      id: payload.id,
+      userId,
+      gymId: payload.gymId,
+      location: sessionLocation,
+      startTime,
+      endTime,
+      totalDurationMs: payload.totalDurationMs,
+      notes: payload.notes ?? null,
+      updatedAt: now,
+    })
+    .onConflictDoUpdate({
+      target: sessions.id,
+      set: {
         gymId: payload.gymId,
         location: sessionLocation,
         startTime,
@@ -89,47 +99,33 @@ export const syncSession = async (
         totalDurationMs: payload.totalDurationMs,
         notes: payload.notes ?? null,
         updatedAt: now,
-      })
-      .onConflictDoUpdate({
-        target: sessions.id,
-        set: {
-          gymId: payload.gymId,
-          location: sessionLocation,
-          startTime,
-          endTime,
-          totalDurationMs: payload.totalDurationMs,
-          notes: payload.notes ?? null,
-          updatedAt: now,
-        },
-      });
+      },
+    });
 
-    for (const entry of payload.entries) {
-      if (entry.type === 'climb') {
-        await upsertClimbEntry(tx, {
-          userId,
-          sessionId: payload.id,
-          entry,
-          now,
-        });
-        continue;
-      }
-
-      await upsertBreakEntry(tx, {
+  for (const entry of payload.entries) {
+    if (entry.type === 'climb') {
+      await upsertClimbEntry(db, {
         userId,
         sessionId: payload.id,
         entry,
         now,
       });
+      continue;
     }
-  });
+
+    await upsertBreakEntry(db, {
+      userId,
+      sessionId: payload.id,
+      entry,
+      now,
+    });
+  }
 
   return { success: true, sessionId: payload.id };
 };
 
-type SyncTransaction = Parameters<Parameters<AppDb['transaction']>[0]>[0];
-
 const upsertBreakEntry = async (
-  tx: SyncTransaction,
+  db: AppDb,
   {
     userId,
     sessionId,
@@ -142,7 +138,7 @@ const upsertBreakEntry = async (
     now: Date;
   },
 ) => {
-  await tx
+  await db
     .insert(sessionEntries)
     .values({
       id: entry.id,
@@ -164,7 +160,7 @@ const upsertBreakEntry = async (
 };
 
 const upsertClimbEntry = async (
-  tx: SyncTransaction,
+  db: AppDb,
   {
     userId,
     sessionId,
@@ -177,7 +173,7 @@ const upsertClimbEntry = async (
     now: Date;
   },
 ) => {
-  await tx
+  await db
     .insert(sessionEntries)
     .values({
       id: entry.id,
@@ -204,7 +200,7 @@ const upsertClimbEntry = async (
     });
 
   for (const image of entry.images) {
-    await tx
+    await db
       .insert(sessionEntryImages)
       .values({
         id: image.id,
@@ -234,7 +230,7 @@ const upsertClimbEntry = async (
   }
 
   for (const attempt of entry.climbAttempts) {
-    await tx
+    await db
       .insert(climbAttempts)
       .values({
         entryId: entry.id,
