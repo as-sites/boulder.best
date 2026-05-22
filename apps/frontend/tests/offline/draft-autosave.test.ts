@@ -23,7 +23,6 @@ const sessionFormFixture = (): SessionFormValues => ({
       type: 'climb',
       name: 'Pink corner',
       grade: 'V3',
-      completed: false,
       durationMs: 0,
       timer: createIdleTimer(),
       climbAttempts: [

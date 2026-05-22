@@ -34,7 +34,6 @@ const payloadFixture = (): SyncSessionPayload => ({
       type: 'climb',
       name: 'Pink corner',
       grade: 'V3',
-      completed: true,
       durationMs: 45_000,
       climbAttempts: [],
       images: [],

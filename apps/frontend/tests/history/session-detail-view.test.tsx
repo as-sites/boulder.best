@@ -17,7 +17,6 @@ const climbEntry: SessionDetailClimbEntry = {
   name: 'Pink corner route',
   grade: 'V3',
   attempts: 2,
-  completed: true,
   notes: null,
   images: [
     {

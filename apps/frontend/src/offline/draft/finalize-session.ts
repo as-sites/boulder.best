@@ -33,6 +33,7 @@ const toSyncClimbEntry = (
   const climbAttempts = entry.climbAttempts.map((attempt) => ({
     sequenceOrder: attempt.sequenceOrder,
     durationMs: resolveDurationMs(attempt.timer, attempt.durationMs, now),
+    completed: attempt.completed,
     notes: attempt.notes,
   }));
 
@@ -42,7 +43,6 @@ const toSyncClimbEntry = (
     type: 'climb',
     name: entry.name,
     grade: entry.grade,
-    completed: entry.completed,
     notes: entry.notes,
     durationMs: climbAttempts.reduce(
       (total, attempt) => total + attempt.durationMs,

@@ -139,6 +139,7 @@ export const syncClimbAttemptSchema = z
       description: 'Time spent on this attempt in milliseconds',
       example: 12_000,
     }),
+    completed: z.boolean().nullable().optional(),
     notes: z.string().nullable().optional(),
   })
   .strict()
@@ -149,7 +150,6 @@ export const syncClimbEntrySchema = syncBaseEntrySchema
     type: z.literal('climb'),
     name: z.string().max(255).nullable(),
     grade: z.string().max(50).nullable(),
-    completed: z.boolean().nullable(),
     notes: z.string().nullable().optional(),
     climbAttempts: z.array(syncClimbAttemptSchema).openapi({
       description:
@@ -254,7 +254,6 @@ export const sessionDetailClimbEntrySchema = syncBaseEntrySchema
     name: z.string().max(255).nullable(),
     grade: z.string().max(50).nullable(),
     attempts: z.number().int().positive().nullable(),
-    completed: z.boolean().nullable(),
     notes: z.string().nullable().optional(),
     images: z.array(syncedImageSchema),
   })

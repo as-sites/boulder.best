@@ -24,7 +24,6 @@ const stoppedSessionFixture = (): SessionFormValues => ({
       type: 'climb',
       name: 'Pink corner',
       grade: 'V3',
-      completed: true,
       durationMs: 0,
       timer: {
         accumulatedDurationMs: 30_000,
@@ -35,6 +34,7 @@ const stoppedSessionFixture = (): SessionFormValues => ({
         {
           sequenceOrder: 0,
           durationMs: 0,
+          completed: true,
           timer: {
             accumulatedDurationMs: 12_000,
             activeStartTime: null,

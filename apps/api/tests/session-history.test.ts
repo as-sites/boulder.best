@@ -257,7 +257,6 @@ describe('session detail persistence', () => {
           type: 'climb',
           name: 'Pink corner route',
           grade: 'V3',
-          completed: true,
           notes: null,
         },
         {
@@ -267,7 +266,6 @@ describe('session detail persistence', () => {
           type: 'break',
           name: null,
           grade: null,
-          completed: null,
           notes: null,
         },
       ],
@@ -318,7 +316,6 @@ describe('session detail persistence', () => {
           name: 'Pink corner route',
           grade: 'V3',
           attempts: 2,
-          completed: true,
           images: [
             {
               id: '223e4567-e89b-12d3-a456-426614174001',

@@ -188,7 +188,6 @@ const upsertClimbEntry = async (
       durationMs: entry.durationMs,
       name: entry.name,
       grade: entry.grade,
-      completed: entry.completed,
       notes: entry.notes ?? null,
       updatedAt: now,
     })
@@ -199,7 +198,6 @@ const upsertClimbEntry = async (
         durationMs: entry.durationMs,
         name: entry.name,
         grade: entry.grade,
-        completed: entry.completed,
         notes: entry.notes ?? null,
         updatedAt: now,
       },
@@ -242,6 +240,7 @@ const upsertClimbEntry = async (
         entryId: entry.id,
         sequenceOrder: attempt.sequenceOrder,
         durationMs: attempt.durationMs,
+        completed: attempt.completed ?? null,
         notes: attempt.notes ?? null,
         updatedAt: now,
       })
@@ -249,6 +248,7 @@ const upsertClimbEntry = async (
         target: [climbAttempts.entryId, climbAttempts.sequenceOrder],
         set: {
           durationMs: attempt.durationMs,
+          completed: attempt.completed ?? null,
           notes: attempt.notes ?? null,
           updatedAt: now,
         },

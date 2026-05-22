@@ -130,17 +130,6 @@ export const ClimbRow = ({
           searchable
         />
 
-        <Checkbox
-          label="Completed"
-          disabled={isFinalized}
-          checked={climb.completed ?? false}
-          onChange={(event) => {
-            setValue(`${entryPath}.completed`, event.currentTarget.checked, {
-              shouldDirty: true,
-            });
-          }}
-        />
-
         <Textarea
           label="Climb notes"
           disabled={isFinalized}
@@ -214,6 +203,18 @@ export const ClimbRow = ({
                     setValue(
                       `${entryPath}.climbAttempts.${attemptIndex}.notes`,
                       event.currentTarget.value || null,
+                      { shouldDirty: true },
+                    );
+                  }}
+                />
+                <Checkbox
+                  label="Completed"
+                  disabled={isFinalized}
+                  checked={attempt.completed ?? false}
+                  onChange={(event) => {
+                    setValue(
+                      `${entryPath}.climbAttempts.${attemptIndex}.completed`,
+                      event.currentTarget.checked,
                       { shouldDirty: true },
                     );
                   }}

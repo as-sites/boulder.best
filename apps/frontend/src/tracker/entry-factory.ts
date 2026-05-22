@@ -17,6 +17,7 @@ export const createClimbAttempt = (
 ): ClimbAttemptFormEntry => ({
   sequenceOrder,
   durationMs: 0,
+  completed: false,
   notes: null,
   timer: createIdleTimer(),
 });
@@ -30,7 +31,6 @@ export const createClimbEntry = (
   type: 'climb',
   name,
   grade: null,
-  completed: false,
   notes: null,
   durationMs: 0,
   timer: createIdleTimer(),

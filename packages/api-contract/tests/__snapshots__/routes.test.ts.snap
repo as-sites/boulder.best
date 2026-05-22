@@ -184,10 +184,6 @@ exports[`OpenAPI document > serves OpenAPI JSON at /openapi.json > openapi-docum
             "nullable": true,
             "type": "integer",
           },
-          "completed": {
-            "nullable": true,
-            "type": "boolean",
-          },
           "durationMs": {
             "description": "Total time spent on this block in milliseconds",
             "example": 45000,
@@ -241,7 +237,6 @@ exports[`OpenAPI document > serves OpenAPI JSON at /openapi.json > openapi-docum
           "name",
           "grade",
           "attempts",
-          "completed",
           "images",
         ],
         "type": "object",
@@ -423,6 +418,10 @@ exports[`OpenAPI document > serves OpenAPI JSON at /openapi.json > openapi-docum
       "SyncClimbAttempt": {
         "additionalProperties": false,
         "properties": {
+          "completed": {
+            "nullable": true,
+            "type": "boolean",
+          },
           "durationMs": {
             "description": "Time spent on this attempt in milliseconds",
             "example": 12000,
@@ -455,10 +454,6 @@ exports[`OpenAPI document > serves OpenAPI JSON at /openapi.json > openapi-docum
               "$ref": "#/components/schemas/SyncClimbAttempt",
             },
             "type": "array",
-          },
-          "completed": {
-            "nullable": true,
-            "type": "boolean",
           },
           "durationMs": {
             "description": "Total time spent on this block in milliseconds",
@@ -513,7 +508,6 @@ exports[`OpenAPI document > serves OpenAPI JSON at /openapi.json > openapi-docum
           "type",
           "name",
           "grade",
-          "completed",
           "climbAttempts",
           "images",
         ],

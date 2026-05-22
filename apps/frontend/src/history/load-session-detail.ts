@@ -38,7 +38,6 @@ const toLocalSessionDetail = (
       name: entry.name,
       grade: entry.grade,
       attempts: entry.climbAttempts.length,
-      completed: entry.completed,
       notes: entry.notes,
       images: entry.images,
     };

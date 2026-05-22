@@ -13,7 +13,7 @@ import {
 const migrationsDir = join(import.meta.dirname, '../drizzle');
 
 describe('app Drizzle schema', () => {
-  it('keeps climbs and breaks in session_entries without legacy photo/attempt columns', () => {
+  it('keeps climbs and breaks in session_entries without legacy photo/attempt/completed columns', () => {
     const columns = getTableColumns(sessionEntries);
 
     expect(columns.type).toBeDefined();
@@ -21,6 +21,7 @@ describe('app Drizzle schema', () => {
     expect(columns.durationMs).toBeDefined();
     expect('photoUrl' in columns).toBe(false);
     expect('attempts' in columns).toBe(false);
+    expect('completed' in columns).toBe(false);
   });
 
   it('defines session_entry_images with lookup columns and stable index ordering', () => {
@@ -37,7 +38,7 @@ describe('app Drizzle schema', () => {
     expect(columns.contentLength).toBeDefined();
   });
 
-  it('defines climb_attempts with per-entry sequence and bigint duration', () => {
+  it('defines climb_attempts with per-entry sequence, bigint duration, and completed flag', () => {
     const columns = getTableColumns(climbAttempts);
 
     expect(getTableName(climbAttempts)).toBe('climb_attempts');
@@ -45,6 +46,7 @@ describe('app Drizzle schema', () => {
     expect(columns.sequenceOrder).toBeDefined();
     expect(columns.durationMs).toBeDefined();
     expect(columns.durationMs.columnType).toMatch(/^PgBigInt/);
+    expect(columns.completed).toBeDefined();
   });
 
   it('indexes sessions for user history queries', () => {
@@ -76,6 +78,20 @@ describe('app Drizzle migrations', () => {
     expect(sql).toContain('entry_images_entry_index_idx');
     expect(sql).toContain('climb_attempts_entry_id_idx');
     expect(sql).toContain('sessions_user_start_time_idx');
+  });
+
+  it('includes a migration that moves completed from session_entries to climb_attempts', () => {
+    const sql = readFileSync(
+      join(migrationsDir, '0005_move_completed_to_attempt.sql'),
+      'utf8',
+    );
+
+    expect(sql).toContain(
+      'ALTER TABLE "climb_attempts" ADD COLUMN "completed" boolean',
+    );
+    expect(sql).toContain(
+      'ALTER TABLE "session_entries" DROP COLUMN "completed"',
+    );
   });
 
   it('seeds the Sydney gym catalog with locations in migration 0003', () => {

@@ -16,6 +16,7 @@ export const timerStateSchema = z.union([
 export const climbAttemptFormEntrySchema = z.object({
   sequenceOrder: z.number().int().nonnegative(),
   durationMs: z.number().int().nonnegative(),
+  completed: z.boolean().nullable().optional(),
   notes: z.string().nullable().optional(),
   timer: timerStateSchema,
 });
@@ -26,7 +27,6 @@ export const climbFormEntrySchema = z.object({
   type: z.literal('climb'),
   name: z.string().max(255).nullable(),
   grade: z.string().max(50).nullable(),
-  completed: z.boolean().nullable(),
   notes: z.string().nullable().optional(),
   durationMs: z.number().int().nonnegative(),
   timer: timerStateSchema,

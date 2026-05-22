@@ -68,7 +68,6 @@ export const sessionEntries = pgTable(
     durationMs: integer('duration_ms').notNull(),
     name: varchar('name', { length: 255 }),
     grade: varchar('grade', { length: 50 }),
-    completed: boolean('completed'),
     notes: text('notes'),
     createdAt: timestamp('created_at', { withTimezone: true })
       .defaultNow()
@@ -127,6 +126,7 @@ export const climbAttempts = pgTable(
       .notNull(),
     sequenceOrder: integer('sequence_order').notNull(),
     durationMs: bigint('duration_ms', { mode: 'number' }).notNull(),
+    completed: boolean('completed'),
     notes: text('notes'),
     createdAt: timestamp('created_at', { withTimezone: true })
       .defaultNow()

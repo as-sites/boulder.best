@@ -104,7 +104,6 @@ export const getSessionDetail = async (
       type: sessionEntries.type,
       name: sessionEntries.name,
       grade: sessionEntries.grade,
-      completed: sessionEntries.completed,
       notes: sessionEntries.notes,
     })
     .from(sessionEntries)
@@ -188,7 +187,6 @@ export const getSessionDetail = async (
         name: entry.name,
         grade: entry.grade,
         attempts: attemptCount > 0 ? attemptCount : null,
-        completed: entry.completed,
         notes: entry.notes ?? undefined,
         images: (imagesByEntryId.get(entry.id) ?? []).map((image) => ({
           id: image.id,
