@@ -312,10 +312,11 @@ export const AuthActions = () => {
           </Text>
         </Stack>
 
-        <Group grow>
+        <Stack>
           <Button
             data-testid="auth-google"
             disabled={isSubmitting}
+            fullWidth
             leftSection={<GoogleIcon />}
             onClick={() => void signInWithProvider('google')}
             radius="md"
@@ -326,6 +327,7 @@ export const AuthActions = () => {
           <Button
             data-testid="auth-discord"
             disabled={isSubmitting}
+            fullWidth
             leftSection={<DiscordIcon />}
             onClick={() => void signInWithProvider('discord')}
             radius="md"
@@ -333,7 +335,7 @@ export const AuthActions = () => {
           >
             Continue with Discord
           </Button>
-        </Group>
+        </Stack>
 
         <Button
           data-testid="auth-passkey"
