@@ -123,7 +123,6 @@ export const ClimbPhotoAttachments = ({
             ref={inputRef}
             type="file"
             accept="image/*"
-            capture="environment"
             multiple
             hidden
             onChange={(event) => {

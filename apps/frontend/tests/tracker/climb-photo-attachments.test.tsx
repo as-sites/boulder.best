@@ -93,4 +93,13 @@ describe('climb photo attachments', () => {
     expect(screen.queryByRole('button', { name: /add photo/i })).toBeNull();
     expect(document.querySelector('input[type="file"]')).toBeNull();
   });
+
+  it('does not force camera capture for photo selection', () => {
+    renderAttachments();
+
+    const input = document.querySelector('input[type="file"]');
+
+    expect(input).not.toBeNull();
+    expect(input?.getAttribute('capture')).toBeNull();
+  });
 });
