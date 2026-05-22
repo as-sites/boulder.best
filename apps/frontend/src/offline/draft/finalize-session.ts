@@ -29,22 +29,29 @@ const resolveDurationMs = (
 const toSyncClimbEntry = (
   entry: ClimbFormEntry,
   now?: TimerNow,
-): SyncClimbEntry => ({
-  id: entry.id,
-  sequenceOrder: entry.sequenceOrder,
-  type: 'climb',
-  name: entry.name,
-  grade: entry.grade,
-  completed: entry.completed,
-  notes: entry.notes,
-  durationMs: resolveDurationMs(entry.timer, entry.durationMs, now),
-  climbAttempts: entry.climbAttempts.map((attempt) => ({
+): SyncClimbEntry => {
+  const climbAttempts = entry.climbAttempts.map((attempt) => ({
     sequenceOrder: attempt.sequenceOrder,
     durationMs: resolveDurationMs(attempt.timer, attempt.durationMs, now),
     notes: attempt.notes,
-  })),
-  images: [],
-});
+  }));
+
+  return {
+    id: entry.id,
+    sequenceOrder: entry.sequenceOrder,
+    type: 'climb',
+    name: entry.name,
+    grade: entry.grade,
+    completed: entry.completed,
+    notes: entry.notes,
+    durationMs: climbAttempts.reduce(
+      (total, attempt) => total + attempt.durationMs,
+      0,
+    ),
+    climbAttempts,
+    images: [],
+  };
+};
 
 const toSyncEntry = (
   entry: SessionFormEntry,

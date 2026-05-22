@@ -60,10 +60,6 @@ export const ClimbRow = ({
     return null;
   }
 
-  const updateClimbTimer = (timer: typeof climb.timer) => {
-    setValue(`${entryPath}.timer`, timer, { shouldDirty: true });
-  };
-
   const updateAttemptTimer = (
     attemptIndex: number,
     timer: (typeof climb.climbAttempts)[number]['timer'],
@@ -105,26 +101,6 @@ export const ClimbRow = ({
       <Stack gap="sm">
         <Group justify="space-between">
           <Text fw={600}>{climb.name ?? defaultName}</Text>
-          <Group gap="sm">
-            <TimerDisplay timer={climb.timer} />
-            {!isFinalized ? (
-              <TimerControls
-                timer={climb.timer}
-                onStart={() => {
-                  updateClimbTimer(startTimer(climb.timer));
-                }}
-                onResume={() => {
-                  updateClimbTimer(resumeTimer(climb.timer));
-                }}
-                onPause={() => {
-                  updateClimbTimer(pauseTimer(climb.timer));
-                }}
-                onStop={() => {
-                  updateClimbTimer(stopTimer(climb.timer));
-                }}
-              />
-            ) : null}
-          </Group>
         </Group>
 
         <TextInput

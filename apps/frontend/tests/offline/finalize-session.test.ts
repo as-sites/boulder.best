@@ -41,6 +41,15 @@ const stoppedSessionFixture = (): SessionFormValues => ({
             status: 'stopped',
           },
         },
+        {
+          sequenceOrder: 1,
+          durationMs: 5000,
+          timer: {
+            accumulatedDurationMs: 8000,
+            activeStartTime: null,
+            status: 'stopped',
+          },
+        },
       ],
     },
   ],
@@ -61,8 +70,11 @@ describe('finalize stopped session', () => {
     expect(queueItem.payload.location).toBe('Main Wall');
     expect(queueItem.payload.entries[0]).toMatchObject({
       type: 'climb',
-      durationMs: 30_000,
-      climbAttempts: [{ sequenceOrder: 0, durationMs: 12_000 }],
+      durationMs: 20_000,
+      climbAttempts: [
+        { sequenceOrder: 0, durationMs: 12_000 },
+        { sequenceOrder: 1, durationMs: 8000 },
+      ],
     });
     await expect(restoreActiveDraft()).resolves.toBeUndefined();
     await expect(draftSessionRepository.getActive()).resolves.toBeUndefined();

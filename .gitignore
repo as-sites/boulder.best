@@ -18,4 +18,5 @@ dist/
 !.agents/skills/linear-ticket-planning/SKILL.md
 
 coverage
+test-results/
 .env

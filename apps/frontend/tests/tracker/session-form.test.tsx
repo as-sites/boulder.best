@@ -3,6 +3,7 @@ import type { Gym } from '@boulder/api-contract';
 import { MantineProvider } from '@mantine/core';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { createClimbEntry } from '../../src/tracker/entry-factory.js';
 import { createEmptySessionForm } from '../../src/tracker/session-form-state.js';
 import { SessionForm } from '../../src/tracker/session-form.js';
 
@@ -151,5 +152,35 @@ describe(SessionForm, () => {
 
     await waitFor(() => expect(startButton).toBeDisabled());
     expect(stopButton).toBeDisabled();
+  });
+
+  it('renders attempt timers without climb-level timer controls', async () => {
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MantineProvider>
+          <SessionForm
+            initialValues={{
+              ...createEmptySessionForm(),
+              gymId: gymFixture[0].id,
+              location: 'Main Wall',
+              status: 'active',
+              startTime: Temporal.Now.instant().toString(),
+              entries: [createClimbEntry(0, 'Climb 1')],
+            }}
+          />
+        </MantineProvider>
+      </QueryClientProvider>,
+    );
+
+    expect(screen.getByText('Attempt 1')).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: 'Start' })).toHaveLength(1);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Start' }));
+    expect(screen.getByRole('button', { name: 'Pause' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Stop' })).toBeInTheDocument();
   });
 });
