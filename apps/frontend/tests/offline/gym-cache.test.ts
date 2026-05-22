@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Gym } from '@boulder/api-contract';
+import { ApiError } from '../../src/lib/fetch-error.js';
 import {
   cachedGymsRepository,
   loadCachedGyms,
@@ -65,5 +66,27 @@ describe('gym cache', () => {
     vi.stubGlobal('navigator', { onLine: false });
 
     await expect(loadCachedGyms()).resolves.toEqual([]);
+  });
+
+  it('falls back to cached gyms on network error when online', async () => {
+    const gym = gymFixture();
+    await cachedGymsRepository.put(gym);
+
+    const fetchGyms = vi
+      .fn()
+      .mockRejectedValue(new TypeError('Failed to fetch'));
+    await expect(loadCachedGyms({ fetchGyms })).resolves.toEqual([gym]);
+  });
+
+  it('propagates API errors rather than silently falling back to cache', async () => {
+    const gym = gymFixture();
+    await cachedGymsRepository.put(gym);
+
+    const apiErr = new ApiError(500, 'Request failed with status 500');
+    const fetchGyms = vi.fn().mockRejectedValue(apiErr);
+
+    await expect(loadCachedGyms({ fetchGyms })).rejects.toBeInstanceOf(
+      ApiError,
+    );
   });
 });

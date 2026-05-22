@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import type { Gym } from '@boulder/api-contract';
 import { authClient } from '../lib/auth-client.js';
+import { NetworkOfflineError } from '../lib/fetch-error.js';
 import { useSyncQueueList } from '../offline/index.js';
 import { useCachedGymsQuery } from '../tracker/use-cached-gyms-query.js';
 import {
@@ -19,6 +20,10 @@ export const useMergedSessionHistory = () => {
   const gymsQuery = useCachedGymsQuery();
   const queueItems = useSyncQueueList();
 
+  // Treat a network/offline failure as "no server data" rather than a hard
+  // error so that local queue items are still shown without a PageError.
+  const isOfflineError = historyQuery.error instanceof NetworkOfflineError;
+
   const items = useMemo((): MergedHistoryItem[] => {
     const serverItems = isAuthenticated ? (historyQuery.data?.items ?? []) : [];
 
@@ -36,7 +41,8 @@ export const useMergedSessionHistory = () => {
     historyQuery: {
       ...historyQuery,
       isPending: isHistoryLoading,
-      isError: isAuthenticated && historyQuery.isError,
+      // Surface as error only for real API failures, not offline disconnects.
+      isError: isAuthenticated && historyQuery.isError && !isOfflineError,
     },
     gymsQuery,
     isAuthenticated,

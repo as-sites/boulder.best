@@ -3,6 +3,7 @@ import type {
   SyncSessionPayload,
 } from '@boulder/api-contract';
 import { apiClient } from '../lib/api-client.js';
+import { apiErrorFromResponse, isNetworkError } from '../lib/fetch-error.js';
 import { syncQueueRepository } from '../offline/repositories/sync-queue-repository.js';
 
 export type SessionDetailSource = 'server' | 'local';
@@ -58,8 +59,12 @@ export const loadSessionDetail = async (
       response = await apiClient.api.sessions[':id'].$get({
         param: { id: sessionId },
       });
-    } catch {
-      // Network error (e.g. device is offline) – fall through to local queue.
+    } catch (error) {
+      if (!isNetworkError(error)) {
+        // Not an offline/network error — re-throw so the caller surfaces it.
+        throw error;
+      }
+      // Device is offline — fall through to local queue.
     }
   }
 
@@ -72,7 +77,7 @@ export const loadSessionDetail = async (
     }
 
     if (response.status !== 404) {
-      throw new Error(`Failed to load session detail (${response.status})`);
+      throw apiErrorFromResponse(response);
     }
   }
 

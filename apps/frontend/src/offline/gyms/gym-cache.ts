@@ -1,5 +1,6 @@
 import type { Gym } from '@boulder/api-contract';
 import { apiClient } from '../../lib/api-client.js';
+import { ApiError, apiErrorFromResponse } from '../../lib/fetch-error.js';
 import { cachedGymsRepository } from '../repositories/cached-gyms-repository.js';
 
 export type FetchGyms = () => Promise<Gym[]>;
@@ -8,7 +9,7 @@ export const fetchGymsFromApi: FetchGyms = async () => {
   const response = await apiClient.api.gyms.$get();
 
   if (!response.ok) {
-    throw new Error(`Failed to fetch gyms (${response.status})`);
+    throw apiErrorFromResponse(response);
   }
 
   return await response.json();
@@ -36,8 +37,12 @@ export const loadCachedGyms = async (options?: {
   if (shouldRefresh) {
     try {
       return await refreshCachedGymsFromApi(options?.fetchGyms);
-    } catch {
-      // Use the last known cache when refresh fails.
+    } catch (error) {
+      if (error instanceof ApiError) {
+        // A real API / server error — re-throw so the caller can surface it.
+        throw error;
+      }
+      // Network error or other unexpected failure — fall back to the last known cache.
     }
   }
 
