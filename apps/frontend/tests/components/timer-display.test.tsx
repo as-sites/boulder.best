@@ -15,10 +15,17 @@ const fixedNow =
   () =>
     Temporal.Instant.fromEpochMilliseconds(epochMs);
 
-const renderTimer = (timer: Parameters<typeof TimerDisplay>[0]['timer']) =>
+const renderTimer = (
+  timer: Parameters<typeof TimerDisplay>[0]['timer'],
+  showMilliseconds = false,
+) =>
   render(
     <MantineProvider>
-      <TimerDisplay timer={timer} data-testid="timer" />
+      <TimerDisplay
+        timer={timer}
+        data-testid="timer"
+        showMilliseconds={showMilliseconds}
+      />
     </MantineProvider>,
   );
 
@@ -58,6 +65,17 @@ describe(TimerDisplay, () => {
 
     expect(screen.getByTestId('timer')).toHaveTextContent('1:30');
     expect(raf).not.toHaveBeenCalled();
+  });
+
+  it('renders optional millisecond precision', () => {
+    const stopped = stopTimer(
+      startTimer(createIdleTimer(), fixedNow(0)),
+      fixedNow(65_123),
+    );
+
+    renderTimer(stopped, true);
+
+    expect(screen.getByTestId('timer')).toHaveTextContent('1:05.123');
   });
 
   it('schedules animation frames while running', () => {

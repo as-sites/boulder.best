@@ -16,6 +16,7 @@ import {
   type Control,
 } from 'react-hook-form';
 import { TimerDisplay } from '../components/timer/timer-display.js';
+import { useTimerDisplayMilliseconds } from '../lib/settings/index.js';
 import {
   pauseTimer,
   resumeTimer,
@@ -48,6 +49,7 @@ export const ClimbRow = ({
   onRemove,
 }: ClimbRowProps) => {
   const { setValue, getValues } = useFormContext<SessionFormValues>();
+  const { enabled: showTimerMilliseconds } = useTimerDisplayMilliseconds();
   const entryPath = `entries.${index}` as const;
   const climb = useWatch({ control, name: entryPath });
 
@@ -167,7 +169,11 @@ export const ClimbRow = ({
                 <Group justify="space-between">
                   <Text size="sm">Attempt {attemptIndex + 1}</Text>
                   <Group gap="sm">
-                    <TimerDisplay timer={attempt.timer} size="sm" />
+                    <TimerDisplay
+                      timer={attempt.timer}
+                      size="sm"
+                      showMilliseconds={showTimerMilliseconds}
+                    />
                     {!isFinalized ? (
                       <TimerControls
                         timer={attempt.timer}

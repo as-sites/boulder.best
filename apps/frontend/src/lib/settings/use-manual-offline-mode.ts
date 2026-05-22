@@ -7,6 +7,7 @@ import {
 } from './sync-eligibility.js';
 
 const MANUAL_OFFLINE_STORAGE_KEY = 'boulder.manualOfflineMode';
+const TIMER_MILLISECONDS_STORAGE_KEY = 'boulder.timerDisplayMilliseconds';
 
 const subscribeToOnlineStatus = (onStoreChange: () => void): (() => void) => {
   window.addEventListener('online', onStoreChange);
@@ -25,6 +26,21 @@ export const useBrowserOnline = (): boolean =>
 export const useManualOfflineMode = () => {
   const [enabled, setEnabled] = useLocalStorage<boolean>({
     key: MANUAL_OFFLINE_STORAGE_KEY,
+    defaultValue: false,
+  });
+
+  return {
+    enabled,
+    setEnabled,
+    toggle: () => {
+      setEnabled((current) => !current);
+    },
+  };
+};
+
+export const useTimerDisplayMilliseconds = () => {
+  const [enabled, setEnabled] = useLocalStorage<boolean>({
+    key: TIMER_MILLISECONDS_STORAGE_KEY,
     defaultValue: false,
   });
 

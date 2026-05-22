@@ -16,4 +16,14 @@ describe(formatDurationMs, () => {
   it('clamps negative values to zero', () => {
     expect(formatDurationMs(-1000)).toBe('0:00');
   });
+
+  it('optionally formats with millisecond precision', () => {
+    expect(formatDurationMs(65_123, { showMilliseconds: true })).toBe(
+      '1:05.123',
+    );
+    expect(formatDurationMs(3_661_007, { showMilliseconds: true })).toBe(
+      '1:01:01.007',
+    );
+    expect(formatDurationMs(-5, { showMilliseconds: true })).toBe('0:00.000');
+  });
 });

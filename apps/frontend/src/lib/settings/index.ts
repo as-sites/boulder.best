@@ -7,4 +7,5 @@ export {
   useBrowserOnline,
   useManualOfflineMode,
   useSyncEligibility,
+  useTimerDisplayMilliseconds,
 } from './use-manual-offline-mode.js';

@@ -1,6 +1,7 @@
 import { Button, Group, Paper, Stack, Text } from '@mantine/core';
 import { useWatch, type Control } from 'react-hook-form';
 import { TimerDisplay } from '../components/timer/timer-display.js';
+import { useTimerDisplayMilliseconds } from '../lib/settings/index.js';
 import type { SessionFormValues } from '../offline/db/types.js';
 
 export interface BreakRowProps {
@@ -19,6 +20,7 @@ export const BreakRow = ({
   onRemove,
 }: BreakRowProps) => {
   const entry = useWatch({ control, name: `entries.${index}` });
+  const { enabled: showTimerMilliseconds } = useTimerDisplayMilliseconds();
 
   if (entry.type !== 'break') {
     return null;
@@ -32,7 +34,10 @@ export const BreakRow = ({
       <Stack gap="sm">
         <Group justify="space-between">
           <Text fw={600}>Break</Text>
-          <TimerDisplay timer={entry.timer} />
+          <TimerDisplay
+            timer={entry.timer}
+            showMilliseconds={showTimerMilliseconds}
+          />
         </Group>
 
         {!isFinalized && isBreakActive ? (

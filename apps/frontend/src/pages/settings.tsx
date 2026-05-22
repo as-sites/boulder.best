@@ -12,11 +12,16 @@ import { ThemeSwitcher } from '../components/theme-switcher.js';
 import {
   useBrowserOnline,
   useManualOfflineMode,
+  useTimerDisplayMilliseconds,
 } from '../lib/settings/index.js';
 
 export const SettingsPage = () => {
   const { enabled: manualOfflineMode, setEnabled: setManualOfflineMode } =
     useManualOfflineMode();
+  const {
+    enabled: showTimerMilliseconds,
+    setEnabled: setShowTimerMilliseconds,
+  } = useTimerDisplayMilliseconds();
   const isOnline = useBrowserOnline();
   const autoSyncBlocked = manualOfflineMode || !isOnline;
 
@@ -54,6 +59,23 @@ export const SettingsPage = () => {
                 setManualOfflineMode(event.currentTarget.checked);
               }}
               aria-label="Manual offline mode"
+            />
+          </Group>
+
+          <Group justify="space-between">
+            <div>
+              <Text fw={600}>Show milliseconds on timers</Text>
+              <Text c="dimmed" size="sm">
+                Adds millisecond precision to active timer displays on this
+                device.
+              </Text>
+            </div>
+            <Switch
+              checked={showTimerMilliseconds}
+              onChange={(event) => {
+                setShowTimerMilliseconds(event.currentTarget.checked);
+              }}
+              aria-label="Show milliseconds on timers"
             />
           </Group>
 

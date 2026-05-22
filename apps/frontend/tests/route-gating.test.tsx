@@ -224,6 +224,9 @@ describe('route shell smoke tests', () => {
       screen.getByRole('radiogroup', { name: /color scheme/i }),
     ).toBeInTheDocument();
     expect(screen.getByText(/Manual offline mode/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Show milliseconds on timers/i),
+    ).toBeInTheDocument();
   });
 
   it('renders the account route placeholder', async () => {
