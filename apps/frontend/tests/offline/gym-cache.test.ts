@@ -39,6 +39,28 @@ describe('gym cache', () => {
     expect(fetchGyms).not.toHaveBeenCalled();
   });
 
+  it('uses online refresh results when available instead of offline cache fallback', async () => {
+    const staleGym = gymFixture();
+    await cachedGymsRepository.put(staleGym);
+    const freshGym = { ...staleGym, name: 'Fresh Gym Name' };
+    const fetchGyms = vi.fn().mockResolvedValue([freshGym]);
+
+    await expect(loadCachedGyms({ fetchGyms })).resolves.toEqual([freshGym]);
+    expect(fetchGyms).toHaveBeenCalledOnce();
+    await expect(cachedGymsRepository.get(staleGym.id)).resolves.toEqual(
+      freshGym,
+    );
+  });
+
+  it('falls back to cache when online refresh fails', async () => {
+    const gym = gymFixture();
+    await cachedGymsRepository.put(gym);
+    const fetchGyms = vi.fn().mockRejectedValue(new Error('Rate limited'));
+
+    await expect(loadCachedGyms({ fetchGyms })).resolves.toEqual([gym]);
+    expect(fetchGyms).toHaveBeenCalledOnce();
+  });
+
   it('returns an empty list safely when cache and network are unavailable', async () => {
     vi.stubGlobal('navigator', { onLine: false });
 

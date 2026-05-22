@@ -52,6 +52,7 @@ describe('MVP OpenAPI route definitions', () => {
   it('wires request and response schemas for each route', () => {
     const [getGyms, presign, sync, list, detail] = mvpOpenApiRoutes;
     const { 200: getGymsResponse } = getGyms.responses;
+    const { 429: getGymsRateLimitResponse } = getGyms.responses;
     const { 200: presignResponse } = presign.responses;
     const { 200: syncResponse } = sync.responses;
     const { 200: listResponse } = list.responses;
@@ -59,9 +60,16 @@ describe('MVP OpenAPI route definitions', () => {
 
     expect(getGymsResponse.content['application/json'].schema).toBeDefined();
     expect(
+      getGymsRateLimitResponse.content['application/json'].schema,
+    ).toBeDefined();
+    expect('security' in getGyms).toBe(false);
+    expect(Object.keys(getGyms.responses).sort()).toEqual(['200', '429']);
+    expect(
       presign.request.body.content['application/json'].schema,
     ).toBeDefined();
     expect(presignResponse.content['application/json'].schema).toBeDefined();
+    expect(presign.security).toEqual([{ sessionCookie: [] }]);
+    expect(presign.responses[401]).toBeDefined();
     expect(sync.request.body.content['application/json'].schema).toBeDefined();
     expect(syncResponse.content['application/json'].schema).toBeDefined();
     expect(list.request.query).toBeDefined();

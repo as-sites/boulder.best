@@ -21,7 +21,6 @@ export const getGymsRoute = createRoute({
   summary: 'List gyms',
   description:
     'Returns the read-only gym catalog with grade scales for online use and offline cache hydration.',
-  security: authenticatedSecurity,
   responses: {
     200: {
       description: 'Available gyms',
@@ -31,8 +30,13 @@ export const getGymsRoute = createRoute({
         },
       },
     },
-    401: {
-      description: 'Unauthorized',
+    429: {
+      description: 'Too many requests',
+      content: {
+        'application/json': {
+          schema: apiErrorResponseSchema,
+        },
+      },
     },
   },
 });

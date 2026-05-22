@@ -29,7 +29,7 @@ export const createApiContract = <E extends Env = Env>(
   );
 
   const getGymsHandler: RouteHandler<typeof getGymsRoute, E> = async (c) =>
-    c.json(await handlers.getGyms(c));
+    c.json(await handlers.getGyms(c), 200);
 
   const createPresignedUploadHandler: RouteHandler<
     typeof createPresignedUploadRoute,

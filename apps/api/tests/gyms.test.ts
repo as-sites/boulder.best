@@ -83,8 +83,12 @@ describe('gyms list persistence', () => {
   });
 });
 
-const createAuthedApp = (userIdForSession: string | null) =>
+const createAuthedApp = (
+  userIdForSession: string | null,
+  options?: Parameters<typeof createApiApp>[0],
+) =>
   createApiApp({
+    ...options,
     createAuthServer: () => ({
       handler: () => new Response(null),
       api: {
@@ -111,12 +115,74 @@ describe('gyms routes', () => {
     gymMocks.restoreImplementations();
   });
 
-  it('returns 401 without an authenticated session', async () => {
-    const app = createAuthedApp(null);
-    const response = await app.request('/api/gyms');
+  it('returns the read-only gym catalog without an authenticated session', async () => {
+    const gyms = [
+      {
+        id: gymId,
+        name: 'Boulder Central',
+        grades: ['V0', 'V1', 'V2', 'V3'],
+        locations: ['Main Wall'],
+        updatedAt: '2026-05-13T08:00:00.000Z',
+      },
+    ];
+    gymMocks.listGyms.mockResolvedValue(gyms);
 
-    expect(response.status).toBe(401);
-    expect(gymMocks.listGyms).not.toHaveBeenCalled();
+    const app = createAuthedApp(null);
+    const response = await app.request('/api/gyms', undefined, env);
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual(gyms);
+    expect(gymMocks.listGyms).toHaveBeenCalledOnce();
+    expect(mockCreateDb).toHaveBeenCalledWith(env.DATABASE_URL);
+  });
+
+  it('rate limits repeated unauthenticated requests from the same IP', async () => {
+    const gyms = [
+      {
+        id: gymId,
+        name: 'Boulder Central',
+        grades: ['V0', 'V1', 'V2', 'V3'],
+        locations: ['Main Wall'],
+        updatedAt: '2026-05-13T08:00:00.000Z',
+      },
+    ];
+    gymMocks.listGyms.mockResolvedValue(gyms);
+
+    const app = createAuthedApp(null, {
+      unauthenticatedGymsRateLimit: {
+        maxRequests: 1,
+        windowMs: 60_000,
+        now: () => 0,
+      },
+    });
+
+    const first = await app.request(
+      '/api/gyms',
+      {
+        headers: {
+          'CF-Connecting-IP': '203.0.113.11',
+        },
+      },
+      env,
+    );
+    expect(first.status).toBe(200);
+
+    const second = await app.request(
+      '/api/gyms',
+      {
+        headers: {
+          'CF-Connecting-IP': '203.0.113.11',
+        },
+      },
+      env,
+    );
+    expect(second.status).toBe(429);
+    await expect(second.json()).resolves.toEqual({
+      success: false,
+      error: 'Too many unauthenticated requests',
+    });
+    expect(second.headers.get('retry-after')).toBe('60');
+    expect(gymMocks.listGyms).toHaveBeenCalledOnce();
   });
 
   it('returns the read-only gym catalog for authenticated users', async () => {
@@ -138,5 +204,33 @@ describe('gyms routes', () => {
     await expect(response.json()).resolves.toEqual(gyms);
     expect(gymMocks.listGyms).toHaveBeenCalledOnce();
     expect(mockCreateDb).toHaveBeenCalledWith(env.DATABASE_URL);
+  });
+
+  it('does not rate limit authenticated requests', async () => {
+    const gyms = [
+      {
+        id: gymId,
+        name: 'Boulder Central',
+        grades: ['V0', 'V1', 'V2', 'V3'],
+        locations: ['Main Wall'],
+        updatedAt: '2026-05-13T08:00:00.000Z',
+      },
+    ];
+    gymMocks.listGyms.mockResolvedValue(gyms);
+
+    const app = createAuthedApp('user_123', {
+      unauthenticatedGymsRateLimit: {
+        maxRequests: 1,
+        windowMs: 60_000,
+        now: () => 0,
+      },
+    });
+
+    const first = await app.request('/api/gyms', undefined, env);
+    const second = await app.request('/api/gyms', undefined, env);
+
+    expect(first.status).toBe(200);
+    expect(second.status).toBe(200);
+    expect(gymMocks.listGyms).toHaveBeenCalledTimes(2);
   });
 });

@@ -34,6 +34,39 @@ export interface AuthenticatedUser {
   userId: string;
 }
 
+interface UnauthenticatedGymsRateLimitOptions {
+  maxRequests: number;
+  windowMs: number;
+  now: () => number;
+}
+
+const defaultUnauthenticatedGymsRateLimit: UnauthenticatedGymsRateLimitOptions =
+  {
+    maxRequests: 60,
+    windowMs: 60_000,
+    now: () => Date.now(),
+  };
+
+interface UnauthenticatedGymsRateLimitState {
+  count: number;
+  resetAt: number;
+}
+
+const getRequestRateLimitKey = (request: Request): string => {
+  const cfConnectingIp = request.headers.get('CF-Connecting-IP');
+
+  if (cfConnectingIp) {
+    return cfConnectingIp;
+  }
+
+  const forwardedFor = request.headers.get('X-Forwarded-For');
+  if (forwardedFor) {
+    return forwardedFor.split(',')[0]?.trim() ?? 'unknown';
+  }
+
+  return 'unknown';
+};
+
 export const getAuthenticatedUser = async (
   c: Context<ApiEnv>,
   auth: AuthServer,
@@ -62,8 +95,61 @@ export const createProtectedUserMiddleware =
     await next();
   };
 
+const createUnauthenticatedGymsRateLimitMiddleware = (
+  createAuthServer: CreateAuthServer,
+  options: Partial<UnauthenticatedGymsRateLimitOptions> = {},
+): MiddlewareHandler<ApiEnv> => {
+  const config = {
+    ...defaultUnauthenticatedGymsRateLimit,
+    ...options,
+  };
+  const rateLimitByKey = new Map<string, UnauthenticatedGymsRateLimitState>();
+
+  return async (c, next) => {
+    const session = await createAuthServer(c.env).api.getSession({
+      headers: c.req.raw.headers,
+    });
+
+    if (session) {
+      await next();
+      return;
+    }
+
+    const now = config.now();
+    const key = getRequestRateLimitKey(c.req.raw);
+    const existing = rateLimitByKey.get(key);
+
+    if (!existing || now >= existing.resetAt) {
+      rateLimitByKey.set(key, {
+        count: 1,
+        resetAt: now + config.windowMs,
+      });
+      await next();
+      return;
+    }
+
+    if (existing.count >= config.maxRequests) {
+      c.header(
+        'Retry-After',
+        Math.max(1, Math.ceil((existing.resetAt - now) / 1000)).toString(),
+      );
+      return c.json(
+        {
+          success: false,
+          error: 'Too many unauthenticated requests',
+        },
+        429,
+      );
+    }
+
+    existing.count += 1;
+    await next();
+  };
+};
+
 interface CreateApiAppOptions {
   createAuthServer?: CreateAuthServer;
+  unauthenticatedGymsRateLimit?: Partial<UnauthenticatedGymsRateLimitOptions>;
 }
 
 export const createApiApp = (options: CreateApiAppOptions = {}) => {
@@ -90,8 +176,15 @@ export const createApiApp = (options: CreateApiAppOptions = {}) => {
     async (c) => await createAuthServer(c.env).handler(c.req.raw),
   );
 
+  app.use(
+    '/api/gyms',
+    createUnauthenticatedGymsRateLimitMiddleware(
+      createAuthServer,
+      options.unauthenticatedGymsRateLimit,
+    ),
+  );
+
   const protectedMiddleware = createProtectedUserMiddleware(createAuthServer);
-  app.use('/api/gyms', protectedMiddleware);
   app.use('/api/uploads/*', protectedMiddleware);
   app.use('/api/sessions', protectedMiddleware);
   app.use('/api/sessions/*', protectedMiddleware);
