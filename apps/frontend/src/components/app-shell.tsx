@@ -74,7 +74,12 @@ export const AppShell = () => {
           px="md"
           wrap="nowrap"
         >
-          <Flex align="center" gap="sm" wrap="nowrap">
+          <Flex
+            align="center"
+            gap="sm"
+            style={{ flex: '1 1 auto', minWidth: 0 }}
+            wrap="nowrap"
+          >
             <Burger
               aria-controls="app-shell-navbar"
               aria-expanded={navOpened}
@@ -85,12 +90,14 @@ export const AppShell = () => {
               size="sm"
             />
             <AppBrand onNavigate={closeMobileNav} size="lg" />
+          </Flex>
+
+          <Flex align="center" gap="sm" style={{ flexShrink: 0 }} wrap="nowrap">
             {showHeaderTimer ? (
               <AppShellSessionTimer compact formData={activeFormData} />
             ) : null}
+            <AppUserMenu />
           </Flex>
-
-          <AppUserMenu />
         </Flex>
       </MantineAppShell.Header>
 

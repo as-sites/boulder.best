@@ -216,6 +216,23 @@ describe('AppShell active session timer', () => {
     expect(shellNavbar()).not.toContainElement(sessionTimer());
   });
 
+  it('places the header timer immediately before the account menu trigger', async () => {
+    activeDraftMocks.useActiveDraftSession.mockReturnValue(
+      activeDraftFixture(),
+    );
+
+    await renderShellAt('/history', false);
+
+    await waitFor(() => {
+      expect(sessionTimer()).toBeVisible();
+    });
+
+    const timer = sessionTimer();
+    const accountTrigger = accountMenuTrigger();
+    expect(timer.nextElementSibling).not.toBeNull();
+    expect(timer.nextElementSibling).toContainElement(accountTrigger);
+  });
+
   it('ticks via requestAnimationFrame without per-second form updates', async () => {
     const raf = vi.spyOn(globalThis, 'requestAnimationFrame');
     activeDraftMocks.useActiveDraftSession.mockReturnValue(
