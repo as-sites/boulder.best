@@ -18,6 +18,13 @@ export const TrackerPage = () => {
   );
   const [finalizeError, setFinalizeError] = useState<string | null>(null);
 
+  const refreshInitialValues = async () => {
+    const draft = await restoreActiveDraft();
+    setInitialValues(
+      draft ? hydrateSessionForm(draft.formData) : createEmptySessionForm(),
+    );
+  };
+
   useEffect(() => {
     let cancelled = false;
 
@@ -41,11 +48,16 @@ export const TrackerPage = () => {
 
   const handleStopped = (values: SessionFormValues) => {
     setFinalizeError(null);
-    void finalizeStoppedSession(values).catch((error: unknown) => {
-      setFinalizeError(
-        error instanceof Error ? error.message : 'Unable to finalize session',
-      );
-    });
+    void (async () => {
+      try {
+        await finalizeStoppedSession(values);
+        await refreshInitialValues();
+      } catch (error) {
+        setFinalizeError(
+          error instanceof Error ? error.message : 'Unable to finalize session',
+        );
+      }
+    })();
   };
 
   if (initialValues === null) {
@@ -72,7 +84,11 @@ export const TrackerPage = () => {
           </Text>
         </Stack>
 
-        <SessionForm initialValues={initialValues} onStopped={handleStopped} />
+        <SessionForm
+          key={initialValues.id}
+          initialValues={initialValues}
+          onStopped={handleStopped}
+        />
 
         {finalizeError ? (
           <Text c="red" size="sm" role="alert">
