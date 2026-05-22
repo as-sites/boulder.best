@@ -1,8 +1,12 @@
-[
-  {
-    "AllowedOrigins": ["https://boulder.best"],
-    "AllowedMethods": ["PUT", "GET", "HEAD"],
-    "AllowedHeaders": ["Content-Type", "Content-Length"],
-    "MaxAgeSeconds": 3600
-  }
-]
+{
+  "rules": [
+    {
+      "allowed": {
+        "origins": ["https://boulder.best"],
+        "methods": ["PUT", "GET", "HEAD"],
+        "headers": ["Content-Type", "Content-Length"]
+      },
+      "maxAgeSeconds": 3600
+    }
+  ]
+}
