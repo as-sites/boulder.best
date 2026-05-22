@@ -167,7 +167,6 @@ describe('createPresignedUpload', () => {
       },
       objectKey: response.objectKey,
       contentType: 'image/webp',
-      contentLength: 512_000,
     });
   });
 });

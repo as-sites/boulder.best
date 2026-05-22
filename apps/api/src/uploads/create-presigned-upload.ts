@@ -34,7 +34,6 @@ export const createPresignedUpload = async ({
     config: r2,
     objectKey,
     contentType: body.contentType,
-    contentLength: body.contentLength,
   });
 
   return {

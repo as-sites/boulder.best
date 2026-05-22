@@ -21,17 +21,19 @@ export const createR2PresignedPutUrl = async ({
   config,
   objectKey,
   contentType,
-  contentLength,
   expiresInSeconds = DEFAULT_PRESIGN_EXPIRY_SECONDS,
 }: {
   config: R2PresignConfig;
   objectKey: string;
   contentType: string;
-  contentLength: number;
   expiresInSeconds?: number;
 }): Promise<string> => {
   const s3 = createS3Client(config);
 
+  // Do not sign Content-Length: browsers treat it as a forbidden header and
+  // auto-set it, so it is never included in the CORS preflight
+  // Access-Control-Request-Headers. Signing it causes R2 to reject the PUT
+  // with a signature mismatch that the browser surfaces as a CORS error.
   return await s3.getPresignedUrl(
     'PUT',
     objectKey,
@@ -39,7 +41,6 @@ export const createR2PresignedPutUrl = async ({
     {},
     {
       'Content-Type': contentType,
-      'Content-Length': String(contentLength),
     },
   );
 };
