@@ -127,8 +127,8 @@ maintenance task explicitly needs a direct connection string.
 
 R2 public URLs are **not** a Worker binding in `wrangler.jsonc`. The bucket stays
 bound as `MEDIA_BUCKET` for uploads; browsers read objects via `PUBLIC_PHOTO_URL_BASE`
-(`https://cdn.boulder.best`), configured in `apps/api/r2-public.json` and
-`apps/api/wrangler.jsonc`.
+(`https://cdn.boulder.best`), configured in `apps/api/wrangler.jsonc` and
+`apps/api/mise.toml` (`api:r2:domain:*` tasks).
 
 After the bucket exists, set `CLOUDFLARE_ZONE_ID` in `.env` (zone overview in the
 dashboard), then connect the custom domain from git:

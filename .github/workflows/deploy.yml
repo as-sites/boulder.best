@@ -1,8 +1,9 @@
 # Deploy boulder-frontend and boulder-api to Cloudflare after CI passes on main.
 #
 # Required repository secrets (Settings → Secrets and variables → Actions):
-#   CLOUDFLARE_API_TOKEN  — API token with Workers Scripts + Workers Routes (zone boulder.best)
+#   CLOUDFLARE_API_TOKEN  — API token with Workers Scripts + Workers Routes + R2 (zone boulder.best)
 #   CLOUDFLARE_ACCOUNT_ID — Cloudflare account ID (wrangler whoami)
+#   CLOUDFLARE_ZONE_ID    — Zone ID for boulder.best (R2 custom domain: cdn.boulder.best)
 #   DATABASE_URL          — Neon connection string for production migrations (api:db:migrate)
 #
 # API Worker runtime secrets (DATABASE_URL, BETTER_AUTH_SECRET, OAuth keys, etc.) are set on
@@ -39,6 +40,7 @@ jobs:
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
     steps:
       - name: Checkout code
@@ -57,3 +59,6 @@ jobs:
 
       - name: Deploy API Worker
         run: mise run api:deploy
+
+      - name: Sync R2 bucket (CORS and public domain)
+        run: mise run api:r2:sync
