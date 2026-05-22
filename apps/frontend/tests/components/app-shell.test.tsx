@@ -236,7 +236,7 @@ describe('AppShell active session timer', () => {
     expect(shellNavbar()).not.toContainElement(sessionTimer());
   });
 
-  it('places sync controls between the header timer and account menu trigger', async () => {
+  it('keeps sync controls out of the mobile header', async () => {
     activeDraftMocks.useActiveDraftSession.mockReturnValue(
       activeDraftFixture(),
     );
@@ -248,12 +248,10 @@ describe('AppShell active session timer', () => {
     });
 
     const timer = sessionTimer();
-    const controls = syncControls();
     const accountTrigger = accountMenuTrigger();
+    expect(screen.queryByTestId('app-shell-sync-controls')).toBeNull();
     expect(timer.nextElementSibling).not.toBeNull();
-    expect(timer.nextElementSibling).toBe(controls);
-    expect(controls.nextElementSibling).not.toBeNull();
-    expect(controls.nextElementSibling).toContainElement(accountTrigger);
+    expect(timer.nextElementSibling).toContainElement(accountTrigger);
   });
 
   it('ticks via requestAnimationFrame without per-second form updates', async () => {

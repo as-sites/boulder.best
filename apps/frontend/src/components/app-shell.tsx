@@ -97,8 +97,8 @@ export const AppShell = () => {
             {showHeaderTimer ? (
               <AppShellSessionTimer compact formData={activeFormData} />
             ) : null}
-            <AppShellSyncControls />
-            <AppUserMenu />
+            {isDesktopNav ? <AppShellSyncControls /> : null}
+            <AppUserMenu showSyncControls={!isDesktopNav} />
           </Flex>
         </Flex>
       </MantineAppShell.Header>

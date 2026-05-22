@@ -9,6 +9,7 @@ import {
 import { SignOutIcon, UserCircleIcon } from '@phosphor-icons/react';
 import { Link } from '@tanstack/react-router';
 import { authClient } from '../lib/auth-client.js';
+import { AppShellSyncControls } from './app-shell-sync-controls.js';
 
 const accountPath = '/auth/account' as const;
 
@@ -32,7 +33,11 @@ const userInitials = (
   return '?';
 };
 
-export const AppUserMenu = () => {
+interface AppUserMenuProps {
+  showSyncControls?: boolean;
+}
+
+export const AppUserMenu = ({ showSyncControls = false }: AppUserMenuProps) => {
   const session = authClient.useSession();
   const user = session.data?.user;
 
@@ -73,6 +78,14 @@ export const AppUserMenu = () => {
       </Menu.Target>
 
       <Menu.Dropdown>
+        {showSyncControls ? (
+          <>
+            <Menu.Label>
+              <AppShellSyncControls />
+            </Menu.Label>
+            <Menu.Divider />
+          </>
+        ) : null}
         {isSignedIn ? (
           <>
             <Menu.Label>
