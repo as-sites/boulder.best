@@ -65,4 +65,12 @@ describe('timer math', () => {
       'Cannot start a stopped timer',
     );
   });
+
+  it('rounds sub-millisecond precision to whole milliseconds', () => {
+    const start = Temporal.Instant.from('2026-05-22T14:00:05.499Z');
+    const end = Temporal.Instant.from('2026-05-22T14:00:35.794439941Z');
+    const started = startTimer(createIdleTimer(), () => start);
+
+    expect(elapsedDurationMs(started, () => end)).toBe(30_295);
+  });
 });

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { SyncSessionPayload } from '@boulder/api-contract';
+import type { SyncClimbEntry, SyncSessionPayload } from '@boulder/api-contract';
 import type * as apiClientModule from '../../src/lib/api-client.js';
 import { submitSyncSession } from '../../src/offline/index.js';
 
@@ -21,24 +21,24 @@ vi.mock(
     }) as unknown as typeof apiClientModule,
 );
 
+const climbEntryFixture = (): SyncClimbEntry => ({
+  id: '123e4567-e89b-12d3-a456-426614174000',
+  sequenceOrder: 0,
+  type: 'climb',
+  name: 'Pink corner',
+  grade: 'V3',
+  durationMs: 45_000,
+  climbAttempts: [],
+  images: [],
+});
+
 const payloadFixture = (): SyncSessionPayload => ({
   id: '987fcdeb-51a2-43d7-9012-345678901234',
   gymId: 'a1b2c3d4-e5f6-4789-a234-56789abcdef0',
   startTime: '2026-05-13T10:00:00.000Z',
   endTime: '2026-05-13T12:00:00.000Z',
   totalDurationMs: 7_200_000,
-  entries: [
-    {
-      id: '123e4567-e89b-12d3-a456-426614174000',
-      sequenceOrder: 0,
-      type: 'climb',
-      name: 'Pink corner',
-      grade: 'V3',
-      durationMs: 45_000,
-      climbAttempts: [],
-      images: [],
-    },
-  ],
+  entries: [climbEntryFixture()],
 });
 
 describe('submit sync session', () => {
@@ -87,5 +87,42 @@ describe('submit sync session', () => {
     await expect(submitSyncSession(payloadFixture(), [])).rejects.toThrow(
       'Session sync failed (500)',
     );
+  });
+
+  it('rounds fractional duration fields before posting', async () => {
+    sessionSyncPost.mockResolvedValue({ ok: true });
+
+    await submitSyncSession(
+      {
+        ...payloadFixture(),
+        totalDurationMs: 30_295.439_941,
+        entries: [
+          {
+            ...climbEntryFixture(),
+            durationMs: 8587.735_107,
+            climbAttempts: [
+              {
+                sequenceOrder: 0,
+                durationMs: 8587.735_107,
+                completed: true,
+              },
+            ],
+          },
+        ],
+      },
+      [],
+    );
+
+    expect(sessionSyncPost).toHaveBeenCalledWith({
+      json: expect.objectContaining({
+        totalDurationMs: 30_295,
+        entries: [
+          expect.objectContaining({
+            durationMs: 8588,
+            climbAttempts: [expect.objectContaining({ durationMs: 8588 })],
+          }),
+        ],
+      }),
+    });
   });
 });

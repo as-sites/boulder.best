@@ -6,6 +6,9 @@ const resolveNow = (now?: TimerNow): TimerNow => now ?? defaultNow;
 
 const instantToIso = (instant: Temporal.Instant): string => instant.toString();
 
+/** Temporal durations can include sub-millisecond precision; persist whole ms. */
+const roundDurationMs = (durationMs: number): number => Math.round(durationMs);
+
 const activeElapsedMs = (state: TimerState, now: TimerNow): number => {
   if (state.activeStartTime === null) {
     return 0;
@@ -13,7 +16,7 @@ const activeElapsedMs = (state: TimerState, now: TimerNow): number => {
 
   const activeStart = Temporal.Instant.from(state.activeStartTime);
   const elapsed = now().since(activeStart);
-  return elapsed.total({ unit: 'milliseconds' });
+  return roundDurationMs(elapsed.total({ unit: 'milliseconds' }));
 };
 
 /** Elapsed duration in milliseconds from stored timer state. */
@@ -22,7 +25,9 @@ export const elapsedDurationMs = (
   now?: TimerNow,
 ): number => {
   const readNow = resolveNow(now);
-  return state.accumulatedDurationMs + activeElapsedMs(state, readNow);
+  return roundDurationMs(
+    state.accumulatedDurationMs + activeElapsedMs(state, readNow),
+  );
 };
 
 export const createIdleTimer = (): TimerState => ({

@@ -23,7 +23,7 @@ const resolveDurationMs = (
     return storedDurationMs;
   }
 
-  return elapsedDurationMs(timer, now);
+  return Math.round(elapsedDurationMs(timer, now));
 };
 
 const toSyncClimbEntry = (
@@ -87,7 +87,7 @@ export const buildSyncSessionPayload = (
     location: form.location ?? undefined,
     startTime: form.startTime,
     endTime: form.endTime,
-    totalDurationMs: form.totalDurationMs,
+    totalDurationMs: Math.round(form.totalDurationMs),
     notes: form.notes,
     entries: form.entries.map((entry) => toSyncEntry(entry, now)),
   };

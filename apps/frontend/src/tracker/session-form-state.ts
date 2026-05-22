@@ -91,9 +91,9 @@ export const stopSession = (
 
   const endInstant = now();
   const startInstant = Temporal.Instant.from(form.startTime);
-  const totalDurationMs = endInstant
-    .since(startInstant)
-    .total({ unit: 'milliseconds' });
+  const totalDurationMs = Math.round(
+    endInstant.since(startInstant).total({ unit: 'milliseconds' }),
+  );
 
   return {
     ...form,
