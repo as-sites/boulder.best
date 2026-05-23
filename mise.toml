@@ -147,7 +147,7 @@ depends = ["lint", "format", "typecheck"]
 # Requires `gh auth login` (github) and `wrangler` auth via LOCAL_CLOUDFLARE_API_TOKEN or `wrangler login` (cloudflare).
 
 [tasks."secrets:sync"]
-description = "Push .env secrets to GitHub Actions and the production API Worker"
+description = "Push .env to GitHub Actions (incl. CLOUDFLARE_ZONE_ID) and production API Worker secrets"
 depends = ["secrets:sync:github", "secrets:sync:cloudflare"]
 
 [tasks."secrets:sync:github"]

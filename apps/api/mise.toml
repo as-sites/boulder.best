@@ -79,6 +79,45 @@ alias = ["api:r2:cors:list"]
 description = "List current CORS rules for the R2 bucket"
 run = "wrangler r2 bucket cors list boulder-dot-best"
 
+[tasks."r2:domain:add"]
+alias = ["api:r2:domain:add"]
+description = "Connect cdn.boulder.best to the production R2 bucket (requires CLOUDFLARE_ZONE_ID)"
+run = '''
+: "${CLOUDFLARE_ZONE_ID:?CLOUDFLARE_ZONE_ID is required (zone overview for boulder.best)}"
+wrangler r2 bucket domain add boulder-dot-best --domain cdn.boulder.best --zone-id "$CLOUDFLARE_ZONE_ID" --force
+'''
+run_windows = [
+  "if not defined CLOUDFLARE_ZONE_ID (echo CLOUDFLARE_ZONE_ID is required (zone overview for boulder.best) 1>&2 & exit /b 1)",
+  "wrangler r2 bucket domain add boulder-dot-best --domain cdn.boulder.best --zone-id %CLOUDFLARE_ZONE_ID% --force",
+]
+
+[tasks."r2:domain:ensure"]
+alias = ["api:r2:domain:ensure"]
+description = "Idempotently connect cdn.boulder.best (requires CLOUDFLARE_ZONE_ID)"
+run = '''
+: "${CLOUDFLARE_ZONE_ID:?CLOUDFLARE_ZONE_ID is required (zone overview for boulder.best)}"
+if wrangler r2 bucket domain get boulder-dot-best --domain cdn.boulder.best >/dev/null 2>&1; then
+  echo "Custom domain cdn.boulder.best already connected to boulder-dot-best"
+else
+  wrangler r2 bucket domain add boulder-dot-best --domain cdn.boulder.best --zone-id "$CLOUDFLARE_ZONE_ID" --force
+fi
+'''
+run_windows = [
+  "if not defined CLOUDFLARE_ZONE_ID (echo CLOUDFLARE_ZONE_ID is required (zone overview for boulder.best) 1>&2 & exit /b 1)",
+  "wrangler r2 bucket domain get boulder-dot-best --domain cdn.boulder.best >nul 2>&1",
+  "if errorlevel 1 (wrangler r2 bucket domain add boulder-dot-best --domain cdn.boulder.best --zone-id %CLOUDFLARE_ZONE_ID% --force) else (echo Custom domain cdn.boulder.best already connected to boulder-dot-best)",
+]
+
+[tasks."r2:domain:list"]
+alias = ["api:r2:domain:list"]
+description = "List custom domains connected to the production R2 bucket"
+run = "wrangler r2 bucket domain list boulder-dot-best"
+
+[tasks."r2:sync"]
+alias = ["api:r2:sync"]
+description = "Apply R2 public domain (idempotent) and CORS rules from repo config"
+depends = ["r2:domain:ensure", "r2:cors:apply"]
+
 [tasks."auth:generate-schema"]
 alias = ["api:auth:generate-schema"]
 description = "Regenerate better-auth Drizzle schema (re-run after adding plugins)"

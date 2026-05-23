@@ -128,11 +128,12 @@ PUBLIC_PHOTO_URL_BASE=https://cdn.boulder.best
 ```
 
 Fill in the repo root `.env` (see `.env.example`), then sync secrets from your
-machine (mise loads `.env` automatically):
+machine (mise loads `.env` automatically). `secrets:sync:github` pushes
+`CLOUDFLARE_ZONE_ID` (for deploy `api:r2:sync`) along with other CI secrets:
 
 ```powershell
 mise run secrets:sync              # GitHub Actions + Cloudflare API Worker
-mise run secrets:sync:github       # repository secrets only
+mise run secrets:sync:github       # repository secrets only (incl. CLOUDFLARE_ZONE_ID)
 mise run secrets:sync:cloudflare   # production API Worker secrets only
 ```
 
@@ -167,8 +168,8 @@ maintenance task explicitly needs a direct connection string.
 
 R2 public URLs are **not** a Worker binding in `wrangler.jsonc`. The bucket stays
 bound as `MEDIA_BUCKET` for uploads; browsers read objects via `PUBLIC_PHOTO_URL_BASE`
-(`https://cdn.boulder.best`), configured in `apps/api/r2-public.json` and
-`apps/api/wrangler.jsonc`.
+(`https://cdn.boulder.best`), configured in `apps/api/wrangler.jsonc` and
+`apps/api/mise.toml` (`api:r2:domain:*` tasks).
 
 After the bucket exists, set `CLOUDFLARE_ZONE_ID` in `.env` (zone overview in the
 dashboard), then connect the custom domain from git:
