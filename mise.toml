@@ -144,7 +144,7 @@ depends = ["lint", "format", "typecheck"]
 # Sync repo root `.env` to GitHub Actions and the production API Worker.
 # GitHub: CLOUDFLARE_* (incl. CLOUDFLARE_ZONE_ID for R2 custom domain), DATABASE_URL, Sentry.
 # Worker: DATABASE_URL, auth/OAuth, R2 keys, SENTRY_DSN_API (secrets:sync:cloudflare).
-# Requires `gh auth login` (github) and `wrangler` auth via LOCAL_CLOUDFLARE_API_TOKEN or `wrangler login` (cloudflare).
+# Requires GITHUB_TOKEN or `gh auth login` (GitHub) and LOCAL_CLOUDFLARE_API_TOKEN (Cloudflare).
 
 [tasks."secrets:sync"]
 description = "Push .env to GitHub Actions (incl. CLOUDFLARE_ZONE_ID) and production API Worker secrets"
@@ -152,46 +152,7 @@ depends = ["secrets:sync:github", "secrets:sync:cloudflare"]
 
 [tasks."secrets:sync:github"]
 description = "Push GitHub Actions secrets from .env (LOCAL_CLOUDFLARE_API_TOKEN → CLOUDFLARE_API_TOKEN in GH, plus account/zone/DB/Sentry)"
-run = [
-  ': "${LOCAL_CLOUDFLARE_API_TOKEN:?LOCAL_CLOUDFLARE_API_TOKEN is not set}"',
-  ': "${CLOUDFLARE_ACCOUNT_ID:?CLOUDFLARE_ACCOUNT_ID is not set}"',
-  ': "${CLOUDFLARE_ZONE_ID:?CLOUDFLARE_ZONE_ID is not set}"',
-  ': "${DATABASE_URL:?DATABASE_URL is not set}"',
-  ': "${VITE_SENTRY_DSN_FRONTEND:?VITE_SENTRY_DSN_FRONTEND is not set}"',
-  ': "${SENTRY_AUTH_TOKEN:?SENTRY_AUTH_TOKEN is not set}"',
-  ': "${SENTRY_ORG:?SENTRY_ORG is not set}"',
-  ': "${SENTRY_PROJECT_FRONTEND:?SENTRY_PROJECT_FRONTEND is not set}"',
-  ': "${SENTRY_PROJECT_API:?SENTRY_PROJECT_API is not set}"',
-  'gh secret set CLOUDFLARE_API_TOKEN --body "$LOCAL_CLOUDFLARE_API_TOKEN"',
-  'gh secret set CLOUDFLARE_ACCOUNT_ID --body "$CLOUDFLARE_ACCOUNT_ID"',
-  'gh secret set CLOUDFLARE_ZONE_ID --body "$CLOUDFLARE_ZONE_ID"',
-  'gh secret set DATABASE_URL --body "$DATABASE_URL"',
-  'gh secret set VITE_SENTRY_DSN_FRONTEND --body "$VITE_SENTRY_DSN_FRONTEND"',
-  'gh secret set SENTRY_AUTH_TOKEN --body "$SENTRY_AUTH_TOKEN"',
-  'gh secret set SENTRY_ORG --body "$SENTRY_ORG"',
-  'gh secret set SENTRY_PROJECT_FRONTEND --body "$SENTRY_PROJECT_FRONTEND"',
-  'gh secret set SENTRY_PROJECT_API --body "$SENTRY_PROJECT_API"',
-]
-run_windows = [
-  "if not defined LOCAL_CLOUDFLARE_API_TOKEN (echo LOCAL_CLOUDFLARE_API_TOKEN is not set 1>&2 & exit /b 1)",
-  "if not defined CLOUDFLARE_ACCOUNT_ID (echo CLOUDFLARE_ACCOUNT_ID is not set 1>&2 & exit /b 1)",
-  "if not defined CLOUDFLARE_ZONE_ID (echo CLOUDFLARE_ZONE_ID is not set 1>&2 & exit /b 1)",
-  "if not defined DATABASE_URL (echo DATABASE_URL is not set 1>&2 & exit /b 1)",
-  "if not defined VITE_SENTRY_DSN_FRONTEND (echo VITE_SENTRY_DSN_FRONTEND is not set 1>&2 & exit /b 1)",
-  "if not defined SENTRY_AUTH_TOKEN (echo SENTRY_AUTH_TOKEN is not set 1>&2 & exit /b 1)",
-  "if not defined SENTRY_ORG (echo SENTRY_ORG is not set 1>&2 & exit /b 1)",
-  "if not defined SENTRY_PROJECT_FRONTEND (echo SENTRY_PROJECT_FRONTEND is not set 1>&2 & exit /b 1)",
-  "if not defined SENTRY_PROJECT_API (echo SENTRY_PROJECT_API is not set 1>&2 & exit /b 1)",
-  'gh secret set CLOUDFLARE_API_TOKEN --body "%LOCAL_CLOUDFLARE_API_TOKEN%"',
-  'gh secret set CLOUDFLARE_ACCOUNT_ID --body "%CLOUDFLARE_ACCOUNT_ID%"',
-  'gh secret set CLOUDFLARE_ZONE_ID --body "%CLOUDFLARE_ZONE_ID%"',
-  'gh secret set DATABASE_URL --body "%DATABASE_URL%"',
-  'gh secret set VITE_SENTRY_DSN_FRONTEND --body "%VITE_SENTRY_DSN_FRONTEND%"',
-  'gh secret set SENTRY_AUTH_TOKEN --body "%SENTRY_AUTH_TOKEN%"',
-  'gh secret set SENTRY_ORG --body "%SENTRY_ORG%"',
-  'gh secret set SENTRY_PROJECT_FRONTEND --body "%SENTRY_PROJECT_FRONTEND%"',
-  'gh secret set SENTRY_PROJECT_API --body "%SENTRY_PROJECT_API%"',
-]
+run = 'node scripts/secrets-sync-github.ts'
 
 # Create a scoped API token for wrangler deploy, R2 sync, and secrets:sync:github.
 # Requires CLOUDFLARE_MASTER_TOKEN in .env.secret (account-owned cfat_* token that can create tokens).
@@ -204,53 +165,11 @@ run = 'node scripts/cloudflare-create-api-token.ts'
 env.'_'.file = { path = ".env.secret", redact = true }
 
 [tasks."secrets:sync:cloudflare"]
-description = "Push production API Worker secrets to Cloudflare from .env (requires wrangler)"
-dir = "apps/api"
-run = [
-  ': "${DATABASE_URL:?DATABASE_URL is not set}"',
-  ': "${BETTER_AUTH_SECRET:?BETTER_AUTH_SECRET is not set}"',
-  ': "${R2_ACCOUNT_ID:?R2_ACCOUNT_ID is not set}"',
-  ': "${R2_ACCESS_KEY_ID:?R2_ACCESS_KEY_ID is not set}"',
-  ': "${R2_SECRET_ACCESS_KEY:?R2_SECRET_ACCESS_KEY is not set}"',
-  ': "${GOOGLE_CLIENT_ID:?GOOGLE_CLIENT_ID is not set}"',
-  ': "${GOOGLE_CLIENT_SECRET:?GOOGLE_CLIENT_SECRET is not set}"',
-  ': "${RESEND_API_KEY:?RESEND_API_KEY is not set}"',
-  ': "${DISCORD_CLIENT_ID:?DISCORD_CLIENT_ID is not set}"',
-  ': "${DISCORD_CLIENT_SECRET:?DISCORD_CLIENT_SECRET is not set}"',
-  ': "${SENTRY_DSN_API:?SENTRY_DSN_API is not set}"',
-  'printf %s "$DATABASE_URL" | wrangler secret put DATABASE_URL --env production',
-  'printf %s "$BETTER_AUTH_SECRET" | wrangler secret put BETTER_AUTH_SECRET --env production',
-  'printf %s "$R2_ACCOUNT_ID" | wrangler secret put R2_ACCOUNT_ID --env production',
-  'printf %s "$R2_ACCESS_KEY_ID" | wrangler secret put R2_ACCESS_KEY_ID --env production',
-  'printf %s "$R2_SECRET_ACCESS_KEY" | wrangler secret put R2_SECRET_ACCESS_KEY --env production',
-  'printf %s "$GOOGLE_CLIENT_ID" | wrangler secret put GOOGLE_CLIENT_ID --env production',
-  'printf %s "$GOOGLE_CLIENT_SECRET" | wrangler secret put GOOGLE_CLIENT_SECRET --env production',
-  'printf %s "$RESEND_API_KEY" | wrangler secret put RESEND_API_KEY --env production',
-  'printf %s "$DISCORD_CLIENT_ID" | wrangler secret put DISCORD_CLIENT_ID --env production',
-  'printf %s "$DISCORD_CLIENT_SECRET" | wrangler secret put DISCORD_CLIENT_SECRET --env production',
-  'printf %s "$SENTRY_DSN_API" | wrangler secret put SENTRY_DSN_API --env production',
-]
-run_windows = [
-  "if not defined DATABASE_URL (echo DATABASE_URL is not set 1>&2 & exit /b 1)",
-  "if not defined BETTER_AUTH_SECRET (echo BETTER_AUTH_SECRET is not set 1>&2 & exit /b 1)",
-  "if not defined R2_ACCOUNT_ID (echo R2_ACCOUNT_ID is not set 1>&2 & exit /b 1)",
-  "if not defined R2_ACCESS_KEY_ID (echo R2_ACCESS_KEY_ID is not set 1>&2 & exit /b 1)",
-  "if not defined R2_SECRET_ACCESS_KEY (echo R2_SECRET_ACCESS_KEY is not set 1>&2 & exit /b 1)",
-  "if not defined GOOGLE_CLIENT_ID (echo GOOGLE_CLIENT_ID is not set 1>&2 & exit /b 1)",
-  "if not defined GOOGLE_CLIENT_SECRET (echo GOOGLE_CLIENT_SECRET is not set 1>&2 & exit /b 1)",
-  "if not defined RESEND_API_KEY (echo RESEND_API_KEY is not set 1>&2 & exit /b 1)",
-  "if not defined DISCORD_CLIENT_ID (echo DISCORD_CLIENT_ID is not set 1>&2 & exit /b 1)",
-  "if not defined DISCORD_CLIENT_SECRET (echo DISCORD_CLIENT_SECRET is not set 1>&2 & exit /b 1)",
-  "if not defined SENTRY_DSN_API (echo SENTRY_DSN_API is not set 1>&2 & exit /b 1)",
-  'powershell -NoProfile -Command "$env:DATABASE_URL | wrangler secret put DATABASE_URL --env production"',
-  'powershell -NoProfile -Command "$env:BETTER_AUTH_SECRET | wrangler secret put BETTER_AUTH_SECRET --env production"',
-  'powershell -NoProfile -Command "$env:R2_ACCOUNT_ID | wrangler secret put R2_ACCOUNT_ID --env production"',
-  'powershell -NoProfile -Command "$env:R2_ACCESS_KEY_ID | wrangler secret put R2_ACCESS_KEY_ID --env production"',
-  'powershell -NoProfile -Command "$env:R2_SECRET_ACCESS_KEY | wrangler secret put R2_SECRET_ACCESS_KEY --env production"',
-  'powershell -NoProfile -Command "$env:GOOGLE_CLIENT_ID | wrangler secret put GOOGLE_CLIENT_ID --env production"',
-  'powershell -NoProfile -Command "$env:GOOGLE_CLIENT_SECRET | wrangler secret put GOOGLE_CLIENT_SECRET --env production"',
-  'powershell -NoProfile -Command "$env:RESEND_API_KEY | wrangler secret put RESEND_API_KEY --env production"',
-  'powershell -NoProfile -Command "$env:DISCORD_CLIENT_ID | wrangler secret put DISCORD_CLIENT_ID --env production"',
-  'powershell -NoProfile -Command "$env:DISCORD_CLIENT_SECRET | wrangler secret put DISCORD_CLIENT_SECRET --env production"',
-  'powershell -NoProfile -Command "$env:SENTRY_DSN_API | wrangler secret put SENTRY_DSN_API --env production"',
-]
+description = "Push production API Worker secrets to Cloudflare from .env"
+run = 'node scripts/secrets-sync-cloudflare.ts'
+
+
+[tasks.wrangler-whois-token]
+description = "Verify the LOCAL_CLOUDFLARE_API_TOKEN is valid"
+env.CLOUDFLARE_API_TOKEN = "{{ env.LOCAL_CLOUDFLARE_API_TOKEN }}"
+run = 'wrangler whoami'

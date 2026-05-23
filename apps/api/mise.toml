@@ -2,6 +2,7 @@
 alias = ["api:dev"]
 description = "Start the API Worker dev server"
 run = "wrangler dev --env dev"
+raw = true
 
 [tasks.build]
 alias = ["api:build"]
