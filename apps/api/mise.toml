@@ -6,12 +6,35 @@ run = "wrangler dev --env dev"
 [tasks.build]
 alias = ["api:build"]
 description = "Bundle the API Worker without deploying"
-run = "wrangler build --env production"
+run = "wrangler deploy --env production --dry-run --outdir dist"
 
 [tasks.deploy]
 alias = ["api:deploy"]
 description = "Deploy the API Worker"
-run = "wrangler deploy --env production"
+run = 'wrangler deploy --env production --outdir dist --var "SENTRY_RELEASE_API:{{ env.SENTRY_RELEASE_API | default(value=env.GITHUB_SHA | default(value="")) }}"'
+
+[tasks."sentry:sourcemaps"]
+alias = ["api:sentry:sourcemaps"]
+description = "Upload API Worker source maps to Sentry (no-op without SENTRY_AUTH_TOKEN)"
+env.SENTRY_RELEASE_API = "{{ env.SENTRY_RELEASE_API | default(value=env.GITHUB_SHA | default(value='')) }}"
+run = [
+  '[ -n "${SENTRY_AUTH_TOKEN:-}" ] || exit 0',
+  ': "${SENTRY_ORG:?SENTRY_ORG is required}"',
+  ': "${SENTRY_PROJECT_API:?SENTRY_PROJECT_API is required}"',
+  ': "${SENTRY_RELEASE_API:?SENTRY_RELEASE_API is required}"',
+  'test -d dist || { echo "dist/ missing — run api:deploy first" >&2; exit 1; }',
+  'sentry-cli releases new "$SENTRY_RELEASE_API" --org "$SENTRY_ORG" --project "$SENTRY_PROJECT_API" || true',
+  'sentry-cli sourcemaps upload --org "$SENTRY_ORG" --project "$SENTRY_PROJECT_API" --release "$SENTRY_RELEASE_API" dist',
+]
+run_windows = [
+  "if not defined SENTRY_AUTH_TOKEN exit /b 0",
+  "if not defined SENTRY_ORG (echo SENTRY_ORG is required 1>&2 & exit /b 1)",
+  "if not defined SENTRY_PROJECT_API (echo SENTRY_PROJECT_API is required 1>&2 & exit /b 1)",
+  "if not defined SENTRY_RELEASE_API (echo SENTRY_RELEASE_API is required 1>&2 & exit /b 1)",
+  "if not exist dist (echo dist/ missing - run api:deploy first 1>&2 & exit /b 1)",
+  "sentry-cli releases new %SENTRY_RELEASE_API% --org %SENTRY_ORG% --project %SENTRY_PROJECT_API || exit /b 0",
+  "sentry-cli sourcemaps upload --org %SENTRY_ORG% --project %SENTRY_PROJECT_API --release %SENTRY_RELEASE_API% dist",
+]
 
 [tasks.typecheck]
 description = "Typecheck the API Worker"

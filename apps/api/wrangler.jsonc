@@ -4,6 +4,7 @@
   "main": "src/index.ts",
   "compatibility_date": "2026-05-13",
   "compatibility_flags": ["nodejs_compat"],
+  "upload_source_maps": true,
   "env": {
     "dev": {
       "name": "boulder-api-dev",
@@ -74,7 +75,8 @@
           "GOOGLE_CLIENT_SECRET",
           "RESEND_API_KEY",
           "DISCORD_CLIENT_ID",
-          "DISCORD_CLIENT_SECRET"
+          "DISCORD_CLIENT_SECRET",
+          "SENTRY_DSN_API"
         ]
       }
     }

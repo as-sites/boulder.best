@@ -13,6 +13,33 @@ alias = ["frontend:build"]
 description = "Build the frontend Worker static assets app"
 run = "vite build"
 env.CLOUDFLARE_ENV = "production"
+# Matches the git SHA used as Sentry release in CI (deploy workflow sets GITHUB_SHA).
+env.VITE_SENTRY_RELEASE_FRONTEND = "{{ env.GITHUB_SHA | default(value='') }}"
+# Source maps upload during this task when SENTRY_AUTH_TOKEN is set (@sentry/vite-plugin).
+
+[tasks."sentry:sourcemaps"]
+alias = ["frontend:sentry:sourcemaps"]
+description = "Upload frontend source maps to Sentry (no-op without SENTRY_AUTH_TOKEN; normally runs during frontend:build)"
+depends = ["build"]
+env.VITE_SENTRY_RELEASE_FRONTEND = "{{ env.VITE_SENTRY_RELEASE_FRONTEND | default(value=env.GITHUB_SHA | default(value='')) }}"
+run = [
+  '[ -n "${SENTRY_AUTH_TOKEN:-}" ] || exit 0',
+  ': "${SENTRY_ORG:?SENTRY_ORG is required}"',
+  ': "${SENTRY_PROJECT_FRONTEND:?SENTRY_PROJECT_FRONTEND is required}"',
+  ': "${VITE_SENTRY_RELEASE_FRONTEND:?VITE_SENTRY_RELEASE_FRONTEND is required}"',
+  'test -d dist/assets || { echo "dist/assets/ missing — run frontend:build first" >&2; exit 1; }',
+  'sentry-cli releases new "$VITE_SENTRY_RELEASE_FRONTEND" --org "$SENTRY_ORG" --project "$SENTRY_PROJECT_FRONTEND" || true',
+  'sentry-cli sourcemaps upload --org "$SENTRY_ORG" --project "$SENTRY_PROJECT_FRONTEND" --release "$VITE_SENTRY_RELEASE_FRONTEND" dist/assets',
+]
+run_windows = [
+  "if not defined SENTRY_AUTH_TOKEN exit /b 0",
+  "if not defined SENTRY_ORG (echo SENTRY_ORG is required 1>&2 & exit /b 1)",
+  "if not defined SENTRY_PROJECT_FRONTEND (echo SENTRY_PROJECT_FRONTEND is required 1>&2 & exit /b 1)",
+  "if not defined VITE_SENTRY_RELEASE_FRONTEND (echo VITE_SENTRY_RELEASE_FRONTEND is required 1>&2 & exit /b 1)",
+  "if not exist dist\\assets (echo dist/assets/ missing - run frontend:build first 1>&2 & exit /b 1)",
+  "sentry-cli releases new %VITE_SENTRY_RELEASE_FRONTEND% --org %SENTRY_ORG% --project %SENTRY_PROJECT_FRONTEND% || exit /b 0",
+  "sentry-cli sourcemaps upload --org %SENTRY_ORG% --project %SENTRY_PROJECT_FRONTEND% --release %VITE_SENTRY_RELEASE_FRONTEND% dist/assets",
+]
 
 [tasks.preview]
 alias = ["frontend:preview"]

@@ -8,12 +8,15 @@
     "@boulder/auth": "workspace:*",
     "@hono/zod-openapi": "1.4.0",
     "@neondatabase/serverless": "^1.1.0",
+    "@sentry/cloudflare": "10.53.1",
+    "@sentry/hono": "10.53.1",
     "drizzle-orm": "^0.45.2",
     "hono": "catalog:",
     "s3mini": "0.9.4",
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@sentry/cli": "2.58.6",
     "drizzle-kit": "0.31.10",
     "wrangler": "catalog:"
   }

@@ -1,8 +1,17 @@
 import { cloudflare } from '@cloudflare/vite-plugin';
+import { sentryVitePlugin } from '@sentry/vite-plugin';
 import react from '@vitejs/plugin-react';
 import { defineConfig, type Plugin } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 import { renderColorSchemeScriptMarkup } from './vite/render-color-scheme-script.js';
+
+const {
+  SENTRY_AUTH_TOKEN: sentryAuthToken,
+  VITE_SENTRY_RELEASE_FRONTEND: sentryRelease,
+  SENTRY_ORG: sentryOrg,
+  SENTRY_PROJECT_FRONTEND: sentryProjectFrontend,
+  // oxlint-disable-next-line node/no-process-env
+} = process.env;
 
 const colorSchemeBootstrapPlugin = (): Plugin => ({
   name: 'color-scheme-bootstrap',
@@ -11,6 +20,9 @@ const colorSchemeBootstrapPlugin = (): Plugin => ({
 });
 
 export default defineConfig({
+  build: {
+    sourcemap: true,
+  },
   plugins: [
     colorSchemeBootstrapPlugin(),
     react(),
@@ -47,6 +59,21 @@ export default defineConfig({
       },
     }),
     cloudflare(),
+    ...(sentryAuthToken
+      ? [
+          sentryVitePlugin({
+            authToken: sentryAuthToken,
+            ...(sentryOrg ? { org: sentryOrg } : {}),
+            ...(sentryProjectFrontend
+              ? { project: sentryProjectFrontend }
+              : {}),
+            telemetry: false,
+            ...(sentryRelease
+              ? { release: { name: sentryRelease, inject: true } }
+              : {}),
+          }),
+        ]
+      : []),
   ],
   server: {
     proxy: {

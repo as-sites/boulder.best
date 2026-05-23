@@ -7,7 +7,8 @@ const OFFLINE_ERROR_PATTERNS = [
   /^NetworkError when attempting to fetch resource\.?$/i,
 ];
 
-const dsn = import.meta.env.VITE_SENTRY_DSN;
+const { VITE_SENTRY_DSN_FRONTEND: dsn, VITE_SENTRY_RELEASE_FRONTEND: release } =
+  import.meta.env;
 
 export const initSentry = (): void => {
   if (!dsn) {
@@ -16,6 +17,7 @@ export const initSentry = (): void => {
 
   Sentry.init({
     dsn,
+    ...(release ? { release } : {}),
     tracesSampleRate: 0,
     ignoreErrors: OFFLINE_ERROR_PATTERNS,
   });

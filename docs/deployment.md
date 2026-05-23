@@ -63,6 +63,31 @@ The production frontend defaults to same-origin API/auth calls. Only set
 `VITE_API_BASE_URL` for preview environments that intentionally call a different
 API origin.
 
+### Sentry (optional)
+
+Production builds emit browser source maps and, when CI secrets are set, upload
+them to Sentry during `frontend:build` (see `.github/workflows/deploy.yml`).
+
+| Variable                       | Where              | Purpose                                    |
+| ------------------------------ | ------------------ | ------------------------------------------ |
+| `VITE_SENTRY_DSN_FRONTEND`     | CI secret → build  | Enables the browser SDK                    |
+| `VITE_SENTRY_RELEASE_FRONTEND` | CI (`GITHUB_SHA`)  | Frontend release id; must match map upload |
+| `SENTRY_AUTH_TOKEN`            | CI secret → build  | Uploads source maps (frontend + API)       |
+| `SENTRY_ORG`                   | CI secret → build  | Organization slug                          |
+| `SENTRY_PROJECT_FRONTEND`      | CI secret → build  | Frontend project slug                      |
+| `SENTRY_PROJECT_API`           | CI secret → deploy | API project slug (source map upload)       |
+| `SENTRY_DSN_API`               | Worker secret      | API runtime DSN (`wrangler secret put`)    |
+| `SENTRY_RELEASE_API`           | CI (`GITHUB_SHA`)  | API release id for maps + runtime events   |
+
+Set the same values in the repo root `.env` to test uploads locally with
+`mise run frontend:build` (uploads via `@sentry/vite-plugin`) or
+`mise run frontend:sentry:sourcemaps` to re-upload without rebuilding. For the API,
+use `mise run api:deploy` then `mise run api:sentry:sourcemaps`.
+
+The API uses [`@sentry/hono`](https://docs.sentry.io/platforms/javascript/guides/hono/)
+on Cloudflare Workers (`nodejs_compat` is already enabled). Production deploys set
+`upload_source_maps` in `apps/api/wrangler.jsonc` and upload artifacts after deploy.
+
 ## API Worker
 
 `apps/api/wrangler.jsonc` defines the production route
@@ -79,6 +104,7 @@ GOOGLE_CLIENT_SECRET
 RESEND_API_KEY
 DISCORD_CLIENT_ID
 DISCORD_CLIENT_SECRET
+SENTRY_DSN_API
 ```
 
 Required non-secret production vars:
@@ -91,15 +117,19 @@ PASSKEY_ORIGIN=https://boulder.best
 PUBLIC_PHOTO_URL_BASE=https://cdn.boulder.best
 ```
 
-Fill in the repo root `.env` (see `.env.example`), then sync all API secrets at
-once:
+Fill in the repo root `.env` (see `.env.example`), then sync secrets from your
+machine (mise loads `.env` automatically):
 
 ```powershell
-mise run api:secrets:sync
+mise run secrets:sync              # GitHub Actions + Cloudflare API Worker
+mise run secrets:sync:github       # repository secrets only
+mise run secrets:sync:cloudflare   # production API Worker secrets only
 ```
 
-That reads `.env` and runs `wrangler secret bulk` for the production API
-Worker. You can still set secrets individually from `apps/api` if needed:
+Requires `gh auth login` for GitHub and `wrangler` auth (`CLOUDFLARE_API_TOKEN` in
+`.env` or `wrangler login`) for Cloudflare.
+
+To set a single API Worker secret from `apps/api`:
 
 ```powershell
 wrangler secret put DATABASE_URL --env production

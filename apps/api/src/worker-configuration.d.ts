@@ -3,6 +3,10 @@ import type { AuthEnvBindings } from '@boulder/auth';
 
 declare global {
   type CloudflareBindings = AuthEnvBindings & {
+    /** Sentry DSN (Worker secret). Omit in tests/local when Sentry is disabled. */
+    SENTRY_DSN_API?: string;
+    /** Release id (deploy injects git SHA via `wrangler deploy --var`). */
+    SENTRY_RELEASE_API?: string;
     /** R2 bucket for session photo storage */
     MEDIA_BUCKET: R2Bucket;
     /** Base URL for public photo access, e.g. https://cdn.boulder.best */

@@ -4,10 +4,12 @@ import {
   type AuthEnvBindings,
   type AuthServer,
 } from '@boulder/auth';
+import { sentry } from '@sentry/hono/cloudflare';
 import { Hono, type Context, type MiddlewareHandler } from 'hono';
 import { cors } from 'hono/cors';
 import { getDb } from './db/index.js';
 import { listGyms as loadGyms } from './gyms/list-gyms.js';
+import { createApiSentryOptions } from './lib/sentry.js';
 import {
   getSessionDetail as loadSessionDetail,
   listSessions as loadSessionHistory,
@@ -155,6 +157,13 @@ interface CreateApiAppOptions {
 export const createApiApp = (options: CreateApiAppOptions = {}) => {
   const createAuthServer = options.createAuthServer ?? createAuth;
   const app = new Hono<ApiEnv>();
+
+  app.use(
+    sentry(
+      app,
+      (env) => createApiSentryOptions(env) ?? { dsn: '', tracesSampleRate: 0 },
+    ),
+  );
 
   app.use(
     '/api/auth/*',

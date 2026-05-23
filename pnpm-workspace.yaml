@@ -37,6 +37,7 @@ saveExact: true
 sideEffectsCache: false
 blockExoticSubdeps: true
 allowBuilds:
+  '@sentry/cli': true
   esbuild: true
   sharp: true
   workerd: true
