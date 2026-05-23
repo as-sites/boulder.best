@@ -59,14 +59,12 @@ export default defineConfig({
       },
     }),
     cloudflare(),
-    ...(sentryAuthToken
+    ...(sentryAuthToken && sentryOrg && sentryProjectFrontend
       ? [
           sentryVitePlugin({
             authToken: sentryAuthToken,
-            ...(sentryOrg ? { org: sentryOrg } : {}),
-            ...(sentryProjectFrontend
-              ? { project: sentryProjectFrontend }
-              : {}),
+            org: sentryOrg,
+            project: sentryProjectFrontend,
             telemetry: false,
             ...(sentryRelease
               ? { release: { name: sentryRelease, inject: true } }

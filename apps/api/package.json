@@ -17,7 +17,6 @@
   },
   "devDependencies": {
     "@sentry/cli": "2.58.6",
-    "drizzle-kit": "0.31.10",
-    "wrangler": "catalog:"
+    "drizzle-kit": "0.31.10"
   }
 }

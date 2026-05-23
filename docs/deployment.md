@@ -12,6 +12,16 @@ Workers are created on first deploy. Wrangler resolves the target account from
 **Local:** add to the repo root `.env` (see `.env.example`), or run
 `wrangler login` and `wrangler whoami`.
 
+To mint a scoped deploy token (Workers, Routes, R2, DNS for `boulder.best`):
+
+```powershell
+# .env.secret: CLOUDFLARE_MASTER_TOKEN (account-owned cfat_* token from Account API Tokens)
+# .env: CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_ZONE_ID
+mise run cloudflare:token:create
+```
+
+Copy the printed `LOCAL_CLOUDFLARE_API_TOKEN` into `.env`.
+
 **CI:** set the `CLOUDFLARE_ACCOUNT_ID` repository secret (see `.github/workflows/deploy.yml`).
 
 ```powershell
@@ -126,8 +136,8 @@ mise run secrets:sync:github       # repository secrets only
 mise run secrets:sync:cloudflare   # production API Worker secrets only
 ```
 
-Requires `gh auth login` for GitHub and `wrangler` auth (`CLOUDFLARE_API_TOKEN` in
-`.env` or `wrangler login`) for Cloudflare.
+Requires `gh auth login` for GitHub and `wrangler` auth (`LOCAL_CLOUDFLARE_API_TOKEN` in
+`.env` for secret sync, or `wrangler login`) for Cloudflare.
 
 To set a single API Worker secret from `apps/api`:
 

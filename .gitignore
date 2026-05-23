@@ -20,3 +20,4 @@ dist/
 coverage
 test-results/
 .env
+.env.secret

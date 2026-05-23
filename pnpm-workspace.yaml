@@ -9,7 +9,6 @@ catalog:
   '@types/react-dom': 19.2.3
   '@types/node': 24.12.3
   zod: 4.4.3
-  wrangler: 4.93.0
   hono: 4.12.21
 
 catalogs:
