@@ -142,7 +142,7 @@ description = "Run all checks for the workspace"
 depends = ["lint", "format", "typecheck"]
 
 # Sync repo root `.env` to GitHub Actions and the production API Worker.
-# GitHub: CLOUDFLARE_* (incl. CLOUDFLARE_ZONE_ID for R2 custom domain), DATABASE_URL, Sentry.
+# GitHub: CLOUDFLARE_* (incl. CLOUDFLARE_ZONE_ID for R2 custom domain), DATABASE_URL, Sentry (both DSNs).
 # Worker: DATABASE_URL, auth/OAuth, R2 keys, SENTRY_DSN_API (secrets:sync:cloudflare).
 # Requires `gh auth login` (github) and `wrangler` auth via LOCAL_CLOUDFLARE_API_TOKEN or `wrangler login` (cloudflare).
 
@@ -162,6 +162,7 @@ run = [
   ': "${SENTRY_ORG:?SENTRY_ORG is not set}"',
   ': "${SENTRY_PROJECT_FRONTEND:?SENTRY_PROJECT_FRONTEND is not set}"',
   ': "${SENTRY_PROJECT_API:?SENTRY_PROJECT_API is not set}"',
+  ': "${SENTRY_DSN_API:?SENTRY_DSN_API is not set}"',
   'gh secret set CLOUDFLARE_API_TOKEN --body "$LOCAL_CLOUDFLARE_API_TOKEN"',
   'gh secret set CLOUDFLARE_ACCOUNT_ID --body "$CLOUDFLARE_ACCOUNT_ID"',
   'gh secret set CLOUDFLARE_ZONE_ID --body "$CLOUDFLARE_ZONE_ID"',
@@ -171,6 +172,7 @@ run = [
   'gh secret set SENTRY_ORG --body "$SENTRY_ORG"',
   'gh secret set SENTRY_PROJECT_FRONTEND --body "$SENTRY_PROJECT_FRONTEND"',
   'gh secret set SENTRY_PROJECT_API --body "$SENTRY_PROJECT_API"',
+  'gh secret set SENTRY_DSN_API --body "$SENTRY_DSN_API"',
 ]
 run_windows = [
   "if not defined LOCAL_CLOUDFLARE_API_TOKEN (echo LOCAL_CLOUDFLARE_API_TOKEN is not set 1>&2 & exit /b 1)",
@@ -182,6 +184,7 @@ run_windows = [
   "if not defined SENTRY_ORG (echo SENTRY_ORG is not set 1>&2 & exit /b 1)",
   "if not defined SENTRY_PROJECT_FRONTEND (echo SENTRY_PROJECT_FRONTEND is not set 1>&2 & exit /b 1)",
   "if not defined SENTRY_PROJECT_API (echo SENTRY_PROJECT_API is not set 1>&2 & exit /b 1)",
+  "if not defined SENTRY_DSN_API (echo SENTRY_DSN_API is not set 1>&2 & exit /b 1)",
   'gh secret set CLOUDFLARE_API_TOKEN --body "%LOCAL_CLOUDFLARE_API_TOKEN%"',
   'gh secret set CLOUDFLARE_ACCOUNT_ID --body "%CLOUDFLARE_ACCOUNT_ID%"',
   'gh secret set CLOUDFLARE_ZONE_ID --body "%CLOUDFLARE_ZONE_ID%"',
@@ -191,6 +194,7 @@ run_windows = [
   'gh secret set SENTRY_ORG --body "%SENTRY_ORG%"',
   'gh secret set SENTRY_PROJECT_FRONTEND --body "%SENTRY_PROJECT_FRONTEND%"',
   'gh secret set SENTRY_PROJECT_API --body "%SENTRY_PROJECT_API%"',
+  'gh secret set SENTRY_DSN_API --body "%SENTRY_DSN_API%"',
 ]
 
 # Create a scoped API token for wrangler deploy, R2 sync, and secrets:sync:github.
@@ -254,3 +258,9 @@ run_windows = [
   'powershell -NoProfile -Command "$env:DISCORD_CLIENT_SECRET | wrangler secret put DISCORD_CLIENT_SECRET --env production"',
   'powershell -NoProfile -Command "$env:SENTRY_DSN_API | wrangler secret put SENTRY_DSN_API --env production"',
 ]
+
+
+[tasks.wrangler-whois-token]
+description = "Verify the LOCAL_CLOUDFLARE_API_TOKEN is valid"
+env.CLOUDFLARE_API_TOKEN = "{{ env.LOCAL_CLOUDFLARE_API_TOKEN }}"
+run = 'wrangler whoami'
