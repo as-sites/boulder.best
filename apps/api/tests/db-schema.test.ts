@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { getTableColumns, getTableName, isTable } from 'drizzle-orm';
+import migrationJournal from '../drizzle/meta/_journal.json' with { type: 'json' };
 import {
   climbAttempts,
   gyms,
@@ -89,8 +90,15 @@ describe('app Drizzle migrations', () => {
     expect(sql).toContain(
       'ALTER TABLE "climb_attempts" ADD COLUMN "completed" boolean',
     );
+    expect(sql).toContain('UPDATE "climb_attempts"');
     expect(sql).toContain(
       'ALTER TABLE "session_entries" DROP COLUMN "completed"',
+    );
+  });
+
+  it('registers the completed migration in the drizzle journal', () => {
+    expect(migrationJournal.entries.map((entry) => entry.tag)).toContain(
+      '0005_move_completed_to_attempt',
     );
   });
 

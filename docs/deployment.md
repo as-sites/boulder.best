@@ -31,13 +31,12 @@ wrangler whoami
 
 ### Workers and R2
 
-| Resource                     | Name                   | Notes                                                  |
-| ---------------------------- | ---------------------- | ------------------------------------------------------ |
-| API Worker (production)      | `boulder-api`          | Route `boulder.best/api/*`                             |
-| Frontend Worker (production) | `boulder-frontend`     | Custom domain `boulder.best` (DNS managed on deploy)   |
-| API Worker route             | `boulder.best/api/*`   | Zone route; takes precedence over the frontend domain  |
-| R2 (production)              | `boulder-dot-best`     | Bound as `MEDIA_BUCKET`; public URL `cdn.boulder.best` |
-| R2 (local dev)               | `boulder-dot-best-dev` | Preview bucket for `wrangler dev --env dev`            |
+| Resource                     | Name                 | Notes                                                                                   |
+| ---------------------------- | -------------------- | --------------------------------------------------------------------------------------- |
+| API Worker (production)      | `boulder-api`        | Route `boulder.best/api/*`                                                              |
+| Frontend Worker (production) | `boulder-frontend`   | Custom domain `boulder.best` (DNS managed on deploy)                                    |
+| API Worker route             | `boulder.best/api/*` | Zone route; takes precedence over the frontend domain                                   |
+| R2                           | `boulder-dot-best`   | Bound as `MEDIA_BUCKET`; public URL `cdn.boulder.best` (local dev uses the same bucket) |
 
 The frontend uses a **custom domain** on `boulder.best` (Wrangler creates apex DNS
 and TLS). The API keeps a **zone route** on `boulder.best/api/*`, which is more

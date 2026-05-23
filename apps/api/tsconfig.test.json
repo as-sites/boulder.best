@@ -5,7 +5,7 @@
     "rootDir": ".",
     "types": ["vitest/globals", "node"]
   },
-  "include": ["tests"],
+  "include": ["tests", "drizzle/meta/_journal.json"],
   "references": [
     { "path": "../../packages/api-contract" },
     { "path": "../../packages/auth" },

@@ -62,7 +62,7 @@ const authEnv = {
   DATABASE_URL: 'postgresql://user:pass@host/db',
   PUBLIC_PHOTO_URL_BASE: 'https://cdn.example.com',
   R2_ACCOUNT_ID: 'test-account-id',
-  R2_BUCKET_NAME: 'boulder-dot-best-dev',
+  R2_BUCKET_NAME: 'boulder-dot-best',
   R2_ACCESS_KEY_ID: 'test-access-key',
   R2_SECRET_ACCESS_KEY: 'test-secret-key',
 } satisfies AuthEnvBindings & {
@@ -215,7 +215,7 @@ describe('presigned upload routes', () => {
   it('returns presigned upload metadata for authenticated users', async () => {
     const expected = {
       uploadUrl:
-        'https://acc.r2.cloudflarestorage.com/boulder-dot-best-dev/key?X-Amz-Signature=abc',
+        'https://acc.r2.cloudflarestorage.com/boulder-dot-best/key?X-Amz-Signature=abc',
       objectKey:
         'user_123/987fcdeb-51a2-43d7-9012-345678901234/123e4567-e89b-12d3-a456-426614174000/1715600000000-0.webp',
       photoUrl:

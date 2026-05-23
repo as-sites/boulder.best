@@ -2,7 +2,11 @@
   "rules": [
     {
       "allowed": {
-        "origins": ["https://boulder.best"],
+        "origins": [
+          "https://boulder.best",
+          "http://localhost:5173",
+          "http://127.0.0.1:5173"
+        ],
         "methods": ["PUT", "GET", "HEAD"],
         "headers": ["Content-Type", "Content-Length"]
       },

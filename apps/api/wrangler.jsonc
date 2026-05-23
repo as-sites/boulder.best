@@ -11,9 +11,8 @@
       "r2_buckets": [
         {
           "binding": "MEDIA_BUCKET",
-          "bucket_name": "boulder-dot-best-dev",
-          // wrangler dev simulates R2 locally; no real bucket is needed for local dev
-          "preview_bucket_name": "boulder-dot-best-dev"
+          "bucket_name": "boulder-dot-best",
+          "preview_bucket_name": "boulder-dot-best"
         }
       ],
       "vars": {
@@ -21,9 +20,9 @@
         "FRONTEND_URL": "http://localhost:5173",
         "PASSKEY_RP_ID": "localhost",
         "PASSKEY_ORIGIN": "http://localhost:5173",
-        // Base URL served by wrangler dev's local R2 emulation
-        "PUBLIC_PHOTO_URL_BASE": "http://localhost:8787",
-        "R2_BUCKET_NAME": "boulder-dot-best-dev"
+        // Same CDN as production so synced photoUrl values work everywhere
+        "PUBLIC_PHOTO_URL_BASE": "https://cdn.boulder.best",
+        "R2_BUCKET_NAME": "boulder-dot-best"
       },
       "secrets": {
         "required": [
