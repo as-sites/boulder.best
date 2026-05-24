@@ -3,7 +3,6 @@ import {
   ACTIVE_DRAFT_SESSION_ID,
   autosaveActiveDraft,
   createIdleTimer,
-  isPreStartAutosaveField,
   resetOfflineDatabase,
   restoreActiveDraft,
   type SessionFormValues,
@@ -104,16 +103,5 @@ describe('draft autosave', () => {
       formData,
       lastSavedAt: expect.any(Number),
     });
-  });
-});
-
-describe('pre-start autosave field names', () => {
-  it('matches pre-start session fields only', () => {
-    expect(isPreStartAutosaveField('gymId')).toBe(true);
-    expect(isPreStartAutosaveField('location')).toBe(true);
-    expect(isPreStartAutosaveField('notes')).toBe(true);
-    expect(isPreStartAutosaveField(undefined)).toBe(true);
-    expect(isPreStartAutosaveField('entries')).toBe(false);
-    expect(isPreStartAutosaveField('status')).toBe(false);
   });
 });
