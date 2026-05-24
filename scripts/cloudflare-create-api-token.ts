@@ -1,19 +1,31 @@
 /* oxlint-disable eslint/no-console -- CLI script; env vars are injected by mise */
 /**
- * Create a scoped Cloudflare API token for boulder.best wrangler/CI workflows.
+ * Create Cloudflare API tokens for boulder.best:
+ *
+ * 1. Deploy token (`LOCAL_CLOUDFLARE_API_TOKEN`) — wrangler, CI, R2 bucket admin
+ *    via API.
+ * 2. R2 S3 credentials (`R2_*`) — presigned browser uploads via s3mini / S3 API.
  *
  * Expects CLOUDFLARE_MASTER_TOKEN (account-owned `cfat_*` token with permission
  * to create tokens), CLOUDFLARE_ACCOUNT_ID, and CLOUDFLARE_ZONE_ID in the
- * environment.
+ * environment. Optional R2_BUCKET_NAME (default: boulder-dot-best).
  *
- * @see https://developers.cloudflare.com/fundamentals/api/get-started/account-owned-tokens/
  * @see https://developers.cloudflare.com/fundamentals/api/how-to/create-via-api/
+ * @see https://developers.cloudflare.com/r2/api/tokens/
  */
 
 /// <reference types="node" />
 
+import {
+  buildR2BucketResource,
+  deriveR2SecretAccessKey,
+  toCloudflareTimestamp,
+} from './lib/cloudflare-r2-token.ts';
+
 const API_BASE = 'https://api.cloudflare.com/client/v4';
-const TOKEN_NAME = 'boulder.best deploy (mise)';
+const DEPLOY_TOKEN_NAME = 'boulder.best deploy (mise)';
+const R2_S3_TOKEN_NAME = 'boulder.best r2 s3 uploads (mise)';
+const DEFAULT_R2_BUCKET = 'boulder-dot-best';
 
 const PERMISSION_ALIASES = {
   account: [
@@ -32,6 +44,7 @@ const PERMISSION_ALIASES = {
     'SSL and Certificates Write',
     'Zone Read',
   ],
+  r2BucketObjectWrite: ['Workers R2 Storage Bucket Item Write'],
 } as const;
 
 interface PermissionGroup {
@@ -52,9 +65,11 @@ interface CreateTokenResult {
   value: string;
 }
 
-/** Cloudflare expects UTC timestamps without fractional seconds. */
-const toCloudflareTimestamp = (date: Date): string =>
-  date.toISOString().replace(/\.\d{3}Z$/, 'Z');
+interface TokenPolicy {
+  effect: 'allow';
+  resources: Record<string, string>;
+  permission_groups: Array<{ id: string; name: string }>;
+}
 
 const requiredEnv = (name: string): string => {
   // oxlint-disable-next-line node/no-process-env
@@ -63,6 +78,12 @@ const requiredEnv = (name: string): string => {
     throw new Error(`${name} is not set`);
   }
   return value;
+};
+
+const optionalEnv = (name: string): string | undefined => {
+  // oxlint-disable-next-line node/no-process-env
+  const value = process.env[name]?.trim();
+  return value || undefined;
 };
 
 const cfRequest = async <T>(
@@ -130,6 +151,23 @@ const resolvePermissionGroup = (
   return { id: matches[0].id, name: matches[0].name };
 };
 
+const resolvePermissionGroupByName = (
+  groups: PermissionGroup[],
+  aliases: ReadonlyArray<string>,
+): { id: string; name: string } => {
+  const wanted = new Set(aliases.map((a) => a.toLowerCase()));
+  const matches = groups.filter((g) => wanted.has(g.name.toLowerCase()));
+  if (matches.length === 0) {
+    throw new Error(
+      `Could not find permission group (${aliases.join(' / ')}).`,
+    );
+  }
+  const bucketScoped =
+    matches.find((g) => g.scopes.some((s) => s.includes('edge.r2.bucket'))) ??
+    matches[0];
+  return { id: bucketScoped.id, name: bucketScoped.name };
+};
+
 const resolveUniquePermissions = (
   aliases: ReadonlyArray<string>,
   scope: string,
@@ -162,10 +200,45 @@ const printPermissionList = (
   }
 };
 
+const createAccountToken = async ({
+  masterToken,
+  accountId,
+  name,
+  policies,
+  expiresOn,
+}: {
+  masterToken: string;
+  accountId: string;
+  name: string;
+  policies: TokenPolicy[];
+  expiresOn: Date;
+}): Promise<CreateTokenResult> => {
+  const create = await cfRequest<CreateTokenResult>(
+    masterToken,
+    `/accounts/${accountId}/tokens`,
+    {
+      method: 'POST',
+      body: {
+        name,
+        policies,
+        expires_on: toCloudflareTimestamp(expiresOn),
+      },
+    },
+  );
+
+  const { id, value } = create.result ?? {};
+  if (!id || !value) {
+    throw new Error('Cloudflare API did not return a token id and value.');
+  }
+
+  return { id, value };
+};
+
 try {
   const masterToken = requiredEnv('CLOUDFLARE_MASTER_TOKEN');
   const accountId = requiredEnv('CLOUDFLARE_ACCOUNT_ID');
   const zoneId = requiredEnv('CLOUDFLARE_ZONE_ID');
+  const r2BucketName = optionalEnv('R2_BUCKET_NAME') ?? DEFAULT_R2_BUCKET;
 
   await cfRequest(masterToken, `/accounts/${accountId}/tokens/verify`);
 
@@ -209,10 +282,15 @@ try {
   );
   resolvePermissionGroup(allGroups, ['DNS Edit', 'DNS Write'], zoneScope);
 
+  const r2ObjectWritePermission = resolvePermissionGroupByName(
+    allGroups,
+    PERMISSION_ALIASES.r2BucketObjectWrite,
+  );
+
   const expiresOn = new Date();
   expiresOn.setUTCFullYear(expiresOn.getUTCFullYear() + 1);
 
-  const policies = [
+  const deployPolicies: TokenPolicy[] = [
     {
       effect: 'allow',
       resources: { [`com.cloudflare.api.account.${accountId}`]: '*' },
@@ -225,40 +303,61 @@ try {
     },
   ];
 
-  const create = await cfRequest<CreateTokenResult>(
+  const deployToken = await createAccountToken({
     masterToken,
-    `/accounts/${accountId}/tokens`,
+    accountId,
+    name: DEPLOY_TOKEN_NAME,
+    policies: deployPolicies,
+    expiresOn,
+  });
+
+  const r2BucketResource = buildR2BucketResource(accountId, r2BucketName);
+  const r2Policies: TokenPolicy[] = [
     {
-      method: 'POST',
-      body: {
-        name: TOKEN_NAME,
-        policies,
-        expires_on: toCloudflareTimestamp(expiresOn),
-      },
+      effect: 'allow',
+      resources: { [r2BucketResource]: '*' },
+      permission_groups: [r2ObjectWritePermission],
     },
+  ];
+
+  const r2Token = await createAccountToken({
+    masterToken,
+    accountId,
+    name: R2_S3_TOKEN_NAME,
+    policies: r2Policies,
+    expiresOn,
+  });
+
+  const r2SecretAccessKey = deriveR2SecretAccessKey(r2Token.value);
+
+  console.log(
+    `Created deploy API token "${DEPLOY_TOKEN_NAME}" (id: ${deployToken.id})`,
   );
-
-  const { id: tokenId, value: tokenValue } = create.result ?? {};
-  if (!tokenId || !tokenValue) {
-    throw new Error('Cloudflare API did not return a token id and value.');
-  }
-
-  console.log(`Created API token "${TOKEN_NAME}" (id: ${tokenId})`);
+  console.log(
+    `Created R2 S3 API token "${R2_S3_TOKEN_NAME}" (id: ${r2Token.id})`,
+  );
+  console.log(`R2 bucket: ${r2BucketName} (${r2BucketResource})`);
   console.log(`Expires: ${toCloudflareTimestamp(expiresOn)}`);
   console.log('');
-  printPermissionList('Account permissions:', accountPermissions);
-  printPermissionList('Zone permissions (boulder.best):', zonePermissions);
+  printPermissionList('Deploy — account permissions:', accountPermissions);
+  printPermissionList(
+    'Deploy — zone permissions (boulder.best):',
+    zonePermissions,
+  );
+  printPermissionList('R2 S3 — bucket permissions:', [r2ObjectWritePermission]);
   console.log('');
-  console.log('Add to .env for wrangler and mise run secrets:sync:github:');
-  console.log(`LOCAL_CLOUDFLARE_API_TOKEN="${tokenValue}"`);
+  console.log('Add to .env:');
+  console.log(`LOCAL_CLOUDFLARE_API_TOKEN="${deployToken.value}"`);
+  console.log(`R2_ACCOUNT_ID="${accountId}"`);
+  console.log(`R2_ACCESS_KEY_ID="${r2Token.id}"`);
+  console.log(`R2_SECRET_ACCESS_KEY="${r2SecretAccessKey}"`);
   console.log('');
-  console.log('This value is shown once. Store it securely.');
+  console.log(
+    'R2_ACCESS_KEY_ID is the R2 token id; R2_SECRET_ACCESS_KEY is SHA-256 of the R2 token value (Cloudflare R2 S3 API).',
+  );
+  console.log('These values are shown once. Store them securely.');
 } catch (error: unknown) {
   const message = error instanceof Error ? error.message : String(error);
   console.error(`error: ${message}`);
   process.exitCode = 1;
 }
-
-// so typescript treats this as a module
-// oxlint-disable-next-line unicorn/require-module-specifiers
-export {};

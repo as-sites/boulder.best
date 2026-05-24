@@ -98,6 +98,38 @@ describe('drain sync queue', () => {
     });
   });
 
+  it('retries failed items immediately when forceRetry is set', async () => {
+    const item = queueItemFixture({
+      status: 'error',
+      retryCount: 1,
+      lastError: 'Session sync failed',
+      nextRetryAt: Date.now() + 60_000,
+    });
+    await syncQueueRepository.put(item);
+    submitSession.mockResolvedValue(undefined);
+
+    await drainSyncQueue({ ...eligibleContext, forceRetry: true });
+
+    expect(submitSession).toHaveBeenCalledWith(item.payload, []);
+    await expect(syncQueueRepository.get(item.id)).resolves.toMatchObject({
+      status: 'synced',
+    });
+  });
+
+  it('does not retry backoff error items without forceRetry', async () => {
+    const item = queueItemFixture({
+      status: 'error',
+      retryCount: 1,
+      lastError: 'Session sync failed',
+      nextRetryAt: Date.now() + 60_000,
+    });
+    await syncQueueRepository.put(item);
+
+    await drainSyncQueue(eligibleContext);
+
+    expect(submitSession).not.toHaveBeenCalled();
+  });
+
   it('does nothing while manual offline mode is enabled', async () => {
     await syncQueueRepository.put(queueItemFixture());
 

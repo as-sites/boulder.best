@@ -12,7 +12,7 @@ Workers are created on first deploy. Wrangler resolves the target account from
 **Local:** add to the repo root `.env` (see `.env.example`), or run
 `wrangler login` and `wrangler whoami`.
 
-To mint a scoped deploy token (Workers, Routes, R2, DNS for `boulder.best`):
+To mint deploy + R2 S3 credentials (Workers, Routes, DNS, presigned uploads):
 
 ```powershell
 # .env.secret: CLOUDFLARE_MASTER_TOKEN (account-owned cfat_* token from Account API Tokens)
@@ -20,7 +20,10 @@ To mint a scoped deploy token (Workers, Routes, R2, DNS for `boulder.best`):
 mise run cloudflare:token:create
 ```
 
-Copy the printed `LOCAL_CLOUDFLARE_API_TOKEN` into `.env`.
+Copy the printed values into `.env`:
+
+- `LOCAL_CLOUDFLARE_API_TOKEN` — wrangler / CI
+- `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` — presigned photo uploads (do **not** reuse the deploy token)
 
 **CI:** set the `CLOUDFLARE_ACCOUNT_ID` repository secret (see `.github/workflows/deploy.yml`).
 

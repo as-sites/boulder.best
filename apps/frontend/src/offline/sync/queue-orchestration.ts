@@ -19,13 +19,16 @@ export const canProcessSyncQueue = (
 export const isQueueItemReadyForAttempt = (
   item: SyncQueueItem,
   now = Date.now(),
+  forceRetry = false,
 ): boolean => {
   if (item.status === 'pending') {
     return true;
   }
 
   if (item.status === 'error') {
-    return item.nextRetryAt === undefined || item.nextRetryAt <= now;
+    return (
+      forceRetry || item.nextRetryAt === undefined || item.nextRetryAt <= now
+    );
   }
 
   return false;
@@ -34,8 +37,10 @@ export const isQueueItemReadyForAttempt = (
 export const listEligibleQueueItems = (
   items: SyncQueueItem[],
   context: SyncQueueRuntimeContext,
-  now = Date.now(),
+  options: { forceRetry?: boolean; now?: number } = {},
 ): SyncQueueItem[] => {
+  const { forceRetry = false, now = Date.now() } = options;
+
   if (!canProcessSyncQueue(context)) {
     return [];
   }
@@ -43,7 +48,7 @@ export const listEligibleQueueItems = (
   return items.filter(
     (item) =>
       (item.status === 'pending' || item.status === 'error') &&
-      isQueueItemReadyForAttempt(item, now),
+      isQueueItemReadyForAttempt(item, now, forceRetry),
   );
 };
 

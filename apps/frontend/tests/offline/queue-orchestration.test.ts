@@ -71,7 +71,25 @@ describe('queue orchestration', () => {
       }),
     ];
 
-    expect(listEligibleQueueItems(items, eligibleContext(), now)).toEqual([]);
+    expect(listEligibleQueueItems(items, eligibleContext(), { now })).toEqual(
+      [],
+    );
+  });
+
+  it('includes backoff error items when forceRetry is set', () => {
+    const now = 1_700_000_000_000;
+    const backoffError = queueItemFixture({
+      status: 'error',
+      retryCount: 1,
+      nextRetryAt: now + 60_000,
+    });
+
+    expect(
+      listEligibleQueueItems([backoffError], eligibleContext(), {
+        forceRetry: true,
+        now,
+      }),
+    ).toEqual([backoffError]);
   });
 
   it('includes retry-ready error items and pending items', () => {
@@ -85,7 +103,9 @@ describe('queue orchestration', () => {
     });
 
     expect(
-      listEligibleQueueItems([pending, retryReady], eligibleContext(), now),
+      listEligibleQueueItems([pending, retryReady], eligibleContext(), {
+        now,
+      }),
     ).toEqual([pending, retryReady]);
   });
 

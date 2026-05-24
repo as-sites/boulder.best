@@ -49,6 +49,7 @@ export {
   useActiveDraftSession,
   useSyncNow,
   useSyncQueueErrorCount,
+  useSyncQueueHasWork,
   useSyncQueueLastError,
   useSyncQueueList,
   useSyncQueuePendingCount,

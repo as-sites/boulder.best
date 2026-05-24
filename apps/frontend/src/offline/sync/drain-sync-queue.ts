@@ -11,10 +11,16 @@ import {
 import { submitSyncSession } from './submit-sync-session.js';
 import { uploadOfflineImagesForSession } from './upload-offline-image.js';
 
+export interface SyncQueueDrainOptions extends SyncQueueRuntimeContext {
+  /** When true, retry failed items immediately instead of waiting for backoff. */
+  forceRetry?: boolean;
+}
+
 export const drainSyncQueue = async (
-  context: SyncQueueRuntimeContext,
+  context: SyncQueueDrainOptions,
 ): Promise<void> => {
-  if (!canProcessSyncQueue(context)) {
+  const { forceRetry = false, ...runtimeContext } = context;
+  if (!canProcessSyncQueue(runtimeContext)) {
     return;
   }
 
@@ -36,7 +42,9 @@ export const drainSyncQueue = async (
   }
 
   const items = await syncQueueRepository.listAll();
-  const eligible = listEligibleQueueItems(items, context);
+  const eligible = listEligibleQueueItems(items, runtimeContext, {
+    forceRetry,
+  });
 
   for (const item of eligible) {
     const syncing = markQueueItemSyncing(item);

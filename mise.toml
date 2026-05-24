@@ -154,13 +154,13 @@ depends = ["secrets:sync:github", "secrets:sync:cloudflare"]
 description = "Push GitHub Actions secrets from .env (LOCAL_CLOUDFLARE_API_TOKEN → CLOUDFLARE_API_TOKEN in GH, plus account/zone/DB/Sentry)"
 run = 'node scripts/secrets-sync-github.ts'
 
-# Create a scoped API token for wrangler deploy, R2 sync, and secrets:sync:github.
-# Requires CLOUDFLARE_MASTER_TOKEN in .env.secret (account-owned cfat_* token that can create tokens).
-# Requires CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_ZONE_ID in .env.
-# @see https://developers.cloudflare.com/fundamentals/api/how-to/create-via-api/
+# Create deploy + R2 S3 credentials via API (CLOUDFLARE_MASTER_TOKEN in .env.secret).
+# Prints LOCAL_CLOUDFLARE_API_TOKEN and R2_ACCESS_KEY_ID / R2_SECRET_ACCESS_KEY for .env.
 
 [tasks."cloudflare:token:create"]
-description = "Create LOCAL_CLOUDFLARE_API_TOKEN via API (CLOUDFLARE_MASTER_TOKEN in .env.secret)"
+description = "Create LOCAL_CLOUDFLARE_API_TOKEN and R2 S3 credentials via API (CLOUDFLARE_MASTER_TOKEN in .env.secret)"
+# raw bypasses mise output redaction so one-time token values (incl. R2_ACCOUNT_ID) are visible.
+raw = true
 run = 'node scripts/cloudflare-create-api-token.ts'
 env.'_'.file = { path = ".env.secret", redact = true }
 

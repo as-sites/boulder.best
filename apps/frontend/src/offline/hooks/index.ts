@@ -1,6 +1,7 @@
 export { useActiveDraftSession } from './use-active-draft-session.js';
 export {
   useSyncQueueErrorCount,
+  useSyncQueueHasWork,
   useSyncQueueList,
   useSyncQueuePendingCount,
 } from './use-sync-queue.js';

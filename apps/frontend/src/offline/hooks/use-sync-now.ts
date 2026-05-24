@@ -6,6 +6,7 @@ import {
   useSyncEligibility,
 } from '../../lib/settings/index.js';
 import { drainSyncQueue } from '../sync/drain-sync-queue.js';
+import { useSyncQueueHasWork } from './use-sync-queue.js';
 
 export const useSyncNow = () => {
   const session = authClient.useSession();
@@ -13,10 +14,11 @@ export const useSyncNow = () => {
   const { enabled: manualOfflineMode } = useManualOfflineMode();
   const isOnline = useBrowserOnline();
   const eligibility = useSyncEligibility(isAuthenticated);
+  const hasQueueWork = useSyncQueueHasWork();
   const [isSyncing, setIsSyncing] = useState(false);
 
   const canSyncNow =
-    eligibility.canAutoSync && !isSyncing && !session.isPending;
+    eligibility.canAutoSync && hasQueueWork && !isSyncing && !session.isPending;
 
   const disabledReason = manualOfflineMode
     ? 'Turn off manual offline mode to sync queued sessions.'
@@ -24,7 +26,9 @@ export const useSyncNow = () => {
       ? 'Sync is unavailable while your browser is offline.'
       : !isAuthenticated
         ? 'Sign in to sync queued sessions.'
-        : undefined;
+        : !hasQueueWork
+          ? 'Nothing in the sync queue to upload.'
+          : undefined;
 
   const syncNow = useCallback(async () => {
     if (!canSyncNow) {
@@ -38,6 +42,7 @@ export const useSyncNow = () => {
         isOnline,
         isAuthenticated,
         isAppForeground: true,
+        forceRetry: true,
       });
     } finally {
       setIsSyncing(false);
