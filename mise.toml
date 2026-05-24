@@ -54,7 +54,7 @@ sources = [
 ]
 outputs = ["node_modules/"]
 description = "Install dependencies with pnpm"
-run = 'pnpm install'
+run = 'pnpm install --frozen-lockfile'
 
 [env]
 HK_MISE = "1"

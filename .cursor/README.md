@@ -8,10 +8,10 @@ Committed [`.cursor/environment.json`](environment.json) sets the VM **install**
 
 ## Scripts
 
-| Script                                     | When to use                                                                                                                                                                                                                                                                                 |
-| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`.cursor/setup.sh`](setup.sh)             | First-time environment setup (agent-driven setup in the dashboard, or `RUN` in a `.cursor/Dockerfile`). Installs `mise` when missing, persists shell activation, upgrades `mise` via apt when available, installs pinned tools from `mise.toml`, and runs `pnpm install --frozen-lockfile`. |
-| [`.cursor/maintenance.sh`](maintenance.sh) | Every agent run via `environment.json` `install`. Re-trusts `mise`, refreshes tools, and reinstalls workspace deps. If `mise` is missing (e.g. snapshot fallback), delegates to `setup.sh`.                                                                                                 |
+| Script                                     | When to use                                                                                                                                                                                                                                                                                                 |
+| ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`.cursor/setup.sh`](setup.sh)             | First-time environment setup (agent-driven setup in the dashboard, or `RUN` in a `.cursor/Dockerfile`). Installs `mise` when missing, persists shell activation, upgrades `mise` via `mise self-update` (or apt when installed as a package), installs pinned tools from `mise.toml`, and runs `mise deps`. |
+| [`.cursor/maintenance.sh`](maintenance.sh) | Every agent run via `environment.json` `install`. Re-trusts `mise`, refreshes tools, and reinstalls workspace deps. If `mise` is missing (e.g. snapshot fallback), delegates to `setup.sh`.                                                                                                                 |
 
 ## Dashboard vs code
 

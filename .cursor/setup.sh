@@ -32,6 +32,8 @@ grep -qxF 'eval "$(mise activate bash)"' "${HOME}/.bashrc" ||
   echo 'eval "$(mise activate bash)"' >>"${HOME}/.bashrc"
 
 mise trust --yes
-sudo apt update && sudo apt install --only-upgrade mise
+# shellcheck source=mise-upgrade.sh
+source "${SCRIPT_DIR}/mise-upgrade.sh"
+upgrade_mise
 mise install --yes
-pnpm install --frozen-lockfile
+mise deps
