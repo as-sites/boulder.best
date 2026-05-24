@@ -12,7 +12,6 @@ import { AppBrand } from './app-brand.js';
 import { APP_SHELL_DESKTOP_NAV_QUERY } from './app-nav-items.js';
 import { AppShellMainNavLinks } from './app-shell-nav.js';
 import { AppShellSessionTimer } from './app-shell-session-timer.js';
-import { AppShellSyncControls } from './app-shell-sync-controls.js';
 import { AppUserMenu } from './app-user-menu.js';
 
 const HEADER_HEIGHT = 56;
@@ -39,8 +38,7 @@ export const AppShell = () => {
   const activeDraft = useActiveDraftSession();
   const activeFormData =
     activeDraft?.formData.status === 'active' ? activeDraft.formData : null;
-  const showNavbarTimer = activeFormData !== null && navOpened;
-  const showHeaderTimer = activeFormData !== null && !navOpened;
+  const showHeaderTimer = activeFormData !== null;
 
   useEffect(() => {
     closeMobileNav();
@@ -97,18 +95,12 @@ export const AppShell = () => {
             {showHeaderTimer ? (
               <AppShellSessionTimer compact formData={activeFormData} />
             ) : null}
-            {isDesktopNav ? <AppShellSyncControls /> : null}
-            <AppUserMenu showSyncControls={!isDesktopNav} />
+            <AppUserMenu />
           </Flex>
         </Flex>
       </MantineAppShell.Header>
 
       <MantineAppShell.Navbar id="app-shell-navbar" p="md">
-        {showNavbarTimer ? (
-          <MantineAppShell.Section pb="md">
-            <AppShellSessionTimer formData={activeFormData} />
-          </MantineAppShell.Section>
-        ) : null}
         <MantineAppShell.Section grow component={ScrollArea} type="auto">
           <AppShellMainNavLinks onNavigate={closeMobileNav} />
         </MantineAppShell.Section>

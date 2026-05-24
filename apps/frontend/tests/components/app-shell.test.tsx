@@ -156,6 +156,8 @@ const brandLink = () => screen.getByRole('link', { name: 'boulder.best' });
 
 const sessionTimer = () => screen.getByTestId('app-shell-session-timer');
 const syncControls = () => screen.getByTestId('app-shell-sync-controls');
+const syncStatusIndicator = () =>
+  screen.getByTestId('app-sync-status-indicator');
 
 const activeDraftFixture = (
   status: 'not_started' | 'active' | 'stopped' = 'active',
@@ -208,7 +210,24 @@ describe('AppShell active session timer', () => {
     expect(screen.queryByTestId('app-shell-session-timer')).toBeNull();
   });
 
-  it('shows the session timer in the side nav when a session is active and the nav is open', async () => {
+  // oxlint-disable-next-line jest/prefer-ending-with-an-expect -- inside the `waitFor`
+  it('shows the session timer for an active session with no climbs yet', async () => {
+    activeDraftMocks.useActiveDraftSession.mockReturnValue({
+      ...activeDraftFixture(),
+      formData: {
+        ...activeDraftFixture().formData,
+        entries: [],
+      },
+    });
+
+    await renderShellAt('/history', false);
+
+    await waitFor(() => {
+      expect(sessionTimer()).toBeVisible();
+    });
+  });
+
+  it('shows the session timer in the header on desktop when the nav is open', async () => {
     activeDraftMocks.useActiveDraftSession.mockReturnValue(
       activeDraftFixture(),
     );
@@ -216,14 +235,30 @@ describe('AppShell active session timer', () => {
     await renderShellAt('/history', true);
 
     await waitFor(() => {
-      expect(
-        within(shellNavbar()).getByTestId('app-shell-session-timer'),
-      ).toBeVisible();
+      expect(sessionTimer()).toBeVisible();
     });
+    expect(shellNavbar()).not.toContainElement(sessionTimer());
     expect(screen.queryAllByTestId('app-shell-session-timer')).toHaveLength(1);
   });
 
-  it('shows a compact session timer in the header when the nav is collapsed', async () => {
+  it('places the desktop session timer left of the account menu in the header', async () => {
+    activeDraftMocks.useActiveDraftSession.mockReturnValue(
+      activeDraftFixture(),
+    );
+
+    await renderShellAt('/history', true);
+
+    await waitFor(() => {
+      expect(sessionTimer()).toBeVisible();
+    });
+
+    const timer = sessionTimer();
+    const accountTrigger = accountMenuTrigger();
+    expect(screen.queryByTestId('app-shell-sync-controls')).toBeNull();
+    expect(timer.nextElementSibling).toContainElement(accountTrigger);
+  });
+
+  it('shows a compact session timer with icon in the header when the nav is collapsed', async () => {
     activeDraftMocks.useActiveDraftSession.mockReturnValue(
       activeDraftFixture(),
     );
@@ -233,6 +268,7 @@ describe('AppShell active session timer', () => {
     await waitFor(() => {
       expect(sessionTimer()).toBeVisible();
     });
+    expect(sessionTimer().querySelector('svg')).not.toBeNull();
     expect(shellNavbar()).not.toContainElement(sessionTimer());
   });
 
@@ -355,6 +391,18 @@ describe('AppShell navigation', () => {
       expect(signInItem.closest('a')).toHaveAttribute('href', '/auth/account');
     });
 
+    it('shows sync status on the avatar without header sync controls', async () => {
+      syncQueueMocks.useSyncQueuePendingCount.mockReturnValue(1);
+      syncQueueMocks.useSyncQueueErrorCount.mockReturnValue(0);
+      await renderShellAt('/tracker', false);
+
+      expect(screen.queryByTestId('app-shell-sync-controls')).toBeNull();
+      expect(syncStatusIndicator()).toHaveAttribute(
+        'data-sync-status',
+        'pending',
+      );
+    });
+
     it('routes from the drawer and closes it after navigation', async () => {
       await renderShellAt('/tracker', false);
 
@@ -419,18 +467,37 @@ describe('AppShell navigation', () => {
       expect(sideNav()).not.toContainElement(brandLink());
     });
 
-    it('shows sync status and sync button in the header', async () => {
+    it('shows sync status on the avatar and keeps sync controls in the account menu', async () => {
       syncQueueMocks.useSyncQueuePendingCount.mockReturnValue(2);
       syncQueueMocks.useSyncQueueErrorCount.mockReturnValue(1);
       await renderShellAt('/tracker', true);
 
-      expect(
-        within(syncControls()).getByText(/2 pending/i),
-      ).toBeInTheDocument();
+      expect(screen.queryByTestId('app-shell-sync-controls')).toBeNull();
+      expect(syncStatusIndicator()).toHaveAttribute(
+        'data-sync-status',
+        'error',
+      );
+
+      fireEvent.click(accountMenuTrigger());
+
+      await waitFor(() => {
+        expect(
+          within(syncControls()).getByText(/2 pending/i),
+        ).toBeInTheDocument();
+      });
       expect(within(syncControls()).getByText(/1 failed/i)).toBeInTheDocument();
-      expect(
-        within(syncControls()).getByRole('button', { name: /sync now/i }),
-      ).toBeInTheDocument();
+      expect(within(syncControls()).getByText(/sync now/i)).toBeInTheDocument();
+    });
+
+    it('shows a green synced indicator on the avatar when the queue is clear', async () => {
+      syncQueueMocks.useSyncQueuePendingCount.mockReturnValue(0);
+      syncQueueMocks.useSyncQueueErrorCount.mockReturnValue(0);
+      await renderShellAt('/tracker', true);
+
+      expect(syncStatusIndicator()).toHaveAttribute(
+        'data-sync-status',
+        'synced',
+      );
     });
 
     it('shows a persistent side nav and burger toggle without bottom tab bar', async () => {

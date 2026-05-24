@@ -1,5 +1,6 @@
 import {
   Avatar,
+  Box,
   Group,
   Loader,
   Menu,
@@ -10,6 +11,7 @@ import { SignOutIcon, UserCircleIcon } from '@phosphor-icons/react';
 import { Link } from '@tanstack/react-router';
 import { authClient } from '../lib/auth-client.js';
 import { AppShellSyncControls } from './app-shell-sync-controls.js';
+import { AppSyncStatusIndicator } from './app-sync-status-indicator.js';
 
 const accountPath = '/auth/account' as const;
 
@@ -33,11 +35,7 @@ const userInitials = (
   return '?';
 };
 
-interface AppUserMenuProps {
-  showSyncControls?: boolean;
-}
-
-export const AppUserMenu = ({ showSyncControls = false }: AppUserMenuProps) => {
+export const AppUserMenu = () => {
   const session = authClient.useSession();
   const user = session.data?.user;
 
@@ -60,32 +58,31 @@ export const AppUserMenu = ({ showSyncControls = false }: AppUserMenuProps) => {
             lineHeight: 0,
           }}
         >
-          <Avatar
-            alt=""
-            color="blue"
-            radius="xl"
-            size="md"
-            src={user?.image ?? null}
-            variant={isSignedIn ? 'filled' : 'light'}
-          >
-            {isSignedIn ? (
-              initials
-            ) : (
-              <UserCircleIcon aria-hidden size={22} weight="duotone" />
-            )}
-          </Avatar>
+          <Box pos="relative" display="inline-block">
+            <Avatar
+              alt=""
+              color="blue"
+              radius="xl"
+              size="md"
+              src={user?.image ?? null}
+              variant={isSignedIn ? 'filled' : 'light'}
+            >
+              {isSignedIn ? (
+                initials
+              ) : (
+                <UserCircleIcon aria-hidden size={22} weight="duotone" />
+              )}
+            </Avatar>
+            <AppSyncStatusIndicator onAvatar />
+          </Box>
         </UnstyledButton>
       </Menu.Target>
 
       <Menu.Dropdown>
-        {showSyncControls ? (
-          <>
-            <Menu.Label>
-              <AppShellSyncControls />
-            </Menu.Label>
-            <Menu.Divider />
-          </>
-        ) : null}
+        <Menu.Label>
+          <AppShellSyncControls />
+        </Menu.Label>
+        <Menu.Divider />
         {isSignedIn ? (
           <>
             <Menu.Label>

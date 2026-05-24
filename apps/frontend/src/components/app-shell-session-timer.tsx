@@ -1,4 +1,5 @@
-import { Stack, Text } from '@mantine/core';
+import { Flex, Stack, Text } from '@mantine/core';
+import { TimerIcon } from '@phosphor-icons/react';
 import { useTimerDisplayMilliseconds } from '../lib/settings/index.js';
 import type { SessionFormValues } from '../offline/db/types.js';
 import { sessionDisplayTimer } from '../tracker/session-form-state.js';
@@ -18,14 +19,21 @@ export const AppShellSessionTimer = ({
 
   if (compact) {
     return (
-      <TimerDisplay
+      <Flex
+        align="center"
         aria-label="Active session duration"
         data-testid="app-shell-session-timer"
-        fw={600}
-        size="sm"
-        timer={timer}
-        showMilliseconds={showTimerMilliseconds}
-      />
+        gap={6}
+        wrap="nowrap"
+      >
+        <TimerIcon aria-hidden size={18} weight="duotone" />
+        <TimerDisplay
+          fw={600}
+          size="sm"
+          timer={timer}
+          showMilliseconds={showTimerMilliseconds}
+        />
+      </Flex>
     );
   }
 

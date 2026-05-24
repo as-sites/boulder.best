@@ -28,6 +28,14 @@ vi.mock(import('../../src/offline/gyms/gym-cache.js'), () => ({
   fetchGymsFromApi: vi.fn(),
 }));
 
+const autosaveMocks = vi.hoisted(() => ({
+  autosaveActiveDraft: vi.fn(),
+}));
+
+vi.mock(import('../../src/offline/draft/draft-autosave.js'), () => ({
+  autosaveActiveDraft: autosaveMocks.autosaveActiveDraft,
+}));
+
 const renderSessionForm = () => {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
@@ -45,6 +53,11 @@ const renderSessionForm = () => {
 describe(SessionForm, () => {
   beforeEach(() => {
     gymMocks.loadCachedGyms.mockResolvedValue(gymFixture);
+    autosaveMocks.autosaveActiveDraft.mockResolvedValue({
+      id: 'active-draft',
+      lastSavedAt: Date.now(),
+      formData: createEmptySessionForm(),
+    });
   });
 
   it('disables start until a gym is selected', async () => {
@@ -147,6 +160,16 @@ describe(SessionForm, () => {
     const startButton = screen.getByRole('button', { name: /start session/i });
     await waitFor(() => expect(startButton).not.toBeDisabled());
     fireEvent.click(startButton);
+
+    await waitFor(() => {
+      expect(autosaveMocks.autosaveActiveDraft).toHaveBeenCalledWith(
+        expect.objectContaining({
+          status: 'active',
+          startTime: expect.any(String),
+          entries: [],
+        }),
+      );
+    });
 
     const stopButton = screen.getByRole('button', { name: /stop session/i });
     await waitFor(() => expect(stopButton).not.toBeDisabled());

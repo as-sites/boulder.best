@@ -119,6 +119,7 @@ export const SessionForm = ({ initialValues, onStopped }: SessionFormProps) => {
         selectedGym ? { gymLocations: selectedGym.locations } : {},
       );
       form.reset(next);
+      void autosaveActiveDraft(next);
     } catch (error) {
       const message =
         error instanceof Error ? error.message : 'Unable to start session';
