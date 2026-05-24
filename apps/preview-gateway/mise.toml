@@ -1,0 +1,15 @@
+[tasks.dev]
+alias = ["preview-gateway:dev"]
+description = "Start the preview gateway Worker locally"
+run = "wrangler dev --env production"
+raw = true
+
+[tasks.deploy]
+alias = ["preview-gateway:deploy"]
+description = "Deploy the preview gateway Worker (one-time + WORKERS_SUBDOMAIN updates)"
+run = "wrangler deploy --env production"
+
+[tasks.typecheck]
+alias = ["preview-gateway:typecheck"]
+description = "Typecheck the preview gateway Worker"
+run = "tsc -b ."

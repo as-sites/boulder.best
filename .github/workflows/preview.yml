@@ -1,0 +1,148 @@
+# Per-PR preview environments: Neon branch + Cloudflare Preview URLs + gateway proxy.
+#
+# Required repository secrets:
+#   CLOUDFLARE_API_TOKEN   — Workers deploy / versions upload
+#   CLOUDFLARE_ACCOUNT_ID  — Cloudflare account ID
+#   NEON_API_KEY           — Neon API key (branch create/delete)
+#
+# Required repository variables:
+#   NEON_PROJECT_ID        — Neon project ID
+#
+# Production deploy (.github/workflows/deploy.yml) is unchanged.
+
+name: Preview
+
+on:
+  pull_request:
+    types: [closed]
+    branches-ignore:
+      - '**/graphite-base/**'
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+
+concurrency:
+  group: preview-${{ github.event.workflow_run.pull_requests[0].number || github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  preview:
+    name: Deploy PR preview
+    if: >-
+      github.event_name == 'workflow_run' &&
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.pull_requests[0] != null
+    runs-on: blacksmith-2vcpu-ubuntu-2404
+    timeout-minutes: 30
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      PR_NUMBER: ${{ github.event.workflow_run.pull_requests[0].number }}
+      PREVIEW_ALIAS: pr-${{ github.event.workflow_run.pull_requests[0].number }}
+      PREVIEW_ORIGIN: https://pr-${{ github.event.workflow_run.pull_requests[0].number }}.preview.boulder.best
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Setup CI
+        uses: ./.github/actions/setup-ci
+
+      - name: Create Neon branch
+        id: neon-branch
+        uses: neondatabase/create-branch-action@v6
+        with:
+          api_key: ${{ secrets.NEON_API_KEY }}
+          project_id: ${{ vars.NEON_PROJECT_ID }}
+          branch_name: ${{ env.PREVIEW_ALIAS }}
+
+      - name: Apply database migrations
+        env:
+          DATABASE_URL: ${{ steps.neon-branch.outputs.db_url_pooled }}
+        run: mise run api:db:migrate
+
+      - name: Write preview secrets file
+        env:
+          DATABASE_URL: ${{ steps.neon-branch.outputs.db_url_pooled }}
+        run: |
+          printf 'DATABASE_URL=%s\n' "$DATABASE_URL" > preview.secrets.env
+
+      - name: Upload API preview version
+        env:
+          PREVIEW_SECRETS_FILE: ${{ github.workspace }}/preview.secrets.env
+          DATABASE_URL: ${{ steps.neon-branch.outputs.db_url_pooled }}
+        run: mise run //apps/api:preview:upload
+
+      - name: Upload frontend preview version
+        env:
+          SENTRY_AUTH_TOKEN: ''
+          VITE_SENTRY_DSN_FRONTEND: ''
+          VITE_SENTRY_RELEASE_FRONTEND: ''
+        run: mise run //apps/frontend:preview:upload
+
+      - name: Comment preview URL on pull request
+        uses: actions/github-script@ed597411d8f324910dbc2ad2aeeb9e1348ebb560 # v8
+        env:
+          PREVIEW_URL: ${{ env.PREVIEW_ORIGIN }}
+        with:
+          script: |
+            const marker = '<!-- boulder-preview-deployment -->';
+            const prNumber = Number(process.env.PR_NUMBER);
+            const previewUrl = process.env.PREVIEW_URL;
+            const body = [
+              marker,
+              '## Preview deployment',
+              '',
+              `**URL:** ${previewUrl}`,
+              '',
+              'Same-origin `/api` routing via the preview gateway. Email/password and passkeys use `PASSKEY_RP_ID=boulder.best`.',
+              '',
+              '_OAuth and Sentry are not configured for preview builds._',
+            ].join('\n');
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+            });
+
+            const existing = comments.find(
+              (comment) =>
+                comment.user?.type === 'Bot' &&
+                comment.body?.includes(marker),
+            );
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                body,
+              });
+            }
+
+  cleanup:
+    name: Delete PR preview resources
+    if: github.event_name == 'pull_request'
+    runs-on: blacksmith-2vcpu-ubuntu-2404
+    timeout-minutes: 10
+    steps:
+      - name: Delete Neon branch
+        uses: neondatabase/delete-branch-action@v3
+        with:
+          api_key: ${{ secrets.NEON_API_KEY }}
+          project_id: ${{ vars.NEON_PROJECT_ID }}
+          branch: pr-${{ github.event.pull_request.number }}

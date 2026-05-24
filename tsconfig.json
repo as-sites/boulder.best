@@ -8,6 +8,8 @@
     { "path": "./apps/api" },
     { "path": "./apps/api/tsconfig.test.json" },
     { "path": "./apps/frontend" },
-    { "path": "./apps/frontend/tsconfig.test.json" }
+    { "path": "./apps/frontend/tsconfig.test.json" },
+    { "path": "./apps/preview-gateway" },
+    { "path": "./apps/preview-gateway/tsconfig.test.json" }
   ]
 }

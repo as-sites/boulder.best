@@ -47,6 +47,15 @@ alias = ["frontend:preview"]
 description = "Preview the built frontend app locally"
 run = "vite preview"
 
+[tasks."preview:upload"]
+alias = ["frontend:preview:upload"]
+description = "Upload a preview frontend Worker version (PREVIEW_ALIAS; same-origin API via gateway)"
+depends = ["build"]
+run = '''
+: "${PREVIEW_ALIAS:?PREVIEW_ALIAS is required}"
+wrangler versions upload --preview-alias "$PREVIEW_ALIAS"
+'''
+
 [tasks.deploy]
 alias = ["frontend:deploy"]
 description = "Deploy the frontend Worker static assets app"
