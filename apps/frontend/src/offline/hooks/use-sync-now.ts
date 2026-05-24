@@ -1,4 +1,6 @@
 import { useCallback, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { sessionHistoryQueryKey } from '../../history/use-session-history-query.js';
 import { authClient } from '../../lib/auth-client.js';
 import {
   useBrowserOnline,
@@ -9,6 +11,7 @@ import { drainSyncQueue } from '../sync/drain-sync-queue.js';
 import { useSyncQueueHasWork } from './use-sync-queue.js';
 
 export const useSyncNow = () => {
+  const queryClient = useQueryClient();
   const session = authClient.useSession();
   const isAuthenticated = Boolean(session.data?.user);
   const { enabled: manualOfflineMode } = useManualOfflineMode();
@@ -44,10 +47,13 @@ export const useSyncNow = () => {
         isAppForeground: true,
         forceRetry: true,
       });
+      await queryClient.invalidateQueries({
+        queryKey: sessionHistoryQueryKey,
+      });
     } finally {
       setIsSyncing(false);
     }
-  }, [canSyncNow, isAuthenticated, isOnline, manualOfflineMode]);
+  }, [canSyncNow, isAuthenticated, isOnline, manualOfflineMode, queryClient]);
 
   return {
     canSyncNow,
