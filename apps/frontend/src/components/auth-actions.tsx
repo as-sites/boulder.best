@@ -7,14 +7,17 @@ import {
   Group,
   Loader,
   Paper,
-  PasswordInput,
   Stack,
   Text,
   TextInput,
   Title,
 } from '@mantine/core';
 import { FingerprintIcon } from '@phosphor-icons/react';
-import { useForm } from 'react-hook-form';
+import {
+  PasswordInput,
+  TextInput as FormTextInput,
+} from '@trendcapital/react-hook-form-mantine';
+import { FormProvider, useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { authClient, type OAuthProvider } from '../lib/auth-client.js';
 import { DiscordIcon, GoogleIcon } from './auth-provider-icons.js';
@@ -48,45 +51,44 @@ const SignInForm = ({
   disabled: boolean;
   onSubmit: (data: SignInValues) => Promise<void>;
 }) => {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<SignInValues>({
+  const form = useForm<SignInValues>({
     resolver: zodResolver(signInSchema),
     defaultValues: { email: '', password: '' },
   });
 
   return (
-    <form noValidate onSubmit={(event) => void handleSubmit(onSubmit)(event)}>
-      <Stack gap="sm">
-        <TextInput
-          disabled={disabled}
-          label="Email"
-          placeholder="you@example.com"
-          radius="md"
-          type="email"
-          {...register('email')}
-          error={errors.email?.message}
-        />
-        <PasswordInput
-          disabled={disabled}
-          label="Password"
-          radius="md"
-          {...register('password')}
-          error={errors.password?.message}
-        />
-        <Button
-          data-testid="auth-submit"
-          disabled={disabled}
-          loading={disabled}
-          radius="md"
-          type="submit"
-        >
-          Sign in
-        </Button>
-      </Stack>
-    </form>
+    <FormProvider {...form}>
+      <form
+        noValidate
+        onSubmit={(event) => void form.handleSubmit(onSubmit)(event)}
+      >
+        <Stack gap="sm">
+          <FormTextInput<SignInValues>
+            disabled={disabled}
+            label="Email"
+            name="email"
+            placeholder="you@example.com"
+            radius="md"
+            type="email"
+          />
+          <PasswordInput<SignInValues>
+            disabled={disabled}
+            label="Password"
+            name="password"
+            radius="md"
+          />
+          <Button
+            data-testid="auth-submit"
+            disabled={disabled}
+            loading={disabled}
+            radius="md"
+            type="submit"
+          >
+            Sign in
+          </Button>
+        </Stack>
+      </form>
+    </FormProvider>
   );
 };
 
@@ -97,53 +99,51 @@ const SignUpForm = ({
   disabled: boolean;
   onSubmit: (data: SignUpValues) => Promise<void>;
 }) => {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<SignUpValues>({
+  const form = useForm<SignUpValues>({
     resolver: zodResolver(signUpSchema),
     defaultValues: { email: '', password: '', name: '' },
   });
 
   return (
-    <form noValidate onSubmit={(event) => void handleSubmit(onSubmit)(event)}>
-      <Stack gap="sm">
-        <TextInput
-          disabled={disabled}
-          label="Name"
-          placeholder="Your name"
-          radius="md"
-          {...register('name')}
-          error={errors.name?.message}
-        />
-        <TextInput
-          disabled={disabled}
-          label="Email"
-          placeholder="you@example.com"
-          radius="md"
-          type="email"
-          {...register('email')}
-          error={errors.email?.message}
-        />
-        <PasswordInput
-          disabled={disabled}
-          label="Password"
-          radius="md"
-          {...register('password')}
-          error={errors.password?.message}
-        />
-        <Button
-          data-testid="auth-submit"
-          disabled={disabled}
-          loading={disabled}
-          radius="md"
-          type="submit"
-        >
-          Create account
-        </Button>
-      </Stack>
-    </form>
+    <FormProvider {...form}>
+      <form
+        noValidate
+        onSubmit={(event) => void form.handleSubmit(onSubmit)(event)}
+      >
+        <Stack gap="sm">
+          <FormTextInput<SignUpValues>
+            disabled={disabled}
+            label="Name"
+            name="name"
+            placeholder="Your name"
+            radius="md"
+          />
+          <FormTextInput<SignUpValues>
+            disabled={disabled}
+            label="Email"
+            name="email"
+            placeholder="you@example.com"
+            radius="md"
+            type="email"
+          />
+          <PasswordInput<SignUpValues>
+            disabled={disabled}
+            label="Password"
+            name="password"
+            radius="md"
+          />
+          <Button
+            data-testid="auth-submit"
+            disabled={disabled}
+            loading={disabled}
+            radius="md"
+            type="submit"
+          >
+            Create account
+          </Button>
+        </Stack>
+      </form>
+    </FormProvider>
   );
 };
 

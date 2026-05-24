@@ -22,6 +22,7 @@ catalogs:
     '@better-auth/core': *better_auth_version
   mantine:
     '@mantine/core': &mantine_version 9.2.1
+    '@mantine/dates': *mantine_version
     '@mantine/hooks': *mantine_version
 
 autoInstallPeers: false

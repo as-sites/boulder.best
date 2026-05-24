@@ -22,5 +22,9 @@
     "oxlint-tsgolint": "0.23.0",
     "typescript": "6.0.3",
     "vitest": "catalog:vitest"
+  },
+  "dependencies": {
+    "@mantine/dates": "catalog:mantine",
+    "dayjs": "1.11.20"
   }
 }
