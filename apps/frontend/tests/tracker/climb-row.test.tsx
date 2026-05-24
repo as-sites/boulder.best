@@ -35,7 +35,7 @@ const ClimbRowWrapper = ({
 };
 
 describe(ClimbRow, () => {
-  it('shows manual duration input when timer is idle', () => {
+  it('shows timer + edit controls when timer is idle', () => {
     render(
       <MantineProvider>
         <ClimbRowWrapper />
@@ -43,19 +43,43 @@ describe(ClimbRow, () => {
     );
 
     expect(
-      screen.getByRole('textbox', { name: /duration/i }),
+      screen.queryByRole('textbox', { name: /duration/i }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Edit duration' }),
     ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Start' })).toBeInTheDocument();
   });
 
-  it('hides manual duration input after the timer is started', () => {
+  it('switches from timer text to manual input when edit is clicked', () => {
     render(
       <MantineProvider>
         <ClimbRowWrapper />
       </MantineProvider>,
     );
 
-    fireEvent.click(screen.getByRole('button', { name: 'Start timer' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Edit duration' }));
 
+    expect(
+      screen.getByRole('textbox', { name: /duration/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Start' }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('hides manual duration controls after the timer is started', () => {
+    render(
+      <MantineProvider>
+        <ClimbRowWrapper />
+      </MantineProvider>,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Start' }));
+
+    expect(
+      screen.queryByRole('button', { name: 'Edit duration' }),
+    ).not.toBeInTheDocument();
     expect(
       screen.queryByRole('textbox', { name: /duration/i }),
     ).not.toBeInTheDocument();
@@ -69,7 +93,7 @@ describe(ClimbRow, () => {
     );
 
     expect(
-      screen.queryByRole('textbox', { name: /duration/i }),
+      screen.queryByRole('button', { name: 'Edit duration' }),
     ).not.toBeInTheDocument();
   });
 
@@ -80,6 +104,7 @@ describe(ClimbRow, () => {
       </MantineProvider>,
     );
 
+    fireEvent.click(screen.getByRole('button', { name: 'Edit duration' }));
     const input = screen.getByRole('textbox', { name: /duration/i });
     fireEvent.change(input, { target: { value: '1:30' } });
     fireEvent.blur(input);
@@ -91,8 +116,11 @@ describe(ClimbRow, () => {
 
     // Timer controls should be gone (stopped timer renders null in TimerControls)
     expect(
-      screen.queryByRole('button', { name: 'Start timer' }),
+      screen.queryByRole('button', { name: 'Start' }),
     ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Edit duration' }),
+    ).toBeInTheDocument();
   });
 
   it('shows an error and keeps input visible for invalid duration', () => {
@@ -102,6 +130,7 @@ describe(ClimbRow, () => {
       </MantineProvider>,
     );
 
+    fireEvent.click(screen.getByRole('button', { name: 'Edit duration' }));
     const input = screen.getByRole('textbox', { name: /duration/i });
     fireEvent.change(input, { target: { value: 'bad' } });
     fireEvent.blur(input);
@@ -113,22 +142,24 @@ describe(ClimbRow, () => {
     ).toBeInTheDocument();
   });
 
-  it('does nothing on blur when input is empty', () => {
+  it('cancels editing on blur when input is empty', () => {
     render(
       <MantineProvider>
         <ClimbRowWrapper />
       </MantineProvider>,
     );
 
+    fireEvent.click(screen.getByRole('button', { name: 'Edit duration' }));
     const input = screen.getByRole('textbox', { name: /duration/i });
-    fireEvent.blur(input); // empty — no-op
+    fireEvent.blur(input);
 
-    // Timer still idle, input still visible
+    // Timer still idle, edit mode closed
     expect(
-      screen.getByRole('textbox', { name: /duration/i }),
-    ).toBeInTheDocument();
+      screen.queryByRole('textbox', { name: /duration/i }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Start' })).toBeInTheDocument();
     expect(
-      screen.getByRole('button', { name: 'Start timer' }),
+      screen.getByRole('button', { name: 'Edit duration' }),
     ).toBeInTheDocument();
   });
 
@@ -139,6 +170,7 @@ describe(ClimbRow, () => {
       </MantineProvider>,
     );
 
+    fireEvent.click(screen.getByRole('button', { name: 'Edit duration' }));
     const input = screen.getByRole('textbox', { name: /duration/i });
     fireEvent.change(input, { target: { value: '2:00' } });
     fireEvent.keyDown(input, { key: 'Enter' });

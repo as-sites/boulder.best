@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import {
+  ActionIcon,
   Button,
   Group,
   Paper,
@@ -7,7 +8,7 @@ import {
   Text,
   TextInput as MantineTextInput,
 } from '@mantine/core';
-import { PencilSimpleIcon } from '@phosphor-icons/react';
+import { CheckIcon, PencilSimpleIcon } from '@phosphor-icons/react';
 import {
   Checkbox,
   Select,
@@ -23,6 +24,8 @@ import {
 import { TimerDisplay } from '../components/timer/timer-display.js';
 import { useTimerDisplayMilliseconds } from '../lib/settings/index.js';
 import {
+  elapsedDurationMs,
+  formatDurationMs,
   parseDurationInput,
   pauseTimer,
   resumeTimer,
@@ -36,50 +39,44 @@ import { createClimbAttempt } from './entry-factory.js';
 import { TimerControls } from './timer-controls.js';
 
 interface ManualDurationInputProps {
-  onCommit: (durationMs: number) => void;
+  value: string;
+  error: string | null;
+  placeholder: string;
+  onChange: (value: string) => void;
+  onCommit: () => void;
+  onCancel: () => void;
 }
 
-/** Inline duration editor that parses MM:SS (or S / H:MM:SS) on blur or Enter. */
-const ManualDurationInput = ({ onCommit }: ManualDurationInputProps) => {
-  const [value, setValue] = useState('');
-  const [error, setError] = useState<string | null>(null);
-
-  const commit = () => {
-    const trimmed = value.trim();
-    if (!trimmed) {
-      return;
-    }
-    const ms = parseDurationInput(trimmed);
-    if (ms === null) {
-      setError('Enter time as M:SS (e.g. 1:30)');
-      return;
-    }
-    setError(null);
-    onCommit(ms);
-  };
-
-  return (
-    <MantineTextInput
-      placeholder="0:00"
-      size="xs"
-      w={110}
-      value={value}
-      error={error}
-      leftSection={<PencilSimpleIcon aria-hidden size={14} />}
-      aria-label="Duration (MM:SS)"
-      onChange={(event) => {
-        setValue(event.currentTarget.value);
-        setError(null);
-      }}
-      onBlur={commit}
-      onKeyDown={(event) => {
-        if (event.key === 'Enter') {
-          commit();
-        }
-      }}
-    />
-  );
-};
+/** Inline duration editor for MM:SS(.mmm) style manual entry. */
+const ManualDurationInput = ({
+  value,
+  error,
+  placeholder,
+  onChange,
+  onCommit,
+  onCancel,
+}: ManualDurationInputProps) => (
+  <MantineTextInput
+    placeholder={placeholder}
+    size="xs"
+    w={86}
+    value={value}
+    error={error}
+    aria-label="Duration (MM:SS)"
+    onChange={(event) => {
+      onChange(event.currentTarget.value);
+    }}
+    onBlur={onCommit}
+    onKeyDown={(event) => {
+      if (event.key === 'Enter') {
+        onCommit();
+      }
+      if (event.key === 'Escape') {
+        onCancel();
+      }
+    }}
+  />
+);
 
 export interface ClimbRowProps {
   control: Control<SessionFormValues>;
@@ -102,6 +99,13 @@ export const ClimbRow = ({
 }: ClimbRowProps) => {
   const { setValue, getValues } = useFormContext<SessionFormValues>();
   const { enabled: showTimerMilliseconds } = useTimerDisplayMilliseconds();
+  const [editingAttemptIndex, setEditingAttemptIndex] = useState<number | null>(
+    null,
+  );
+  const [manualDurationDraft, setManualDurationDraft] = useState('');
+  const [manualDurationError, setManualDurationError] = useState<string | null>(
+    null,
+  );
   const entryPath = `entries.${index}` as const;
   const climb = useWatch({ control, name: entryPath });
 
@@ -139,6 +143,9 @@ export const ClimbRow = ({
     }
 
     attemptsField.remove(attemptIndex);
+    if (editingAttemptIndex === attemptIndex) {
+      setEditingAttemptIndex(null);
+    }
     const reordered = getValues(`${entryPath}.climbAttempts`).map(
       (item, sequenceOrder) => ({ ...item, sequenceOrder }),
     );
@@ -148,6 +155,52 @@ export const ClimbRow = ({
   const handleAddAttempt = () => {
     const nextOrder = climb.climbAttempts.length;
     attemptsField.append(createClimbAttempt(nextOrder));
+  };
+
+  const closeManualDurationEditor = () => {
+    setEditingAttemptIndex(null);
+    setManualDurationError(null);
+  };
+
+  const openManualDurationEditor = (
+    attemptIndex: number,
+    timer: (typeof climb.climbAttempts)[number]['timer'],
+  ) => {
+    setEditingAttemptIndex(attemptIndex);
+    setManualDurationDraft(
+      formatDurationMs(elapsedDurationMs(timer), {
+        showMilliseconds: showTimerMilliseconds,
+      }),
+    );
+    setManualDurationError(null);
+  };
+
+  const commitManualDuration = (attemptIndex: number, initialValue: string) => {
+    const trimmed = manualDurationDraft.trim();
+    if (!trimmed || trimmed === initialValue) {
+      closeManualDurationEditor();
+      return;
+    }
+    const durationMs = parseDurationInput(trimmed);
+    if (durationMs === null) {
+      setManualDurationError(
+        'Enter time as M:SS or M:SS.mmm (e.g. 1:30 or 1:30.250)',
+      );
+      return;
+    }
+    setValue(
+      `${entryPath}.climbAttempts.${attemptIndex}.durationMs`,
+      durationMs,
+      {
+        shouldDirty: true,
+      },
+    );
+    updateAttemptTimer(attemptIndex, {
+      status: 'stopped',
+      accumulatedDurationMs: durationMs,
+      activeStartTime: null,
+    });
+    closeManualDurationEditor();
   };
 
   return (
@@ -194,90 +247,147 @@ export const ClimbRow = ({
           <Text size="sm" fw={500}>
             Attempts
           </Text>
-          {climb.climbAttempts.map((attempt, attemptIndex) => (
-            <Paper key={attemptIndex} p="sm" withBorder>
-              <Stack gap="xs">
-                <Group justify="space-between">
-                  <Text size="sm">Attempt {attemptIndex + 1}</Text>
-                  <Group gap="sm">
-                    <TimerDisplay
-                      timer={attempt.timer}
-                      size="sm"
-                      showMilliseconds={showTimerMilliseconds}
-                    />
-                    {!isFinalized && attempt.timer.status === 'idle' ? (
-                      <ManualDurationInput
-                        onCommit={(durationMs) => {
-                          setValue(
-                            `${entryPath}.climbAttempts.${attemptIndex}.durationMs`,
-                            durationMs,
-                            { shouldDirty: true },
-                          );
-                          updateAttemptTimer(attemptIndex, {
-                            status: 'stopped',
-                            accumulatedDurationMs: durationMs,
-                            activeStartTime: null,
-                          });
-                        }}
-                      />
-                    ) : null}
-                    {!isFinalized ? (
-                      <TimerControls
-                        timer={attempt.timer}
-                        onStart={() => {
-                          updateAttemptTimer(
-                            attemptIndex,
-                            startTimer(attempt.timer),
-                          );
-                        }}
-                        onResume={() => {
-                          updateAttemptTimer(
-                            attemptIndex,
-                            resumeTimer(attempt.timer),
-                          );
-                        }}
-                        onPause={() => {
-                          updateAttemptTimer(
-                            attemptIndex,
-                            pauseTimer(attempt.timer),
-                          );
-                        }}
-                        onStop={() => {
-                          updateAttemptTimer(
-                            attemptIndex,
-                            stopTimer(attempt.timer),
-                          );
-                        }}
-                      />
-                    ) : null}
+          {climb.climbAttempts.map((attempt, attemptIndex) => {
+            const canEditManualDuration =
+              attempt.timer.status === 'idle' ||
+              attempt.timer.status === 'stopped';
+            const isEditingManualDuration =
+              canEditManualDuration && editingAttemptIndex === attemptIndex;
+            const initialDurationValue = formatDurationMs(
+              elapsedDurationMs(attempt.timer),
+              {
+                showMilliseconds: showTimerMilliseconds,
+              },
+            );
+
+            return (
+              <Paper key={attemptIndex} p="sm" withBorder>
+                <Stack gap="xs">
+                  <Group justify="space-between">
+                    <Text size="sm">Attempt {attemptIndex + 1}</Text>
+                    <Group gap={6}>
+                      {isEditingManualDuration ? (
+                        <ManualDurationInput
+                          value={manualDurationDraft}
+                          error={manualDurationError}
+                          placeholder={formatDurationMs(0, {
+                            showMilliseconds: showTimerMilliseconds,
+                          })}
+                          onChange={(value) => {
+                            setManualDurationDraft(value);
+                            setManualDurationError(null);
+                          }}
+                          onCommit={() => {
+                            commitManualDuration(
+                              attemptIndex,
+                              initialDurationValue,
+                            );
+                          }}
+                          onCancel={() => {
+                            closeManualDurationEditor();
+                          }}
+                        />
+                      ) : (
+                        <TimerDisplay
+                          timer={attempt.timer}
+                          size="sm"
+                          showMilliseconds={showTimerMilliseconds}
+                        />
+                      )}
+                      {!isFinalized && canEditManualDuration ? (
+                        <ActionIcon
+                          size="sm"
+                          variant="subtle"
+                          color={isEditingManualDuration ? 'green' : 'gray'}
+                          aria-label={
+                            isEditingManualDuration
+                              ? 'Confirm duration'
+                              : 'Edit duration'
+                          }
+                          onMouseDown={(event) => {
+                            if (isEditingManualDuration) {
+                              event.preventDefault();
+                            }
+                          }}
+                          onClick={() => {
+                            if (isEditingManualDuration) {
+                              commitManualDuration(
+                                attemptIndex,
+                                initialDurationValue,
+                              );
+                              return;
+                            }
+                            openManualDurationEditor(
+                              attemptIndex,
+                              attempt.timer,
+                            );
+                          }}
+                        >
+                          {isEditingManualDuration ? (
+                            <CheckIcon aria-hidden size={14} />
+                          ) : (
+                            <PencilSimpleIcon aria-hidden size={14} />
+                          )}
+                        </ActionIcon>
+                      ) : null}
+                      {!isFinalized && !isEditingManualDuration ? (
+                        <TimerControls
+                          timer={attempt.timer}
+                          onStart={() => {
+                            updateAttemptTimer(
+                              attemptIndex,
+                              startTimer(attempt.timer),
+                            );
+                          }}
+                          onResume={() => {
+                            updateAttemptTimer(
+                              attemptIndex,
+                              resumeTimer(attempt.timer),
+                            );
+                          }}
+                          onPause={() => {
+                            updateAttemptTimer(
+                              attemptIndex,
+                              pauseTimer(attempt.timer),
+                            );
+                          }}
+                          onStop={() => {
+                            updateAttemptTimer(
+                              attemptIndex,
+                              stopTimer(attempt.timer),
+                            );
+                          }}
+                        />
+                      ) : null}
+                    </Group>
                   </Group>
-                </Group>
-                <Textarea<SessionFormValues>
-                  label="Attempt note"
-                  name={`${entryPath}.climbAttempts.${attemptIndex}.notes`}
-                  disabled={isFinalized}
-                  minRows={1}
-                />
-                <Checkbox<SessionFormValues>
-                  label="Completed"
-                  name={`${entryPath}.climbAttempts.${attemptIndex}.completed`}
-                  disabled={isFinalized}
-                />
-                {!isFinalized && climb.climbAttempts.length > 1 ? (
-                  <Button
-                    size="compact-xs"
-                    variant="subtle"
-                    color="red"
-                    onClick={() => {
-                      handleRemoveAttempt(attemptIndex);
-                    }}
-                  >
-                    Remove attempt
-                  </Button>
-                ) : null}
-              </Stack>
-            </Paper>
-          ))}
+                  <Textarea<SessionFormValues>
+                    label="Attempt note"
+                    name={`${entryPath}.climbAttempts.${attemptIndex}.notes`}
+                    disabled={isFinalized}
+                    minRows={1}
+                  />
+                  <Checkbox<SessionFormValues>
+                    label="Completed"
+                    name={`${entryPath}.climbAttempts.${attemptIndex}.completed`}
+                    disabled={isFinalized}
+                  />
+                  {!isFinalized && climb.climbAttempts.length > 1 ? (
+                    <Button
+                      size="compact-xs"
+                      variant="subtle"
+                      color="red"
+                      onClick={() => {
+                        handleRemoveAttempt(attemptIndex);
+                      }}
+                    >
+                      Remove attempt
+                    </Button>
+                  ) : null}
+                </Stack>
+              </Paper>
+            );
+          })}
           {!isFinalized ? (
             <Button
               size="compact-sm"

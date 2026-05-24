@@ -49,6 +49,12 @@ describe(parseDurationInput, () => {
     expect(parseDurationInput('0:45')).toBe(45_000);
   });
 
+  it('parses optional milliseconds in the seconds segment', () => {
+    expect(parseDurationInput('1:23.123')).toBe(83_123);
+    expect(parseDurationInput('0:45.5')).toBe(45_500);
+    expect(parseDurationInput('1:00:00.007')).toBe(3_600_007);
+  });
+
   it('parses H:MM:SS format', () => {
     expect(parseDurationInput('1:00:00')).toBe(3_600_000);
     expect(parseDurationInput('1:30:30')).toBe(5_430_000);
@@ -57,6 +63,7 @@ describe(parseDurationInput, () => {
   it('returns null when seconds part exceeds 59', () => {
     expect(parseDurationInput('1:60')).toBeNull();
     expect(parseDurationInput('1:00:60')).toBeNull();
+    expect(parseDurationInput('1:60.123')).toBeNull();
   });
 
   it('returns null when minutes part exceeds 59 in H:MM:SS', () => {
@@ -67,6 +74,8 @@ describe(parseDurationInput, () => {
     expect(parseDurationInput('abc')).toBeNull();
     expect(parseDurationInput('1:ab')).toBeNull();
     expect(parseDurationInput('1.5')).toBeNull();
+    expect(parseDurationInput('1:23.1234')).toBeNull();
+    expect(parseDurationInput('1:23.')).toBeNull();
     expect(parseDurationInput('-1')).toBeNull();
   });
 

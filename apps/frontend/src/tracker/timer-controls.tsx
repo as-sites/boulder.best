@@ -1,4 +1,4 @@
-import { ActionIcon, Group } from '@mantine/core';
+import { ActionIcon, Button, Group } from '@mantine/core';
 import { PauseIcon, PlayIcon, StopIcon } from '@phosphor-icons/react';
 import type { TimerState } from '../lib/timer/types.js';
 
@@ -24,16 +24,16 @@ export const TimerControls = ({
   }
 
   return (
-    <Group gap="xs">
+    <Group gap={4}>
       {timer.status === 'idle' ? (
-        <ActionIcon
-          size="sm"
+        <Button
+          size="compact-xs"
           variant="light"
-          aria-label="Start timer"
+          leftSection={<PlayIcon aria-hidden size={14} />}
           onClick={onStart}
         >
-          <PlayIcon aria-hidden size={14} />
-        </ActionIcon>
+          Start
+        </Button>
       ) : null}
       {timer.status === 'running' ? (
         <ActionIcon
@@ -56,15 +56,15 @@ export const TimerControls = ({
         </ActionIcon>
       ) : null}
       {timer.status === 'running' || timer.status === 'paused' ? (
-        <ActionIcon
-          size="sm"
+        <Button
+          size="compact-xs"
           variant="light"
           color="red"
-          aria-label="Stop timer"
+          leftSection={<StopIcon aria-hidden size={14} />}
           onClick={onStop}
         >
-          <StopIcon aria-hidden size={14} />
-        </ActionIcon>
+          Stop
+        </Button>
       ) : null}
     </Group>
   );
