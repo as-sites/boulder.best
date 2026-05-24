@@ -25,3 +25,52 @@ export const formatDurationMs = (
 
   return `${minutes}:${paddedSeconds}${suffix}`;
 };
+
+const isDigits = (s: string): boolean => /^\d+$/.test(s);
+
+/**
+ * Parses user duration input into milliseconds. Accepts `S`, `M:SS`, `MM:SS`,
+ * or `H:MM:SS` formats. Returns `null` for empty or invalid input.
+ */
+export const parseDurationInput = (input: string): number | null => {
+  const trimmed = input.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  const parts = trimmed.split(':');
+
+  if (parts.length === 1) {
+    if (!isDigits(parts[0])) {
+      return null;
+    }
+    return Number.parseInt(parts[0], 10) * 1000;
+  }
+
+  if (parts.length === 2) {
+    const [mPart, sPart] = parts as [string, string];
+    if (!isDigits(mPart) || !isDigits(sPart)) {
+      return null;
+    }
+    const s = Number.parseInt(sPart, 10);
+    if (s > 59) {
+      return null;
+    }
+    return (Number.parseInt(mPart, 10) * 60 + s) * 1000;
+  }
+
+  if (parts.length === 3) {
+    const [hPart, mPart, sPart] = parts as [string, string, string];
+    if (!isDigits(hPart) || !isDigits(mPart) || !isDigits(sPart)) {
+      return null;
+    }
+    const m = Number.parseInt(mPart, 10);
+    const s = Number.parseInt(sPart, 10);
+    if (m > 59 || s > 59) {
+      return null;
+    }
+    return (Number.parseInt(hPart, 10) * 3600 + m * 60 + s) * 1000;
+  }
+
+  return null;
+};

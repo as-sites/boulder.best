@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Button, Group, Paper, Stack, Text } from '@mantine/core';
 import {
   Checkbox,
@@ -14,6 +15,7 @@ import {
 import { TimerDisplay } from '../components/timer/timer-display.js';
 import { useTimerDisplayMilliseconds } from '../lib/settings/index.js';
 import {
+  parseDurationInput,
   pauseTimer,
   resumeTimer,
   startTimer,
@@ -24,6 +26,50 @@ import { ClimbPhotoAttachments } from './climb-photo-attachments.js';
 import { confirmRemoval } from './confirm-removal.js';
 import { createClimbAttempt } from './entry-factory.js';
 import { TimerControls } from './timer-controls.js';
+
+interface ManualDurationInputProps {
+  onCommit: (durationMs: number) => void;
+}
+
+/** Controlled-free input that parses MM:SS (or S / H:MM:SS) on blur or Enter. */
+const ManualDurationInput = ({ onCommit }: ManualDurationInputProps) => {
+  const [value, setValue] = useState('');
+  const [error, setError] = useState<string | null>(null);
+
+  const commit = () => {
+    const trimmed = value.trim();
+    if (!trimmed) {
+      return;
+    }
+    const ms = parseDurationInput(trimmed);
+    if (ms === null) {
+      setError('Enter time as M:SS (e.g. 1:30)');
+      return;
+    }
+    setError(null);
+    onCommit(ms);
+  };
+
+  return (
+    <TextInput
+      label="Duration (MM:SS)"
+      placeholder="0:00"
+      size="xs"
+      value={value}
+      error={error}
+      onChange={(event) => {
+        setValue(event.currentTarget.value);
+        setError(null);
+      }}
+      onBlur={commit}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter') {
+          commit();
+        }
+      }}
+    />
+  );
+};
 
 export interface ClimbRowProps {
   control: Control<SessionFormValues>;
@@ -180,6 +226,22 @@ export const ClimbRow = ({
                     ) : null}
                   </Group>
                 </Group>
+                {!isFinalized && attempt.timer.status === 'idle' ? (
+                  <ManualDurationInput
+                    onCommit={(durationMs) => {
+                      setValue(
+                        `${entryPath}.climbAttempts.${attemptIndex}.durationMs`,
+                        durationMs,
+                        { shouldDirty: true },
+                      );
+                      updateAttemptTimer(attemptIndex, {
+                        status: 'stopped',
+                        accumulatedDurationMs: durationMs,
+                        activeStartTime: null,
+                      });
+                    }}
+                  />
+                ) : null}
                 <Textarea<SessionFormValues>
                   label="Attempt note"
                   name={`${entryPath}.climbAttempts.${attemptIndex}.notes`}
