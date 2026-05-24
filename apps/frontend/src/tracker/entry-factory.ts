@@ -18,7 +18,7 @@ export const createClimbAttempt = (
   sequenceOrder,
   durationMs: 0,
   completed: false,
-  notes: null,
+  notes: '',
   timer: createIdleTimer(),
 });
 
@@ -30,8 +30,8 @@ export const createClimbEntry = (
   sequenceOrder,
   type: 'climb',
   name,
-  grade: null,
-  notes: null,
+  grade: '',
+  notes: '',
   durationMs: 0,
   timer: createIdleTimer(),
   climbAttempts: [createClimbAttempt(0)],

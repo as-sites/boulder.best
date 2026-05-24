@@ -177,7 +177,7 @@ export const SessionForm = ({ initialValues, onStopped }: SessionFormProps) => {
       entry.type === 'climb'
         ? entry.timer.status === 'running' ||
           entry.timer.status === 'paused' ||
-          Boolean(entry.notes?.trim())
+          Boolean(entry.notes.trim())
         : entry.timer.status === 'running' || entry.timer.status === 'paused';
 
     if (needsConfirm && !confirmRemoval('Remove this entry?')) {
@@ -240,9 +240,9 @@ export const SessionForm = ({ initialValues, onStopped }: SessionFormProps) => {
           label="Session notes"
           placeholder="Optional notes for this session"
           disabled={isFinalized}
-          value={notes ?? ''}
+          value={notes}
           onChange={(event) => {
-            form.setValue('notes', event.currentTarget.value || null, {
+            form.setValue('notes', event.currentTarget.value, {
               shouldDirty: true,
             });
           }}

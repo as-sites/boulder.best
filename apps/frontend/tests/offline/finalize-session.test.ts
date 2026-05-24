@@ -16,6 +16,7 @@ const stoppedSessionFixture = (): SessionFormValues => ({
   startTime: '2026-05-18T10:00:00Z',
   endTime: '2026-05-18T12:00:00Z',
   totalDurationMs: 7_200_000,
+  notes: '',
   status: 'stopped',
   entries: [
     {
@@ -24,6 +25,7 @@ const stoppedSessionFixture = (): SessionFormValues => ({
       type: 'climb',
       name: 'Pink corner',
       grade: 'V3',
+      notes: '',
       durationMs: 0,
       timer: {
         accumulatedDurationMs: 30_000,
@@ -35,6 +37,7 @@ const stoppedSessionFixture = (): SessionFormValues => ({
           sequenceOrder: 0,
           durationMs: 0,
           completed: true,
+          notes: '',
           timer: {
             accumulatedDurationMs: 12_000,
             activeStartTime: null,
@@ -44,6 +47,7 @@ const stoppedSessionFixture = (): SessionFormValues => ({
         {
           sequenceOrder: 1,
           durationMs: 5000,
+          notes: '',
           timer: {
             accumulatedDurationMs: 8000,
             activeStartTime: null,

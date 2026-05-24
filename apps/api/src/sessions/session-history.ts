@@ -166,7 +166,7 @@ export const getSessionDetail = async (
     startTime: session.startTime.toISOString(),
     endTime: session.endTime.toISOString(),
     totalDurationMs: session.totalDurationMs,
-    notes: session.notes ?? undefined,
+    notes: session.notes,
     entries: entries.map((entry) => {
       if (entry.type === 'break') {
         return {
@@ -184,10 +184,10 @@ export const getSessionDetail = async (
         sequenceOrder: entry.sequenceOrder,
         durationMs: entry.durationMs,
         type: 'climb' as const,
-        name: entry.name,
-        grade: entry.grade,
+        name: entry.name ?? '',
+        grade: entry.grade ?? '',
         attempts: attemptCount > 0 ? attemptCount : null,
-        notes: entry.notes ?? undefined,
+        notes: entry.notes,
         images: (imagesByEntryId.get(entry.id) ?? []).map((image) => ({
           id: image.id,
           index: image.index,

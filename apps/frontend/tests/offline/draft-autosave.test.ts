@@ -15,6 +15,7 @@ const sessionFormFixture = (): SessionFormValues => ({
   startTime: '2026-05-18T10:00:00Z',
   endTime: null,
   totalDurationMs: 0,
+  notes: '',
   status: 'active',
   entries: [
     {
@@ -23,6 +24,7 @@ const sessionFormFixture = (): SessionFormValues => ({
       type: 'climb',
       name: 'Pink corner',
       grade: 'V3',
+      notes: '',
       durationMs: 0,
       timer: createIdleTimer(),
       climbAttempts: [

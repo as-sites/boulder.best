@@ -50,7 +50,7 @@ export const syncSessionPayloadFixture = {
       type: 'climb' as const,
       name: 'Pink corner route',
       grade: 'V3',
-      notes: null,
+      notes: '',
       climbAttempts: [
         {
           sequenceOrder: 0,
@@ -58,7 +58,7 @@ export const syncSessionPayloadFixture = {
           completed: false,
           notes: 'Slipped on crux',
         },
-        { sequenceOrder: 1, durationMs: 25_000, completed: true, notes: null },
+        { sequenceOrder: 1, durationMs: 25_000, completed: true, notes: '' },
       ],
       images: [syncedImageFixture, syncedImageFixtureTwo],
     },

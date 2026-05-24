@@ -32,6 +32,7 @@ const payloadFixture = (
   startTime: '2026-05-21T10:00:00.000Z',
   endTime: '2026-05-21T11:00:00.000Z',
   totalDurationMs: 3_600_000,
+  notes: '',
   entries: [
     { id: 'entry-1', sequenceOrder: 0, type: 'break', durationMs: 1000 },
   ],

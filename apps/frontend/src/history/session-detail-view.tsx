@@ -134,7 +134,7 @@ export const SessionDetailView = ({
           <Paper key={entry.id} p="md" withBorder>
             <Stack gap="xs">
               <Text fw={600}>
-                {entry.type === 'climb' ? (entry.name ?? 'Climb') : 'Break'}
+                {entry.type === 'climb' ? entry.name || 'Climb' : 'Break'}
               </Text>
               <Text size="sm">{formatDurationMs(entry.durationMs)}</Text>
               {entry.type === 'climb' ? (

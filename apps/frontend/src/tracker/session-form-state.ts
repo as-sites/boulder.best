@@ -9,7 +9,7 @@ export const createEmptySessionForm = (): SessionFormValues => ({
   startTime: null,
   endTime: null,
   totalDurationMs: 0,
-  notes: null,
+  notes: '',
   status: 'not_started',
   entries: [],
 });

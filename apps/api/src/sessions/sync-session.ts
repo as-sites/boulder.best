@@ -86,7 +86,7 @@ export const syncSession = async (
       startTime,
       endTime,
       totalDurationMs: payload.totalDurationMs,
-      notes: payload.notes ?? null,
+      notes: payload.notes,
       updatedAt: now,
     })
     .onConflictDoUpdate({
@@ -97,7 +97,7 @@ export const syncSession = async (
         startTime,
         endTime,
         totalDurationMs: payload.totalDurationMs,
-        notes: payload.notes ?? null,
+        notes: payload.notes,
         updatedAt: now,
       },
     });
@@ -184,7 +184,7 @@ const upsertClimbEntry = async (
       durationMs: entry.durationMs,
       name: entry.name,
       grade: entry.grade,
-      notes: entry.notes ?? null,
+      notes: entry.notes,
       updatedAt: now,
     })
     .onConflictDoUpdate({
@@ -194,7 +194,7 @@ const upsertClimbEntry = async (
         durationMs: entry.durationMs,
         name: entry.name,
         grade: entry.grade,
-        notes: entry.notes ?? null,
+        notes: entry.notes,
         updatedAt: now,
       },
     });
@@ -237,7 +237,7 @@ const upsertClimbEntry = async (
         sequenceOrder: attempt.sequenceOrder,
         durationMs: attempt.durationMs,
         completed: attempt.completed ?? null,
-        notes: attempt.notes ?? null,
+        notes: attempt.notes,
         updatedAt: now,
       })
       .onConflictDoUpdate({
@@ -245,7 +245,7 @@ const upsertClimbEntry = async (
         set: {
           durationMs: attempt.durationMs,
           completed: attempt.completed ?? null,
-          notes: attempt.notes ?? null,
+          notes: attempt.notes,
           updatedAt: now,
         },
       });
