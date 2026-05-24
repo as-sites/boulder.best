@@ -9,6 +9,12 @@ import { createEmptySessionForm } from '../../src/tracker/session-form-state.js'
 const trackerMocks = vi.hoisted(() => ({
   finalizeStoppedSession: vi.fn(),
   restoreActiveDraft: vi.fn(),
+  navigate: vi.fn(),
+}));
+
+vi.mock(import('@tanstack/react-router'), async (importOriginal) => ({
+  ...(await importOriginal()),
+  useNavigate: () => trackerMocks.navigate,
 }));
 
 vi.mock(import('../../src/offline/index.js'), async (importOriginal) => ({
@@ -65,9 +71,10 @@ describe('tracker page finalization flow', () => {
   beforeEach(() => {
     trackerMocks.finalizeStoppedSession.mockReset();
     trackerMocks.restoreActiveDraft.mockReset();
+    trackerMocks.navigate.mockReset();
   });
 
-  it('resets to a fresh tracker state after finalizing a stopped session', async () => {
+  it('navigates to session history after finalizing a stopped session', async () => {
     const activeSession = {
       ...createEmptySessionForm(),
       gymId: 'a1b2c3d4-e5f6-4789-a234-56789abcdef0',
@@ -76,13 +83,11 @@ describe('tracker page finalization flow', () => {
       status: 'active',
     } satisfies SessionFormValues;
 
-    trackerMocks.restoreActiveDraft
-      .mockResolvedValueOnce({
-        id: 'active',
-        formData: activeSession,
-        lastSavedAt: Date.now(),
-      })
-      .mockResolvedValueOnce(undefined);
+    trackerMocks.restoreActiveDraft.mockResolvedValueOnce({
+      id: 'active',
+      formData: activeSession,
+      lastSavedAt: Date.now(),
+    });
     trackerMocks.finalizeStoppedSession.mockResolvedValue({
       id: activeSession.id,
       sessionId: activeSession.id,
@@ -122,15 +127,13 @@ describe('tracker page finalization flow', () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByTestId('mock-session-status')).toHaveTextContent(
-        'not_started',
-      );
+      expect(trackerMocks.navigate).toHaveBeenCalledWith({
+        to: '/history/$sessionId',
+        params: { sessionId: sessionIdBeforeFinalize },
+      });
     });
     expect(screen.queryByRole('alert')).toBeNull();
-    expect(screen.getByTestId('mock-session-id').textContent).not.toBe(
-      sessionIdBeforeFinalize,
-    );
-    expect(trackerMocks.restoreActiveDraft).toHaveBeenCalledTimes(2);
+    expect(trackerMocks.restoreActiveDraft).toHaveBeenCalledOnce();
   });
 
   it('preserves the stopped tracker state and shows an error when finalization fails', async () => {
@@ -176,5 +179,6 @@ describe('tracker page finalization flow', () => {
       );
     });
     expect(trackerMocks.restoreActiveDraft).toHaveBeenCalledOnce();
+    expect(trackerMocks.navigate).not.toHaveBeenCalled();
   });
 });

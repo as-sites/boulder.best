@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Container, Stack, Text, Title } from '@mantine/core';
+import { useNavigate } from '@tanstack/react-router';
 import { PageLoading } from '../components/page-loading.js';
 import type { SessionFormValues } from '../offline/db/types.js';
 import {
@@ -13,17 +14,11 @@ import {
 import { SessionForm } from '../tracker/session-form.js';
 
 export const TrackerPage = () => {
+  const navigate = useNavigate();
   const [initialValues, setInitialValues] = useState<SessionFormValues | null>(
     null,
   );
   const [finalizeError, setFinalizeError] = useState<string | null>(null);
-
-  const refreshInitialValues = async () => {
-    const draft = await restoreActiveDraft();
-    setInitialValues(
-      draft ? hydrateSessionForm(draft.formData) : createEmptySessionForm(),
-    );
-  };
 
   useEffect(() => {
     let cancelled = false;
@@ -51,7 +46,10 @@ export const TrackerPage = () => {
     void (async () => {
       try {
         await finalizeStoppedSession(values);
-        await refreshInitialValues();
+        void navigate({
+          to: '/history/$sessionId',
+          params: { sessionId: values.id },
+        });
       } catch (error) {
         setFinalizeError(
           error instanceof Error ? error.message : 'Unable to finalize session',
