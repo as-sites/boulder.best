@@ -30,7 +30,10 @@ export type {
 } from '@boulder/api-contract';
 export {
   autosaveActiveDraft,
+  isPreStartAutosaveField,
+  PRE_START_AUTOSAVE_FIELDS,
   restoreActiveDraft,
+  type PreStartAutosaveField,
 } from './draft/draft-autosave.js';
 export {
   buildSyncSessionPayload,

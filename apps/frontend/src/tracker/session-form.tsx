@@ -9,7 +9,10 @@ import {
   useWatch,
 } from 'react-hook-form';
 import type { SessionFormValues } from '../offline/db/types.js';
-import { autosaveActiveDraft } from '../offline/draft/draft-autosave.js';
+import {
+  autosaveActiveDraft,
+  isPreStartAutosaveField,
+} from '../offline/draft/draft-autosave.js';
 import { BreakRow } from './break-row.js';
 import { ClimbRow } from './climb-row.js';
 import { confirmRemoval } from './confirm-removal.js';
@@ -78,13 +81,23 @@ export const SessionForm = ({ initialValues, onStopped }: SessionFormProps) => {
     name: 'entries',
   });
 
-  useEffect(() => {
-    if (status === 'not_started') {
-      return;
-    }
+  const persistDraftNow = () => {
+    void autosaveActiveDraft(form.getValues());
+  };
 
+  const persistPreStartDraftOnBlur = () => {
+    if (status === 'not_started') {
+      persistDraftNow();
+    }
+  };
+
+  useEffect(() => {
     let timeoutId: number;
-    const { unsubscribe } = form.watch(() => {
+    const { unsubscribe } = form.watch((_values, { name }) => {
+      if (status === 'not_started' && !isPreStartAutosaveField(name)) {
+        return;
+      }
+
       window.clearTimeout(timeoutId);
       timeoutId = window.setTimeout(() => {
         void autosaveActiveDraft(form.getValues());
@@ -196,6 +209,7 @@ export const SessionForm = ({ initialValues, onStopped }: SessionFormProps) => {
           placeholder={gymsQuery.isLoading ? 'Loading gyms...' : 'Select a gym'}
           data={gymOptions}
           disabled={status !== 'not_started'}
+          onBlur={persistPreStartDraftOnBlur}
           onChange={() => {
             form.setValue('location', null, { shouldDirty: true });
           }}
@@ -210,6 +224,7 @@ export const SessionForm = ({ initialValues, onStopped }: SessionFormProps) => {
           placeholder={locationPlaceholder}
           data={locationOptions}
           disabled={!canEditLocation}
+          onBlur={persistPreStartDraftOnBlur}
           searchable={canEditLocation}
           nothingFoundMessage="No locations found"
         />
@@ -220,6 +235,7 @@ export const SessionForm = ({ initialValues, onStopped }: SessionFormProps) => {
           placeholder="Optional notes for this session"
           disabled={isFinalized}
           minRows={2}
+          onBlur={persistPreStartDraftOnBlur}
         />
 
         <Stack gap="md">

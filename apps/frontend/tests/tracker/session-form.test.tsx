@@ -32,9 +32,13 @@ const autosaveMocks = vi.hoisted(() => ({
   autosaveActiveDraft: vi.fn(),
 }));
 
-vi.mock(import('../../src/offline/draft/draft-autosave.js'), () => ({
-  autosaveActiveDraft: autosaveMocks.autosaveActiveDraft,
-}));
+vi.mock(
+  import('../../src/offline/draft/draft-autosave.js'),
+  async (importOriginal) => ({
+    ...(await importOriginal()),
+    autosaveActiveDraft: autosaveMocks.autosaveActiveDraft,
+  }),
+);
 
 const renderSessionForm = () => {
   const queryClient = new QueryClient({
@@ -136,6 +140,51 @@ describe(SessionForm, () => {
     expect(
       screen.getByRole('heading', { name: /session/i }),
     ).toBeInTheDocument();
+  });
+
+  it('autosaves pre-start gym and notes edits after debounce', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    renderSessionForm();
+
+    await waitFor(() =>
+      expect(screen.getByRole('combobox', { name: /gym/i })).toBeDefined(),
+    );
+
+    autosaveMocks.autosaveActiveDraft.mockClear();
+
+    fireEvent.click(screen.getByRole('combobox', { name: /gym/i }));
+    fireEvent.click(screen.getByText('Test Gym'));
+
+    await vi.advanceTimersByTimeAsync(300);
+
+    await waitFor(() => {
+      expect(autosaveMocks.autosaveActiveDraft).toHaveBeenCalledWith(
+        expect.objectContaining({
+          gymId: gymFixture[0].id,
+          status: 'not_started',
+        }),
+      );
+    });
+
+    autosaveMocks.autosaveActiveDraft.mockClear();
+
+    fireEvent.change(screen.getByRole('textbox', { name: /session notes/i }), {
+      target: { value: 'Finger warm-up' },
+    });
+
+    await vi.advanceTimersByTimeAsync(300);
+
+    await waitFor(() => {
+      expect(autosaveMocks.autosaveActiveDraft).toHaveBeenCalledWith(
+        expect.objectContaining({
+          notes: 'Finger warm-up',
+          status: 'not_started',
+        }),
+      );
+    });
+
+    vi.useRealTimers();
+    expect(vi.isFakeTimers()).toBe(false);
   });
 
   it('starts and stops a session', async () => {
