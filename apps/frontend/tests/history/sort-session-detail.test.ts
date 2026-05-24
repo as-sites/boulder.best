@@ -21,6 +21,7 @@ describe('session detail ordering', () => {
         name: 'Warm up',
         grade: 'V1',
         attempts: 1,
+        notes: '',
         images: [],
       },
     ]);

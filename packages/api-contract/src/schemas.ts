@@ -140,7 +140,7 @@ export const syncClimbAttemptSchema = z
       example: 12_000,
     }),
     completed: z.boolean().nullable().optional(),
-    notes: z.string().nullable().optional(),
+    notes: z.string(),
   })
   .strict()
   .openapi('SyncClimbAttempt');
@@ -148,9 +148,9 @@ export const syncClimbAttemptSchema = z
 export const syncClimbEntrySchema = syncBaseEntrySchema
   .extend({
     type: z.literal('climb'),
-    name: z.string().max(255).nullable(),
-    grade: z.string().max(50).nullable(),
-    notes: z.string().nullable().optional(),
+    name: z.string().max(255),
+    grade: z.string().max(50),
+    notes: z.string(),
     climbAttempts: z.array(syncClimbAttemptSchema).openapi({
       description:
         'Per-attempt timings for this climb; ignored on break entries',
@@ -194,7 +194,7 @@ export const syncSessionPayloadSchema = z
     totalDurationMs: z.number().int().nonnegative().openapi({
       example: 7_200_000,
     }),
-    notes: z.string().nullable().optional(),
+    notes: z.string(),
     entries: z.array(syncSessionEntrySchema).openapi({
       description: 'Chronological list of climbs and breaks for this session',
     }),
@@ -251,10 +251,10 @@ export type SessionHistoryListResponse = z.infer<
 export const sessionDetailClimbEntrySchema = syncBaseEntrySchema
   .extend({
     type: z.literal('climb'),
-    name: z.string().max(255).nullable(),
-    grade: z.string().max(50).nullable(),
+    name: z.string().max(255),
+    grade: z.string().max(50),
     attempts: z.number().int().positive().nullable(),
-    notes: z.string().nullable().optional(),
+    notes: z.string(),
     images: z.array(syncedImageSchema),
   })
   .strict()
@@ -283,7 +283,7 @@ export const sessionDetailResponseSchema = z
     startTime: isoDateTimeSchema,
     endTime: isoDateTimeSchema,
     totalDurationMs: z.number().int().nonnegative(),
-    notes: z.string().nullable().optional(),
+    notes: z.string(),
     entries: z.array(sessionDetailEntrySchema).openapi({
       description:
         'Entries sorted by sequenceOrder; climb images sorted by index',

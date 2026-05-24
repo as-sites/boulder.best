@@ -28,6 +28,7 @@ const sessionFormFixture = (): SessionFormValues => ({
   startTime: '2026-05-18T10:00:00Z',
   endTime: null,
   totalDurationMs: 0,
+  notes: '',
   status: 'active',
   entries: [],
 });
@@ -38,6 +39,7 @@ const syncPayloadFixture = (): SyncSessionPayload => ({
   startTime: '2026-05-18T10:00:00Z',
   endTime: '2026-05-18T12:00:00Z',
   totalDurationMs: 7_200_000,
+  notes: '',
   entries: [
     {
       id: 'entry-1',
@@ -46,9 +48,10 @@ const syncPayloadFixture = (): SyncSessionPayload => ({
       type: 'climb',
       name: 'Pink corner',
       grade: 'V3',
+      notes: '',
       climbAttempts: [
-        { sequenceOrder: 0, durationMs: 12_000, completed: true },
-        { sequenceOrder: 1, durationMs: 12_000 },
+        { sequenceOrder: 0, durationMs: 12_000, completed: true, notes: '' },
+        { sequenceOrder: 1, durationMs: 12_000, notes: '' },
       ],
       images: [],
     },

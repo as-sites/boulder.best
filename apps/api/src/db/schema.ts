@@ -40,7 +40,7 @@ export const sessions = pgTable(
     startTime: timestamp('start_time', { withTimezone: true }).notNull(),
     endTime: timestamp('end_time', { withTimezone: true }).notNull(),
     totalDurationMs: integer('total_duration_ms').notNull(),
-    notes: text('notes'),
+    notes: text('notes').default('').notNull(),
     createdAt: timestamp('created_at', { withTimezone: true })
       .defaultNow()
       .notNull(),
@@ -68,7 +68,7 @@ export const sessionEntries = pgTable(
     durationMs: integer('duration_ms').notNull(),
     name: varchar('name', { length: 255 }),
     grade: varchar('grade', { length: 50 }),
-    notes: text('notes'),
+    notes: text('notes').default('').notNull(),
     createdAt: timestamp('created_at', { withTimezone: true })
       .defaultNow()
       .notNull(),
@@ -127,7 +127,7 @@ export const climbAttempts = pgTable(
     sequenceOrder: integer('sequence_order').notNull(),
     durationMs: bigint('duration_ms', { mode: 'number' }).notNull(),
     completed: boolean('completed'),
-    notes: text('notes'),
+    notes: text('notes').default('').notNull(),
     createdAt: timestamp('created_at', { withTimezone: true })
       .defaultNow()
       .notNull(),

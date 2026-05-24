@@ -16,6 +16,7 @@ const syncPayloadFixture = (): SyncSessionPayload => ({
   startTime: '2026-05-18T10:00:00Z',
   endTime: '2026-05-18T12:00:00Z',
   totalDurationMs: 7_200_000,
+  notes: '',
   entries: [],
 });
 

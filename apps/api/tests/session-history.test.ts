@@ -261,7 +261,7 @@ describe('session detail persistence', () => {
           type: 'climb',
           name: 'Pink corner route',
           grade: 'V3',
-          notes: null,
+          notes: '',
         },
         {
           id: breakEntryId,
@@ -319,6 +319,7 @@ describe('session detail persistence', () => {
           type: 'climb',
           name: 'Pink corner route',
           grade: 'V3',
+          notes: '',
           attempts: 2,
           images: [
             {
@@ -444,6 +445,7 @@ describe('session history routes', () => {
       startTime: '2026-05-13T10:00:00.000Z',
       endTime: '2026-05-13T12:00:00.000Z',
       totalDurationMs: 7_200_000,
+      notes: '',
       entries: [],
     };
     historyMocks.getSessionDetail.mockResolvedValue(ownedSession);

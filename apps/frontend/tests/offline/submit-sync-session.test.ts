@@ -27,6 +27,7 @@ const climbEntryFixture = (): SyncClimbEntry => ({
   type: 'climb',
   name: 'Pink corner',
   grade: 'V3',
+  notes: '',
   durationMs: 45_000,
   climbAttempts: [],
   images: [],
@@ -38,6 +39,7 @@ const payloadFixture = (): SyncSessionPayload => ({
   startTime: '2026-05-13T10:00:00.000Z',
   endTime: '2026-05-13T12:00:00.000Z',
   totalDurationMs: 7_200_000,
+  notes: '',
   entries: [climbEntryFixture()],
 });
 
@@ -105,6 +107,7 @@ describe('submit sync session', () => {
                 sequenceOrder: 0,
                 durationMs: 8587.735_107,
                 completed: true,
+                notes: '',
               },
             ],
           },

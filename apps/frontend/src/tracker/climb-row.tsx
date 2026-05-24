@@ -80,7 +80,7 @@ export const ClimbRow = ({
     const needsConfirm =
       attempt.timer.status === 'running' ||
       attempt.timer.status === 'paused' ||
-      Boolean(attempt.notes?.trim());
+      Boolean(attempt.notes.trim());
 
     if (needsConfirm && !confirmRemoval('Remove this attempt?')) {
       return;
@@ -102,16 +102,16 @@ export const ClimbRow = ({
     <Paper p="md" withBorder>
       <Stack gap="sm">
         <Group justify="space-between">
-          <Text fw={600}>{climb.name ?? defaultName}</Text>
+          <Text fw={600}>{climb.name || defaultName}</Text>
         </Group>
 
         <TextInput
           label="Name"
           disabled={isFinalized}
-          value={climb.name ?? ''}
+          value={climb.name}
           placeholder={defaultName}
           onChange={(event) => {
-            setValue(`${entryPath}.name`, event.currentTarget.value || null, {
+            setValue(`${entryPath}.name`, event.currentTarget.value, {
               shouldDirty: true,
             });
           }}
@@ -124,7 +124,7 @@ export const ClimbRow = ({
           data={grades}
           value={climb.grade}
           onChange={(grade) => {
-            setValue(`${entryPath}.grade`, grade, { shouldDirty: true });
+            setValue(`${entryPath}.grade`, grade ?? '', { shouldDirty: true });
           }}
           clearable
           searchable
@@ -133,10 +133,10 @@ export const ClimbRow = ({
         <Textarea
           label="Climb notes"
           disabled={isFinalized}
-          value={climb.notes ?? ''}
+          value={climb.notes}
           minRows={2}
           onChange={(event) => {
-            setValue(`${entryPath}.notes`, event.currentTarget.value || null, {
+            setValue(`${entryPath}.notes`, event.currentTarget.value, {
               shouldDirty: true,
             });
           }}
@@ -197,12 +197,12 @@ export const ClimbRow = ({
                 <Textarea
                   label="Attempt note"
                   disabled={isFinalized}
-                  value={attempt.notes ?? ''}
+                  value={attempt.notes}
                   minRows={1}
                   onChange={(event) => {
                     setValue(
                       `${entryPath}.climbAttempts.${attemptIndex}.notes`,
-                      event.currentTarget.value || null,
+                      event.currentTarget.value,
                       { shouldDirty: true },
                     );
                   }}
