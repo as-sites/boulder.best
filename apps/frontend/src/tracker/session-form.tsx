@@ -249,17 +249,6 @@ export const SessionForm = ({ initialValues, onStopped }: SessionFormProps) => {
           minRows={2}
         />
 
-        {canEditEntries ? (
-          <Group>
-            <Button size="compact-sm" variant="light" onClick={handleAddClimb}>
-              Add climb
-            </Button>
-            <Button size="compact-sm" variant="light" onClick={handleAddBreak}>
-              Add break
-            </Button>
-          </Group>
-        ) : null}
-
         <Stack gap="md">
           {entries.map((entry, index) => {
             if (entry.type === 'break') {
@@ -298,6 +287,17 @@ export const SessionForm = ({ initialValues, onStopped }: SessionFormProps) => {
             );
           })}
         </Stack>
+
+        {canEditEntries ? (
+          <Group>
+            <Button size="compact-sm" variant="light" onClick={handleAddClimb}>
+              Add climb
+            </Button>
+            <Button size="compact-sm" variant="light" onClick={handleAddBreak}>
+              Add break
+            </Button>
+          </Group>
+        ) : null}
 
         {form.formState.errors.root?.message ? (
           <Text c="red" size="sm">
