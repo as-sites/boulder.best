@@ -1,0 +1,73 @@
+# Discord alert when a pull request is merged into main.
+#
+# Required repository secret:
+#   DISCORD_PR_MERGE_WEBHOOK_URL — Discord webhook URL for PR merge alerts
+
+name: PR merged
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  notify:
+    name: Notify Discord on PR merge
+    if: github.event.pull_request.merged == true && secrets.DISCORD_PR_MERGE_WEBHOOK_URL != ''
+    runs-on: blacksmith-2vcpu-ubuntu-2404
+    timeout-minutes: 5
+    steps:
+      - name: Notify Discord
+        env:
+          DISCORD_PR_MERGE_WEBHOOK_URL: ${{ secrets.DISCORD_PR_MERGE_WEBHOOK_URL }}
+        run: |
+          pr_number="${{ github.event.pull_request.number }}"
+          pr_title="${{ github.event.pull_request.title }}"
+          pr_url="${{ github.event.pull_request.html_url }}"
+          pr_author="${{ github.event.pull_request.user.login }}"
+          merged_by="${{ github.event.pull_request.merged_by.login }}"
+          base_branch="${{ github.event.pull_request.base.ref }}"
+          head_branch="${{ github.event.pull_request.head.ref }}"
+          merge_commit="${{ github.event.pull_request.merge_commit_sha }}"
+
+          payload="$(
+            jq -cn \
+              --arg repo "$GITHUB_REPOSITORY" \
+              --arg number "$pr_number" \
+              --arg title "$pr_title" \
+              --arg url "$pr_url" \
+              --arg author "$pr_author" \
+              --arg merged_by "$merged_by" \
+              --arg base "$base_branch" \
+              --arg head "$head_branch" \
+              --arg commit "$merge_commit" \
+              '{
+                embeds: [
+                  {
+                    title: ("✅ PR #" + $number + " merged"),
+                    description: $title,
+                    color: 5763719,
+                    url: $url,
+                    fields: [
+                      { name: "Repository", value: $repo, inline: true },
+                      { name: "Author", value: ("@" + $author), inline: true },
+                      { name: "Merged by", value: ("@" + $merged_by), inline: true },
+                      { name: "Branches", value: ($head + " → " + $base), inline: false },
+                      { name: "Merge commit", value: $commit, inline: false },
+                      { name: "Pull request", value: $url, inline: false }
+                    ],
+                    timestamp: (now | todateiso8601)
+                  }
+                ]
+              }'
+          )"
+
+          curl --silent --show-error --fail \
+            -H "Content-Type: application/json" \
+            -X POST \
+            --data "$payload" \
+            "$DISCORD_PR_MERGE_WEBHOOK_URL"
