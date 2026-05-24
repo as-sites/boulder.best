@@ -1,4 +1,5 @@
-import { Button, Group } from '@mantine/core';
+import { ActionIcon, Group } from '@mantine/core';
+import { PauseIcon, PlayIcon, StopIcon } from '@phosphor-icons/react';
 import type { TimerState } from '../lib/timer/types.js';
 
 export interface TimerControlsProps {
@@ -25,24 +26,45 @@ export const TimerControls = ({
   return (
     <Group gap="xs">
       {timer.status === 'idle' ? (
-        <Button size="compact-xs" variant="light" onClick={onStart}>
-          Start
-        </Button>
+        <ActionIcon
+          size="sm"
+          variant="light"
+          aria-label="Start timer"
+          onClick={onStart}
+        >
+          <PlayIcon aria-hidden size={14} />
+        </ActionIcon>
       ) : null}
       {timer.status === 'running' ? (
-        <Button size="compact-xs" variant="light" onClick={onPause}>
-          Pause
-        </Button>
+        <ActionIcon
+          size="sm"
+          variant="light"
+          aria-label="Pause timer"
+          onClick={onPause}
+        >
+          <PauseIcon aria-hidden size={14} />
+        </ActionIcon>
       ) : null}
       {timer.status === 'paused' ? (
-        <Button size="compact-xs" variant="light" onClick={onResume}>
-          Resume
-        </Button>
+        <ActionIcon
+          size="sm"
+          variant="light"
+          aria-label="Resume timer"
+          onClick={onResume}
+        >
+          <PlayIcon aria-hidden size={14} />
+        </ActionIcon>
       ) : null}
       {timer.status === 'running' || timer.status === 'paused' ? (
-        <Button size="compact-xs" variant="light" color="red" onClick={onStop}>
-          Stop
-        </Button>
+        <ActionIcon
+          size="sm"
+          variant="light"
+          color="red"
+          aria-label="Stop timer"
+          onClick={onStop}
+        >
+          <StopIcon aria-hidden size={14} />
+        </ActionIcon>
       ) : null}
     </Group>
   );

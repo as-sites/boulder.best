@@ -7,6 +7,7 @@ import {
   Text,
   TextInput as MantineTextInput,
 } from '@mantine/core';
+import { PencilSimpleIcon } from '@phosphor-icons/react';
 import {
   Checkbox,
   Select,
@@ -38,7 +39,7 @@ interface ManualDurationInputProps {
   onCommit: (durationMs: number) => void;
 }
 
-/** Controlled-free input that parses MM:SS (or S / H:MM:SS) on blur or Enter. */
+/** Inline duration editor that parses MM:SS (or S / H:MM:SS) on blur or Enter. */
 const ManualDurationInput = ({ onCommit }: ManualDurationInputProps) => {
   const [value, setValue] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -59,11 +60,13 @@ const ManualDurationInput = ({ onCommit }: ManualDurationInputProps) => {
 
   return (
     <MantineTextInput
-      label="Duration (MM:SS)"
       placeholder="0:00"
       size="xs"
+      w={110}
       value={value}
       error={error}
+      leftSection={<PencilSimpleIcon aria-hidden size={14} />}
+      aria-label="Duration (MM:SS)"
       onChange={(event) => {
         setValue(event.currentTarget.value);
         setError(null);
@@ -202,6 +205,22 @@ export const ClimbRow = ({
                       size="sm"
                       showMilliseconds={showTimerMilliseconds}
                     />
+                    {!isFinalized && attempt.timer.status === 'idle' ? (
+                      <ManualDurationInput
+                        onCommit={(durationMs) => {
+                          setValue(
+                            `${entryPath}.climbAttempts.${attemptIndex}.durationMs`,
+                            durationMs,
+                            { shouldDirty: true },
+                          );
+                          updateAttemptTimer(attemptIndex, {
+                            status: 'stopped',
+                            accumulatedDurationMs: durationMs,
+                            activeStartTime: null,
+                          });
+                        }}
+                      />
+                    ) : null}
                     {!isFinalized ? (
                       <TimerControls
                         timer={attempt.timer}
@@ -233,22 +252,6 @@ export const ClimbRow = ({
                     ) : null}
                   </Group>
                 </Group>
-                {!isFinalized && attempt.timer.status === 'idle' ? (
-                  <ManualDurationInput
-                    onCommit={(durationMs) => {
-                      setValue(
-                        `${entryPath}.climbAttempts.${attemptIndex}.durationMs`,
-                        durationMs,
-                        { shouldDirty: true },
-                      );
-                      updateAttemptTimer(attemptIndex, {
-                        status: 'stopped',
-                        accumulatedDurationMs: durationMs,
-                        activeStartTime: null,
-                      });
-                    }}
-                  />
-                ) : null}
                 <Textarea<SessionFormValues>
                   label="Attempt note"
                   name={`${entryPath}.climbAttempts.${attemptIndex}.notes`}

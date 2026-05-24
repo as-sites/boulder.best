@@ -54,7 +54,7 @@ describe(ClimbRow, () => {
       </MantineProvider>,
     );
 
-    fireEvent.click(screen.getByRole('button', { name: 'Start' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Start timer' }));
 
     expect(
       screen.queryByRole('textbox', { name: /duration/i }),
@@ -91,7 +91,7 @@ describe(ClimbRow, () => {
 
     // Timer controls should be gone (stopped timer renders null in TimerControls)
     expect(
-      screen.queryByRole('button', { name: 'Start' }),
+      screen.queryByRole('button', { name: 'Start timer' }),
     ).not.toBeInTheDocument();
   });
 
@@ -127,7 +127,9 @@ describe(ClimbRow, () => {
     expect(
       screen.getByRole('textbox', { name: /duration/i }),
     ).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Start' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Start timer' }),
+    ).toBeInTheDocument();
   });
 
   it('commits a valid duration on Enter key', () => {
