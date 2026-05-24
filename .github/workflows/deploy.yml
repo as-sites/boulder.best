@@ -187,9 +187,17 @@ jobs:
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      GITHUB_SHA: ${{ github.event.workflow_run.head_sha }}
       PR_NUMBER: ${{ github.event.workflow_run.pull_requests[0].number }}
       PREVIEW_ALIAS: pr-${{ github.event.workflow_run.pull_requests[0].number }}
       PREVIEW_ORIGIN: https://pr-${{ github.event.workflow_run.pull_requests[0].number }}.preview.boulder.best
+      VITE_SENTRY_RELEASE_FRONTEND: ${{ github.event.workflow_run.head_sha }}
+      VITE_SENTRY_DSN_FRONTEND: ${{ secrets.VITE_SENTRY_DSN_FRONTEND }}
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+      SENTRY_PROJECT_FRONTEND: ${{ secrets.SENTRY_PROJECT_FRONTEND }}
+      SENTRY_PROJECT_API: ${{ secrets.SENTRY_PROJECT_API }}
+      SENTRY_RELEASE_API: ${{ github.event.workflow_run.head_sha }}
     steps:
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -224,11 +232,10 @@ jobs:
           DATABASE_URL: ${{ steps.neon-branch.outputs.db_url_pooled }}
         run: mise run //apps/api:preview:upload
 
+      - name: Upload API source maps to Sentry
+        run: mise run api:sentry:sourcemaps
+
       - name: Upload frontend preview version
-        env:
-          SENTRY_AUTH_TOKEN: ''
-          VITE_SENTRY_DSN_FRONTEND: ''
-          VITE_SENTRY_RELEASE_FRONTEND: ''
         run: mise run //apps/frontend:preview:upload
 
       - name: Comment preview URL on pull request
@@ -248,7 +255,7 @@ jobs:
               '',
               'Same-origin `/api` routing via the preview gateway. Email/password and passkeys use `PASSKEY_RP_ID=boulder.best`.',
               '',
-              '_OAuth and Sentry are not configured for preview builds._',
+              '_OAuth redirect URIs are not configured for preview hosts._',
             ].join('\n');
 
             const { data: comments } = await github.rest.issues.listComments({

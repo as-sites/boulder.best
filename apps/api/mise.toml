@@ -138,5 +138,6 @@ wrangler versions upload --env production --outdir dist \
   --var "BETTER_AUTH_URL:$PREVIEW_ORIGIN" \
   --var "FRONTEND_URL:$PREVIEW_ORIGIN" \
   --var "PASSKEY_ORIGIN:$PREVIEW_ORIGIN" \
-  --var "PASSKEY_RP_ID:boulder.best"
+  --var "PASSKEY_RP_ID:boulder.best" \
+  --var "SENTRY_RELEASE_API:${SENTRY_RELEASE_API:-${GITHUB_SHA:-}}"
 '''

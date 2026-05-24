@@ -269,10 +269,11 @@ Do not set `VITE_API_BASE_URL` for preview frontend builds — the gateway serve
 5. Optional: passkey register + sign-in (`PASSKEY_RP_ID=boulder.best`).
 6. Confirm `https://boulder.best` is unchanged after a preview upload.
 
+Preview deploys use the same Sentry repository secrets as production (`VITE_SENTRY_DSN_FRONTEND`, `SENTRY_AUTH_TOKEN`, org/project slugs). Release IDs use the PR head commit SHA. API runtime reporting uses the production Worker `SENTRY_DSN_API` secret (inherited on `versions upload`).
+
 ### Known limitations (v1)
 
 - OAuth redirect URIs are not registered for preview hosts.
-- Sentry releases / source maps are not uploaded for preview builds.
 - Preview Worker logs are limited compared to routed production Workers.
 - R2 uses the shared production bucket.
 - Underlying `*.workers.dev` preview URLs remain publicly reachable; use the gateway URL for review.
