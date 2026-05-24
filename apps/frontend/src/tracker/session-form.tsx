@@ -79,10 +79,6 @@ export const SessionForm = ({ initialValues, onStopped }: SessionFormProps) => {
   });
 
   useEffect(() => {
-    if (status === 'not_started') {
-      return;
-    }
-
     let timeoutId: number;
     const { unsubscribe } = form.watch(() => {
       window.clearTimeout(timeoutId);
@@ -95,7 +91,7 @@ export const SessionForm = ({ initialValues, onStopped }: SessionFormProps) => {
       unsubscribe();
       window.clearTimeout(timeoutId);
     };
-  }, [form, status]);
+  }, [form]);
 
   const gymOptions =
     gymsQuery.data?.map((gym) => ({
