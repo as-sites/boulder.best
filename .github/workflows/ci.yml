@@ -5,6 +5,7 @@ on:
     types: [opened, reopened, synchronize]
     branches-ignore:
       - '**/graphite-base/**'
+  merge_group:
   push:
     branches: [main]
 
