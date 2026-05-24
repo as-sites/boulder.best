@@ -12,23 +12,27 @@ const authMocks = vi.hoisted(() => ({
 }));
 
 const sessionsGet = vi.hoisted(() =>
-  vi.fn().mockResolvedValue({
-    ok: true,
-    json: async () => ({
-      items: [
-        {
-          id: 'server-1',
-          gymId: 'gym-1',
-          gymName: 'Cloud Gym',
-          startTime: '2026-05-20T12:00:00.000Z',
-          endTime: '2026-05-20T13:00:00.000Z',
-          totalDurationMs: 3_600_000,
-          entryCount: 1,
-        },
-      ],
-      nextCursor: null,
-    }),
-  }),
+  vi.fn().mockResolvedValue(
+    Response.json(
+      {
+        items: [
+          {
+            id: 'server-1',
+            gymId: 'gym-1',
+            gymName: 'Cloud Gym',
+            startTime: '2026-05-20T12:00:00.000Z',
+            endTime: '2026-05-20T13:00:00.000Z',
+            totalDurationMs: 3_600_000,
+            entryCount: 1,
+          },
+        ],
+        nextCursor: null,
+      },
+      {
+        status: 200,
+      },
+    ),
+  ),
 );
 
 const localQueueItem = vi.hoisted(

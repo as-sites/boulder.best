@@ -1,9 +1,6 @@
 import { defineConfig } from 'oxlint';
 
 export default defineConfig({
-  categories: {
-    correctness: 'off',
-  },
   env: {
     builtin: true,
   },
@@ -58,12 +55,6 @@ export default defineConfig({
         'import/no-default-export': 'off',
       },
     },
-    {
-      files: ['**/*.test.{ts,tsx}'],
-      rules: {
-        'typescript/require-await': 'off',
-      },
-    },
   ],
   plugins: [
     'eslint',
@@ -82,18 +73,6 @@ export default defineConfig({
     'unicorn',
     'node',
   ],
-  /*
-
-  Consider adding these later (currently have lots of lint errors)
-  
-    'react-perf/jsx-no-jsx-as-prop': 'error',
-    'react-perf/jsx-no-new-array-as-prop': 'error',
-    'react-perf/jsx-no-new-function-as-prop': 'error',
-    'react-perf/jsx-no-new-object-as-prop': 'error',
-
-    'node/no-process-env': 'error',
-
-  */
   rules: {
     'eslint/accessor-pairs': 'error',
     'eslint/array-callback-return': [

@@ -44,6 +44,7 @@ vi.mock(
           sessions: {
             $get: vi.fn().mockResolvedValue({
               ok: true,
+              // oxlint-disable-next-line typescript/require-await
               json: async () => ({ items: [], nextCursor: null }),
             }),
             ':id': {

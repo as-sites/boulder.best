@@ -70,6 +70,7 @@ describe('upload offline image', () => {
 
     presignPost.mockResolvedValue({
       ok: true,
+      // oxlint-disable-next-line typescript/require-await
       json: async () => presignedUploadResponseFixture,
     });
     fetchMock.mockResolvedValue({ ok: true });
@@ -138,6 +139,7 @@ describe('upload offline image', () => {
 
     presignPost.mockResolvedValue({
       ok: true,
+      // oxlint-disable-next-line typescript/require-await
       json: async () => presignedUploadResponseFixture,
     });
     fetchMock.mockResolvedValue({ ok: true });

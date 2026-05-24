@@ -88,6 +88,7 @@ const createDetailDb = (options: {
           from: vi.fn(() => ({
             innerJoin: vi.fn(() => ({
               where: vi.fn(() => ({
+                // oxlint-disable-next-line typescript/require-await
                 limit: vi.fn(async () =>
                   options.session ? [options.session] : [],
                 ),
@@ -101,6 +102,7 @@ const createDetailDb = (options: {
         return {
           from: vi.fn(() => ({
             where: vi.fn(() => ({
+              // oxlint-disable-next-line typescript/require-await
               orderBy: vi.fn(async () => options.entries ?? []),
             })),
           })),
@@ -111,6 +113,7 @@ const createDetailDb = (options: {
         return {
           from: vi.fn(() => ({
             where: vi.fn(() => ({
+              // oxlint-disable-next-line typescript/require-await
               orderBy: vi.fn(async () => options.images ?? []),
             })),
           })),
@@ -121,6 +124,7 @@ const createDetailDb = (options: {
         from: vi.fn(() => ({
           innerJoin: vi.fn(() => ({
             where: vi.fn(() => ({
+              // oxlint-disable-next-line typescript/require-await
               groupBy: vi.fn(async () =>
                 (options.attemptCounts ?? []).map((row) => ({
                   entryId: row.entryId,

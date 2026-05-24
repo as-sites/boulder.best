@@ -18,6 +18,7 @@ const gymFixture = [
 ] as const satisfies Gym[];
 
 const gymMocks = vi.hoisted(() => ({
+  // oxlint-disable-next-line typescript/require-await
   loadCachedGyms: vi.fn(async () => gymFixture),
 }));
 
@@ -96,6 +97,7 @@ describe(SessionForm, () => {
     expect(startButton).not.toBeDisabled();
   });
 
+  // oxlint-disable-next-line typescript/require-await
   it('does not render a session-level timer in the form header', async () => {
     const queryClient = new QueryClient({
       defaultOptions: { queries: { retry: false } },
@@ -154,6 +156,7 @@ describe(SessionForm, () => {
     expect(stopButton).toBeDisabled();
   });
 
+  // oxlint-disable-next-line typescript/require-await
   it('renders attempt timers without climb-level timer controls', async () => {
     const queryClient = new QueryClient({
       defaultOptions: { queries: { retry: false } },

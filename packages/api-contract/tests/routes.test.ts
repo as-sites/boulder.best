@@ -15,7 +15,9 @@ import {
 } from './fixtures.js';
 
 const stubHandlers: ApiContractHandlers = {
+  // oxlint-disable-next-line typescript/require-await
   hello: async () => ({ message: 'test' }),
+  // oxlint-disable-next-line typescript/require-await
   getGyms: async () => [
     {
       ...gymFixture,
@@ -23,15 +25,19 @@ const stubHandlers: ApiContractHandlers = {
       locations: [...gymFixture.locations],
     },
   ],
+  // oxlint-disable-next-line typescript/require-await
   createPresignedUpload: async () => presignedUploadResponseFixture,
+  // oxlint-disable-next-line typescript/require-await
   syncSession: async () => ({
     success: true,
     sessionId,
   }),
+  // oxlint-disable-next-line typescript/require-await
   listSessions: async () => ({
     ...sessionHistoryListResponseFixture,
     items: sessionHistoryListResponseFixture.items.map((item) => ({ ...item })),
   }),
+  // oxlint-disable-next-line typescript/require-await
   getSessionDetail: async () =>
     sessionDetailResponseSchema.parse(sessionDetailResponseFixture),
 };

@@ -89,6 +89,7 @@ const createMockDb = (
     select: vi.fn(() => ({
       from: vi.fn((table: Parameters<typeof getTableName>[0]) => ({
         where: vi.fn(() => ({
+          // oxlint-disable-next-line typescript/require-await
           limit: vi.fn(async () => {
             const tableName = getTableName(table);
 
@@ -131,6 +132,7 @@ const createMockDb = (
         }
 
         return {
+          // oxlint-disable-next-line typescript/require-await
           onConflictDoUpdate: vi.fn(async (update) => {
             if (tableName === 'climb_attempts') {
               attemptConflictUpdates.push(update);
