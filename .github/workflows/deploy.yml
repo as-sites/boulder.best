@@ -83,7 +83,7 @@ jobs:
         run: mise run api:sentry:sourcemaps
 
       - name: Notify Discord on deploy failure
-        if: failure() && secrets.DISCORD_DEPLOY_WEBHOOK_URL != ''
+        if: failure()
         continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -91,6 +91,11 @@ jobs:
           DEPLOY_BRANCH: ${{ github.event.workflow_run.head_branch || github.ref_name }}
           DEPLOY_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
         run: |
+          if [ -z "$DISCORD_DEPLOY_WEBHOOK_URL" ]; then
+            echo "DISCORD_DEPLOY_WEBHOOK_URL not set; skipping notification."
+            exit 0
+          fi
+
           run_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
           jobs_api_url="$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/jobs?per_page=100"
 

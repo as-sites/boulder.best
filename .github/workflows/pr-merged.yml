@@ -17,7 +17,7 @@ permissions:
 jobs:
   notify:
     name: Notify Discord on PR merge
-    if: github.event.pull_request.merged == true && secrets.DISCORD_PR_MERGE_WEBHOOK_URL != ''
+    if: github.event.pull_request.merged == true
     runs-on: blacksmith-2vcpu-ubuntu-2404
     timeout-minutes: 5
     steps:
@@ -25,6 +25,11 @@ jobs:
         env:
           DISCORD_PR_MERGE_WEBHOOK_URL: ${{ secrets.DISCORD_PR_MERGE_WEBHOOK_URL }}
         run: |
+          if [ -z "$DISCORD_PR_MERGE_WEBHOOK_URL" ]; then
+            echo "DISCORD_PR_MERGE_WEBHOOK_URL not set; skipping notification."
+            exit 0
+          fi
+
           pr_number="${{ github.event.pull_request.number }}"
           pr_title="${{ github.event.pull_request.title }}"
           pr_url="${{ github.event.pull_request.html_url }}"
