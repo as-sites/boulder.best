@@ -206,7 +206,9 @@ describe(SessionForm, () => {
     expect(screen.getAllByRole('button', { name: 'Start' })).toHaveLength(1);
 
     fireEvent.click(screen.getByRole('button', { name: 'Start' }));
-    expect(screen.getByRole('button', { name: 'Pause' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Pause timer' }),
+    ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Stop' })).toBeInTheDocument();
   });
 });
