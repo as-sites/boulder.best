@@ -1,14 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import {
-  Button,
-  Group,
-  Select,
-  Stack,
-  Text,
-  Textarea,
-  Title,
-} from '@mantine/core';
+import { Button, Group, Stack, Text, Title } from '@mantine/core';
+import { Select, Textarea } from '@trendcapital/react-hook-form-mantine';
 import {
   FormProvider,
   useFieldArray,
@@ -48,7 +41,6 @@ export const SessionForm = ({ initialValues, onStopped }: SessionFormProps) => {
   const status = useWatch({ control: form.control, name: 'status' });
   const gymId = useWatch({ control: form.control, name: 'gymId' });
   const location = useWatch({ control: form.control, name: 'location' });
-  const notes = useWatch({ control: form.control, name: 'notes' });
   const entries = useWatch({
     control: form.control,
     name: 'entries',
@@ -197,55 +189,36 @@ export const SessionForm = ({ initialValues, onStopped }: SessionFormProps) => {
       <Stack gap="md">
         <Title order={2}>Session</Title>
 
-        <Select
+        <Select<SessionFormValues>
           label="Gym"
+          name="gymId"
           comboboxProps={{ withinPortal: false }}
           placeholder={gymsQuery.isLoading ? 'Loading gyms...' : 'Select a gym'}
           data={gymOptions}
           disabled={status !== 'not_started'}
-          value={gymId ?? null}
-          onChange={(selectedGymId) => {
-            form.setValue(
-              'gymId',
-              typeof selectedGymId === 'string' ? selectedGymId : null,
-              { shouldDirty: true },
-            );
+          onChange={() => {
             form.setValue('location', null, { shouldDirty: true });
           }}
-          error={form.formState.errors.gymId?.message}
           searchable
           nothingFoundMessage="No gyms found"
         />
 
-        <Select
+        <Select<SessionFormValues>
           label="Location"
+          name="location"
           comboboxProps={{ withinPortal: false }}
           placeholder={locationPlaceholder}
           data={locationOptions}
           disabled={!canEditLocation}
-          value={location}
-          onChange={(selectedLocation) => {
-            form.setValue(
-              'location',
-              typeof selectedLocation === 'string' ? selectedLocation : null,
-              { shouldDirty: true },
-            );
-          }}
-          error={form.formState.errors.location?.message}
           searchable={canEditLocation}
           nothingFoundMessage="No locations found"
         />
 
-        <Textarea
+        <Textarea<SessionFormValues>
           label="Session notes"
+          name="notes"
           placeholder="Optional notes for this session"
           disabled={isFinalized}
-          value={notes}
-          onChange={(event) => {
-            form.setValue('notes', event.currentTarget.value, {
-              shouldDirty: true,
-            });
-          }}
           minRows={2}
         />
 

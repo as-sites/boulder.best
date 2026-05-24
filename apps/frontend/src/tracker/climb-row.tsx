@@ -1,14 +1,10 @@
+import { Button, Group, Paper, Stack, Text } from '@mantine/core';
 import {
-  Button,
   Checkbox,
-  Group,
-  Paper,
   Select,
-  Stack,
-  Text,
   TextInput,
   Textarea,
-} from '@mantine/core';
+} from '@trendcapital/react-hook-form-mantine';
 import {
   useFieldArray,
   useFormContext,
@@ -105,41 +101,31 @@ export const ClimbRow = ({
           <Text fw={600}>{climb.name || defaultName}</Text>
         </Group>
 
-        <TextInput
+        <TextInput<SessionFormValues>
           label="Name"
+          name={`${entryPath}.name`}
           disabled={isFinalized}
-          value={climb.name}
           placeholder={defaultName}
-          onChange={(event) => {
-            setValue(`${entryPath}.name`, event.currentTarget.value, {
-              shouldDirty: true,
-            });
-          }}
         />
 
-        <Select
+        <Select<SessionFormValues>
           label="Grade"
+          name={`${entryPath}.grade`}
           disabled={isFinalized}
           comboboxProps={{ withinPortal: false }}
           data={grades}
-          value={climb.grade}
+          clearable
+          searchable
           onChange={(grade) => {
             setValue(`${entryPath}.grade`, grade ?? '', { shouldDirty: true });
           }}
-          clearable
-          searchable
         />
 
-        <Textarea
+        <Textarea<SessionFormValues>
           label="Climb notes"
+          name={`${entryPath}.notes`}
           disabled={isFinalized}
-          value={climb.notes}
           minRows={2}
-          onChange={(event) => {
-            setValue(`${entryPath}.notes`, event.currentTarget.value, {
-              shouldDirty: true,
-            });
-          }}
         />
 
         <ClimbPhotoAttachments
@@ -194,30 +180,16 @@ export const ClimbRow = ({
                     ) : null}
                   </Group>
                 </Group>
-                <Textarea
+                <Textarea<SessionFormValues>
                   label="Attempt note"
+                  name={`${entryPath}.climbAttempts.${attemptIndex}.notes`}
                   disabled={isFinalized}
-                  value={attempt.notes}
                   minRows={1}
-                  onChange={(event) => {
-                    setValue(
-                      `${entryPath}.climbAttempts.${attemptIndex}.notes`,
-                      event.currentTarget.value,
-                      { shouldDirty: true },
-                    );
-                  }}
                 />
-                <Checkbox
+                <Checkbox<SessionFormValues>
                   label="Completed"
+                  name={`${entryPath}.climbAttempts.${attemptIndex}.completed`}
                   disabled={isFinalized}
-                  checked={attempt.completed ?? false}
-                  onChange={(event) => {
-                    setValue(
-                      `${entryPath}.climbAttempts.${attemptIndex}.completed`,
-                      event.currentTarget.checked,
-                      { shouldDirty: true },
-                    );
-                  }}
                 />
                 {!isFinalized && climb.climbAttempts.length > 1 ? (
                   <Button
