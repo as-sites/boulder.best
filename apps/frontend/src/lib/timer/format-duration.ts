@@ -41,10 +41,11 @@ export const parseDurationInput = (input: string): number | null => {
   const parts = trimmed.split(':');
 
   if (parts.length === 1) {
-    if (!isDigits(parts[0])) {
+    const [part] = parts as [string];
+    if (!isDigits(part)) {
       return null;
     }
-    return Number.parseInt(parts[0], 10) * 1000;
+    return Number.parseInt(part, 10) * 1000;
   }
 
   if (parts.length === 2) {
