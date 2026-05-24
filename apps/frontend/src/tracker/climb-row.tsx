@@ -1,5 +1,12 @@
 import { useState } from 'react';
-import { Button, Group, Paper, Stack, Text } from '@mantine/core';
+import {
+  Button,
+  Group,
+  Paper,
+  Stack,
+  Text,
+  TextInput as MantineTextInput,
+} from '@mantine/core';
 import {
   Checkbox,
   Select,
@@ -51,7 +58,7 @@ const ManualDurationInput = ({ onCommit }: ManualDurationInputProps) => {
   };
 
   return (
-    <TextInput
+    <MantineTextInput
       label="Duration (MM:SS)"
       placeholder="0:00"
       size="xs"
