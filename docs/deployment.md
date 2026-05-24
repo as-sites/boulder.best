@@ -199,7 +199,7 @@ mise run api:r2:cors:list
 
 Per-PR previews use [Cloudflare Preview URLs](https://developers.cloudflare.com/workers/configuration/previews/) (`wrangler versions upload --preview-alias pr-<n>`) for `boulder-api` and `boulder-frontend`, plus a permanent gateway Worker on `*.preview.boulder.best` that reverse-proxies to the aliased `workers.dev` backends. Reviewers open a stable URL such as `https://pr-<n>.preview.boulder.best` with same-origin `/api` routing (like production), so email/password auth and passkeys work with `PASSKEY_RP_ID=boulder.best`.
 
-Production deploy (`.github/workflows/deploy.yml`) is unchanged — PR previews use `versions upload`, not `wrangler deploy`.
+Production and PR previews both deploy automatically from `.github/workflows/deploy.yml` after CI passes. Main uses `wrangler deploy`; pull requests use `wrangler versions upload` with preview aliases (production routes on `boulder.best` are untouched).
 
 ### Architecture
 
@@ -224,14 +224,20 @@ Update `WORKERS_SUBDOMAIN` in `apps/preview-gateway/wrangler.jsonc` (production 
 
 ### GitHub Actions
 
-`.github/workflows/preview.yml` runs after CI succeeds on a pull request:
+`.github/workflows/deploy.yml` runs after CI succeeds:
+
+| Trigger                     | Job               | Action                                              |
+| --------------------------- | ----------------- | --------------------------------------------------- |
+| Push to `main` (CI success) | `deploy`          | Production `wrangler deploy`                        |
+| Pull request (CI success)   | `preview`         | Neon branch, migrate, `versions upload`, PR comment |
+| Pull request closed         | `preview-cleanup` | Delete Neon branch `pr-<number>`                    |
+
+Preview deploy steps:
 
 1. Creates (or reuses) Neon branch `pr-<number>`
 2. Runs `mise run api:db:migrate` against the branch
 3. Uploads API + frontend preview versions with alias `pr-<number>`
 4. Comments on the PR with `https://pr-<number>.preview.boulder.best`
-
-On PR close, the workflow deletes the Neon branch.
 
 **Repository secrets / variables:**
 
