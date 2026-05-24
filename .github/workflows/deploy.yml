@@ -11,6 +11,7 @@
 #   SENTRY_PROJECT_FRONTEND      — Sentry project slug for the frontend
 #   SENTRY_PROJECT_API           — Sentry project slug for the API Worker
 #   SENTRY_DSN_API               — API Worker Sentry DSN (wrangler secret; not used in this workflow)
+#   DISCORD_DEPLOY_WEBHOOK_URL   — Discord webhook URL for deploy failure alerts
 #
 # API Worker runtime secrets (DATABASE_URL, BETTER_AUTH_SECRET, OAuth keys, etc.) are set on
 # the Worker in Cloudflare, not from this workflow. Sync once locally: mise run secrets:sync:cloudflare
@@ -29,6 +30,7 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
+  actions: read
   contents: read
   deployments: write
 
@@ -79,3 +81,68 @@ jobs:
 
       - name: Upload API source maps to Sentry
         run: mise run api:sentry:sourcemaps
+
+      - name: Notify Discord on deploy failure
+        if: failure() && secrets.DISCORD_DEPLOY_WEBHOOK_URL != ''
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          DISCORD_DEPLOY_WEBHOOK_URL: ${{ secrets.DISCORD_DEPLOY_WEBHOOK_URL }}
+          DEPLOY_BRANCH: ${{ github.event.workflow_run.head_branch || github.ref_name }}
+          DEPLOY_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+        run: |
+          run_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          jobs_api_url="$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/jobs?per_page=100"
+
+          jobs_json="$(curl --silent --show-error --fail \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "$jobs_api_url")"
+
+          failed_job="$(echo "$jobs_json" | jq -r '.jobs[] | select(.conclusion == "failure") | .name' | head -n 1)"
+          failed_step="$(echo "$jobs_json" | jq -r '.jobs[] | select(.conclusion == "failure") | .steps[]? | select(.conclusion == "failure") | .name' | head -n 1)"
+
+          if [ -z "$failed_job" ]; then
+            failed_job="Unknown"
+          fi
+
+          if [ -z "$failed_step" ]; then
+            failed_step="Unknown"
+          fi
+
+          payload="$(
+            jq -cn \
+              --arg repo "$GITHUB_REPOSITORY" \
+              --arg branch "$DEPLOY_BRANCH" \
+              --arg commit "$DEPLOY_SHA" \
+              --arg workflow "$GITHUB_WORKFLOW" \
+              --arg run_url "$run_url" \
+              --arg failed_job "$failed_job" \
+              --arg failed_step "$failed_step" \
+              '{
+                embeds: [
+                  {
+                    title: "🚨 Deploy workflow failed",
+                    description: "Production deployment failed.",
+                    color: 15548997,
+                    url: $run_url,
+                    fields: [
+                      { name: "Repository", value: $repo, inline: true },
+                      { name: "Branch", value: $branch, inline: true },
+                      { name: "Commit", value: $commit, inline: false },
+                      { name: "Workflow", value: $workflow, inline: true },
+                      { name: "Run URL", value: $run_url, inline: false },
+                      { name: "Failed Job", value: $failed_job, inline: true },
+                      { name: "Failed Step", value: $failed_step, inline: true }
+                    ],
+                    timestamp: (now | todateiso8601)
+                  }
+                ]
+              }'
+          )"
+
+          curl --silent --show-error --fail \
+            -H "Content-Type: application/json" \
+            -X POST \
+            --data "$payload" \
+            "$DISCORD_DEPLOY_WEBHOOK_URL"

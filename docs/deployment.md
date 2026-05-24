@@ -119,6 +119,13 @@ DISCORD_CLIENT_SECRET
 SENTRY_DSN_API
 ```
 
+GitHub Actions repository secrets for Discord notifications:
+
+```text
+DISCORD_DEPLOY_WEBHOOK_URL    # deploy workflow failures
+DISCORD_PR_MERGE_WEBHOOK_URL  # PR merged into main
+```
+
 Required non-secret production vars:
 
 ```text

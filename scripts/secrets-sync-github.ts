@@ -27,6 +27,8 @@ const GITHUB_SECRETS: Array<[secretName: string, envName?: string]> = [
   ['SENTRY_PROJECT_FRONTEND'],
   ['SENTRY_PROJECT_API'],
   ['SENTRY_DSN_API'],
+  ['DISCORD_DEPLOY_WEBHOOK_URL'],
+  ['DISCORD_PR_MERGE_WEBHOOK_URL'],
 ];
 
 const encryptSecret = async (
