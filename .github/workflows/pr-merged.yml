@@ -24,32 +24,31 @@ jobs:
       - name: Notify Discord
         env:
           DISCORD_PR_MERGE_WEBHOOK_URL: ${{ secrets.DISCORD_PR_MERGE_WEBHOOK_URL }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          MERGED_BY: ${{ github.event.pull_request.merged_by.login || 'unknown' }}
+          BASE_BRANCH: ${{ github.event.pull_request.base.ref }}
+          HEAD_BRANCH: ${{ github.event.pull_request.head.ref }}
+          MERGE_COMMIT: ${{ github.event.pull_request.merge_commit_sha }}
         run: |
           if [ -z "$DISCORD_PR_MERGE_WEBHOOK_URL" ]; then
             echo "DISCORD_PR_MERGE_WEBHOOK_URL not set; skipping notification."
             exit 0
           fi
 
-          pr_number="${{ github.event.pull_request.number }}"
-          pr_title="${{ github.event.pull_request.title }}"
-          pr_url="${{ github.event.pull_request.html_url }}"
-          pr_author="${{ github.event.pull_request.user.login }}"
-          merged_by="${{ github.event.pull_request.merged_by.login }}"
-          base_branch="${{ github.event.pull_request.base.ref }}"
-          head_branch="${{ github.event.pull_request.head.ref }}"
-          merge_commit="${{ github.event.pull_request.merge_commit_sha }}"
-
           payload="$(
             jq -cn \
               --arg repo "$GITHUB_REPOSITORY" \
-              --arg number "$pr_number" \
-              --arg title "$pr_title" \
-              --arg url "$pr_url" \
-              --arg author "$pr_author" \
-              --arg merged_by "$merged_by" \
-              --arg base "$base_branch" \
-              --arg head "$head_branch" \
-              --arg commit "$merge_commit" \
+              --arg number "$PR_NUMBER" \
+              --arg title "$PR_TITLE" \
+              --arg url "$PR_URL" \
+              --arg author "$PR_AUTHOR" \
+              --arg merged_by "$MERGED_BY" \
+              --arg base "$BASE_BRANCH" \
+              --arg head "$HEAD_BRANCH" \
+              --arg commit "$MERGE_COMMIT" \
               '{
                 embeds: [
                   {
