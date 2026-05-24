@@ -43,6 +43,13 @@
       "when": 1779450000000,
       "tag": "0005_move_completed_to_attempt",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1779536400000,
+      "tag": "0006_custom_gym_v_scale",
+      "breakpoints": true
     }
   ]
 }

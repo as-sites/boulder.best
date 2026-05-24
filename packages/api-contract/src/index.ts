@@ -13,6 +13,11 @@ export {
 } from './openapi-routes.js';
 
 export { MAX_IMAGE_UPLOAD_BYTES, MAX_IMAGE_UPLOAD_ERROR } from './constants.js';
+export {
+  CUSTOM_V_SCALE_GYM_ID,
+  CUSTOM_V_SCALE_GYM_NAME,
+  V_SCALE_GRADES,
+} from './gyms.js';
 
 export {
   apiErrorResponseSchema,
