@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { SyncSessionPayload } from '@boulder/api-contract';
 import {
   computeNextRetryAt,
@@ -43,6 +43,10 @@ const eligibleContext = (
 });
 
 describe('queue orchestration', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it('returns no eligible items when manual offline mode is enabled', () => {
     const items = [queueItemFixture()];
 
@@ -110,10 +114,24 @@ describe('queue orchestration', () => {
     ).toEqual([pending, retryReady]);
   });
 
+  it('applies jitter to retry backoff delay', () => {
+    const now = 1_700_000_000_000;
+    const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0);
+
+    expect(computeNextRetryAt(1, now)).toBe(now + 15_000);
+
+    randomSpy.mockReturnValue(1);
+    expect(computeNextRetryAt(1, now)).toBe(now + 45_000);
+  });
+
   it('marks syncing and error transitions with backoff metadata', () => {
     const now = 1_700_000_000_000;
+    vi.spyOn(Math, 'random').mockReturnValue(0.5);
     const syncing = markQueueItemSyncing(queueItemFixture(), now);
-    expect(syncing.status).toBe('syncing');
+    expect(syncing).toMatchObject({
+      status: 'syncing',
+      syncingStartedAt: now,
+    });
 
     const errored = markQueueItemError(syncing, 'Network Error', now);
     expect(errored).toMatchObject({
@@ -122,5 +140,6 @@ describe('queue orchestration', () => {
       lastError: 'Network Error',
       nextRetryAt: computeNextRetryAt(1, now),
     });
+    expect(errored.syncingStartedAt).toBeUndefined();
   });
 });

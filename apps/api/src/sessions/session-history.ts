@@ -29,8 +29,7 @@ export const listSessions = async (
         lt(sessions.id, query.cursor.id),
       ),
     );
-
-    if (paginationCondition) {
+    if (paginationCondition !== undefined) {
       conditions.push(paginationCondition);
     }
   }

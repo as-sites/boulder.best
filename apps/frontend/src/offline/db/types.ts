@@ -84,6 +84,11 @@ export interface SyncQueueItem {
   retryCount: number;
   lastError?: string;
   nextRetryAt?: number;
+  /**
+   * Set when status becomes `syncing`; used for stale-lease recovery after
+   * crashes.
+   */
+  syncingStartedAt?: number;
   createdAt: number;
   updatedAt: number;
 }

@@ -86,4 +86,4 @@ export {
   buildSessionSyncPayload,
   submitSyncSession,
 } from './sync/submit-sync-session.js';
-export { drainSyncQueue } from './sync/drain-sync-queue.js';
+export { drainSyncQueue, SYNCING_STALE_MS } from './sync/drain-sync-queue.js';

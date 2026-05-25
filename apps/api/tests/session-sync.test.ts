@@ -7,6 +7,7 @@ import {
   SyncSessionConflictError,
   SyncSessionForbiddenError,
   SyncSessionInvalidLocationError,
+  SyncSessionInvalidTimeRangeError,
 } from '../src/sessions/sync-session.js';
 
 const syncMocks = vi.hoisted(() => ({
@@ -233,6 +234,20 @@ describe('syncSession persistence', () => {
 
     expect(mock.attemptInserts).toHaveLength(4);
     expect(mock.attemptConflictUpdates).toHaveLength(4);
+  });
+
+  it('rejects sessions where endTime is before startTime', async () => {
+    const mock = createMockDb();
+
+    await expect(
+      syncMocks.syncSession(mock.db as never, 'user_123', {
+        ...syncSessionPayloadFixture,
+        startTime: '2026-05-13T12:00:00.000Z',
+        endTime: '2026-05-13T10:00:00.000Z',
+      }),
+    ).rejects.toBeInstanceOf(SyncSessionInvalidTimeRangeError);
+
+    expect(mock.sessionUpserts).toHaveLength(0);
   });
 
   it('rejects invalid locations for the selected gym', async () => {

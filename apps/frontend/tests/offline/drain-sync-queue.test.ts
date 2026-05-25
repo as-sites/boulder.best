@@ -3,6 +3,7 @@ import type { SyncSessionPayload } from '@boulder/api-contract';
 import {
   drainSyncQueue,
   resetOfflineDatabase,
+  SYNCING_STALE_MS,
   syncQueueRepository,
   type SyncQueueItem,
 } from '../../src/offline/index.js';
@@ -129,6 +130,40 @@ describe('drain sync queue', () => {
     await drainSyncQueue(eligibleContext);
 
     expect(submitSession).not.toHaveBeenCalled();
+  });
+
+  it('does not recover a recently syncing queue item', async () => {
+    const now = Date.now();
+    const item = queueItemFixture({
+      status: 'syncing',
+      syncingStartedAt: now - 1000,
+      updatedAt: now - 1000,
+    });
+    await syncQueueRepository.put(item);
+
+    await drainSyncQueue(eligibleContext);
+
+    expect(uploadSessionImages).not.toHaveBeenCalled();
+    await expect(syncQueueRepository.get(item.id)).resolves.toMatchObject({
+      status: 'syncing',
+    });
+  });
+
+  it('recovers a stale syncing queue item and processes it', async () => {
+    const now = Date.now();
+    const item = queueItemFixture({
+      status: 'syncing',
+      syncingStartedAt: now - SYNCING_STALE_MS - 1000,
+      updatedAt: now - SYNCING_STALE_MS - 1000,
+    });
+    await syncQueueRepository.put(item);
+
+    await drainSyncQueue(eligibleContext);
+
+    expect(uploadSessionImages).toHaveBeenCalledWith(item.sessionId);
+    await expect(syncQueueRepository.get(item.id)).resolves.toMatchObject({
+      status: 'synced',
+    });
   });
 
   it('does nothing while manual offline mode is enabled', async () => {
