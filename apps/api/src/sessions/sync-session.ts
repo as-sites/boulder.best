@@ -43,6 +43,15 @@ export class SyncSessionInvalidLocationError extends Error {
   }
 }
 
+export class SyncSessionInvalidTimeRangeError extends Error {
+  public readonly name = 'SyncSessionInvalidTimeRangeError';
+  public readonly status = 400;
+
+  constructor() {
+    super('Session endTime must be greater than or equal to startTime');
+  }
+}
+
 type SyncSessionWriter = Pick<AppDb, 'insert' | 'select'>;
 type SyncBatchItem = Parameters<AppDb['batch']>[0][number];
 
@@ -316,6 +325,11 @@ export const syncSession = async (
   const sessionLocation = payload.location ?? null;
   const startTime = new Date(payload.startTime);
   const endTime = new Date(payload.endTime);
+
+  if (endTime < startTime) {
+    throw new SyncSessionInvalidTimeRangeError();
+  }
+
   const entryIds = collectEntryIds(payload);
   const imageIds = collectImageIds(payload);
   const now = new Date();

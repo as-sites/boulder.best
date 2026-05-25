@@ -184,7 +184,7 @@ export const AuthActions = () => {
   const signUpWithEmail = async ({ email, password, name }: SignUpValues) => {
     await runAction(async () => {
       const result = await authClient.signUp.email({ email, password, name });
-      return authResult(result, 'Account created. Check your email to verify.');
+      return authResult(result, 'Account created.');
     });
   };
 

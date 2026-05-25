@@ -19,6 +19,7 @@ import {
   SyncSessionForbiddenError,
   SyncSessionInvalidImageMetadataError,
   SyncSessionInvalidLocationError,
+  SyncSessionInvalidTimeRangeError,
   syncSession as persistSyncedSession,
 } from './sessions/sync-session.js';
 import { createPresignedUpload as generatePresignedUpload } from './uploads/create-presigned-upload.js';
@@ -210,6 +211,7 @@ export const createApiApp = (options: CreateApiAppOptions = {}) => {
 
     if (
       error instanceof SyncSessionInvalidLocationError ||
+      error instanceof SyncSessionInvalidTimeRangeError ||
       error instanceof SyncSessionInvalidImageMetadataError
     ) {
       return c.body(null, 400);

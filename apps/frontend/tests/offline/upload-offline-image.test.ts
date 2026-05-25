@@ -119,6 +119,52 @@ describe('upload offline image', () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
+  it('throws when presign JSON is malformed so the image stays pending', async () => {
+    const image = mapFileToOfflineImage({
+      file: new File(['pixels'], 'shot.jpg', { type: 'image/jpeg' }),
+      sessionId,
+      entryId,
+      index: 0,
+      imageId,
+    });
+    await offlineImagesRepository.put(image);
+
+    presignPost.mockResolvedValue({
+      ok: true,
+      // oxlint-disable-next-line typescript/require-await
+      json: async () => ({ uploadUrl: 'not-a-url' }),
+    });
+
+    await expect(uploadOfflineImage(image)).rejects.toThrow(
+      'Presign response failed validation',
+    );
+    await expect(offlineImagesRepository.get(image.id)).resolves.toMatchObject({
+      uploadStatus: 'pending',
+    });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('throws when presign JSON is missing required fields', async () => {
+    const image = mapFileToOfflineImage({
+      file: new File(['pixels'], 'shot.jpg', { type: 'image/jpeg' }),
+      sessionId,
+      entryId,
+      index: 0,
+      imageId,
+    });
+    await offlineImagesRepository.put(image);
+
+    presignPost.mockResolvedValue({
+      ok: true,
+      // oxlint-disable-next-line typescript/require-await
+      json: async () => ({}),
+    });
+
+    await expect(uploadOfflineImage(image)).rejects.toThrow(
+      'Presign response failed validation',
+    );
+  });
+
   it('uploads every image for a session', async () => {
     const first = mapFileToOfflineImage({
       file: new File(['one'], 'one.jpg', { type: 'image/jpeg' }),

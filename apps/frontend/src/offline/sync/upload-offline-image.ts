@@ -1,4 +1,7 @@
-import type { SyncedImage } from '@boulder/api-contract';
+import {
+  presignedUploadResponseSchema,
+  type SyncedImage,
+} from '@boulder/api-contract';
 import { apiClient } from '../../lib/api-client.js';
 import type { OfflineImage } from '../db/types.js';
 import { offlineImagesRepository } from '../repositories/offline-images-repository.js';
@@ -45,7 +48,12 @@ export const uploadOfflineImage = async (
     throw new Error(`Presign request failed (${presignResponse.status})`);
   }
 
-  const presigned = await presignResponse.json();
+  const presignJson: unknown = await presignResponse.json();
+  const parsedPresign = presignedUploadResponseSchema.safeParse(presignJson);
+  if (!parsedPresign.success) {
+    throw new Error('Presign response failed validation');
+  }
+  const { data: presigned } = parsedPresign;
 
   const uploadResponse = await fetch(presigned.uploadUrl, {
     method: 'PUT',

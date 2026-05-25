@@ -60,15 +60,21 @@ export const computeNextRetryAt = (
     BASE_RETRY_DELAY_MS * 2 ** Math.max(retryCount - 1, 0),
     MAX_RETRY_DELAY_MS,
   );
-  return now + delayMs;
+  return now + delayMs * (0.5 + Math.random());
 };
 
 export const markQueueItemSyncing = (
-  { lastError: _lastError, nextRetryAt: _nextRetryAt, ...rest }: SyncQueueItem,
+  {
+    lastError: _lastError,
+    nextRetryAt: _nextRetryAt,
+    syncingStartedAt: _syncingStartedAt,
+    ...rest
+  }: SyncQueueItem,
   now = Date.now(),
 ): SyncQueueItem => ({
   ...rest,
   status: 'syncing',
+  syncingStartedAt: now,
   updatedAt: now,
 });
 
@@ -76,17 +82,25 @@ export const markQueueItemError = (
   item: SyncQueueItem,
   errorMessage: string,
   now = Date.now(),
-): SyncQueueItem => ({
-  ...item,
-  status: 'error',
-  retryCount: item.retryCount + 1,
-  lastError: errorMessage,
-  nextRetryAt: computeNextRetryAt(item.retryCount + 1, now),
-  updatedAt: now,
-});
+): SyncQueueItem => {
+  const { syncingStartedAt: _syncingStartedAt, ...rest } = item;
+  return {
+    ...rest,
+    status: 'error',
+    retryCount: item.retryCount + 1,
+    lastError: errorMessage,
+    nextRetryAt: computeNextRetryAt(item.retryCount + 1, now),
+    updatedAt: now,
+  };
+};
 
 export const markQueueItemSynced = (
-  { lastError: _lastError, nextRetryAt: _nextRetryAt, ...rest }: SyncQueueItem,
+  {
+    lastError: _lastError,
+    nextRetryAt: _nextRetryAt,
+    syncingStartedAt: _syncingStartedAt,
+    ...rest
+  }: SyncQueueItem,
   now = Date.now(),
 ): SyncQueueItem => ({
   ...rest,
