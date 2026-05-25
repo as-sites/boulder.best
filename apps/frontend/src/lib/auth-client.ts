@@ -43,6 +43,9 @@ const _client = createAuthClient({
   // Leave empty in production when the API Worker is routed at /api on the same origin.
   baseURL: import.meta.env.VITE_API_BASE_URL ?? '',
   plugins: [passkeyClient()],
+  sessionOptions: {
+    refetchOnWindowFocus: true,
+  },
 });
 
 export const authClient = _client as unknown as AuthClient;

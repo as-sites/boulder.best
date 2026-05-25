@@ -87,5 +87,7 @@ export const apiClientOptions = {
   },
 } as const satisfies Parameters<typeof hc>[1];
 
-export const createApiClient = (baseUrl: string) =>
-  hc<ApiAppType>(baseUrl, apiClientOptions);
+export const createApiClient = (
+  baseUrl: string,
+  options?: Parameters<typeof hc>[1],
+) => hc<ApiAppType>(baseUrl, { ...apiClientOptions, ...options });

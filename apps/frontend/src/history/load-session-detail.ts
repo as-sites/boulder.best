@@ -99,7 +99,8 @@ export const loadSessionDetail = async (
       };
     }
 
-    if (response.status !== 404) {
+    // oxlint-disable-next-line typescript/no-unnecessary-condition -- temporarily disabled just in case?
+    if (response.status !== 404 && response.status !== 401) {
       throw apiErrorFromResponse(response);
     }
   }

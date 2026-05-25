@@ -9,13 +9,10 @@ import {
   withResolvedGymName,
 } from '../history/load-session-detail.js';
 import { SessionDetailView } from '../history/session-detail-view.js';
-import { authClient } from '../lib/auth-client.js';
 import { useCachedGymsQuery } from '../tracker/use-cached-gyms-query.js';
 
 export const HistoryDetailPage = () => {
   const { sessionId } = useParams({ from: '/history/$sessionId' });
-  const session = authClient.useSession();
-  const isAuthenticated = Boolean(session.data?.user);
   const gymsQuery = useCachedGymsQuery();
   const gymNamesById = useMemo(
     () =>
@@ -26,11 +23,8 @@ export const HistoryDetailPage = () => {
   );
 
   const detailQuery = useQuery({
-    queryKey: ['session-detail', sessionId, isAuthenticated],
-    queryFn: async () =>
-      await loadSessionDetail(sessionId, gymNamesById, {
-        localOnly: !isAuthenticated,
-      }),
+    queryKey: ['session-detail', sessionId],
+    queryFn: async () => await loadSessionDetail(sessionId, gymNamesById),
     enabled: Boolean(sessionId),
   });
 
