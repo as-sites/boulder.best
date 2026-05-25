@@ -1,17 +1,12 @@
 import { z } from '@hono/zod-openapi';
 import { MAX_IMAGE_UPLOAD_BYTES, MAX_IMAGE_UPLOAD_ERROR } from './constants.js';
 
-// --- Placeholder / health (existing contract) ---
-
-export const helloResponseSchema = z.object({
-  message: z.string(),
-});
+// --- Health ---
 
 export const healthResponseSchema = z.object({
   ok: z.boolean(),
 });
 
-export type HelloResponse = z.infer<typeof helloResponseSchema>;
 export type HealthResponse = z.infer<typeof healthResponseSchema>;
 
 // --- Shared primitives ---

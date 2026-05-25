@@ -16,6 +16,7 @@ import {
 } from './sessions/session-history.js';
 import {
   SyncSessionConflictError,
+  SyncSessionDuplicateSequenceOrderError,
   SyncSessionForbiddenError,
   SyncSessionInvalidImageMetadataError,
   SyncSessionInvalidLocationError,
@@ -37,24 +38,6 @@ type CreateAuthServer = (env: AuthEnvBindings) => AuthServer;
 
 export interface AuthenticatedUser {
   userId: string;
-}
-
-interface UnauthenticatedGymsRateLimitOptions {
-  maxRequests: number;
-  windowMs: number;
-  now: () => number;
-}
-
-const defaultUnauthenticatedGymsRateLimit: UnauthenticatedGymsRateLimitOptions =
-  {
-    maxRequests: 60,
-    windowMs: 60_000,
-    now: () => Date.now(),
-  };
-
-interface UnauthenticatedGymsRateLimitState {
-  count: number;
-  resetAt: number;
 }
 
 const getRequestRateLimitKey = (request: Request): string => {
@@ -100,17 +83,9 @@ export const createProtectedUserMiddleware =
     await next();
   };
 
-const createUnauthenticatedGymsRateLimitMiddleware = (
-  createAuthServer: CreateAuthServer,
-  options: Partial<UnauthenticatedGymsRateLimitOptions> = {},
-): MiddlewareHandler<ApiEnv> => {
-  const config = {
-    ...defaultUnauthenticatedGymsRateLimit,
-    ...options,
-  };
-  const rateLimitByKey = new Map<string, UnauthenticatedGymsRateLimitState>();
-
-  return async (c, next) => {
+const createUnauthenticatedGymsRateLimitMiddleware =
+  (createAuthServer: CreateAuthServer): MiddlewareHandler<ApiEnv> =>
+  async (c, next) => {
     const session = await createAuthServer(c.env).api.getSession({
       headers: c.req.raw.headers,
     });
@@ -120,41 +95,25 @@ const createUnauthenticatedGymsRateLimitMiddleware = (
       return;
     }
 
-    const now = config.now();
     const key = getRequestRateLimitKey(c.req.raw);
-    const existing = rateLimitByKey.get(key);
+    const result = await c.env.GYMS_RATE_LIMITER.limit({ key });
 
-    if (!existing || now >= existing.resetAt) {
-      rateLimitByKey.set(key, {
-        count: 1,
-        resetAt: now + config.windowMs,
-      });
+    if (result.success) {
       await next();
       return;
     }
 
-    if (existing.count >= config.maxRequests) {
-      c.header(
-        'Retry-After',
-        Math.max(1, Math.ceil((existing.resetAt - now) / 1000)).toString(),
-      );
-      return c.json(
-        {
-          success: false,
-          error: 'Too many unauthenticated requests',
-        },
-        429,
-      );
-    }
-
-    existing.count += 1;
-    await next();
+    return c.json(
+      {
+        success: false,
+        error: 'Too many unauthenticated requests',
+      },
+      429,
+    );
   };
-};
 
 interface CreateApiAppOptions {
   createAuthServer?: CreateAuthServer;
-  unauthenticatedGymsRateLimit?: Partial<UnauthenticatedGymsRateLimitOptions>;
 }
 
 export const createApiApp = (options: CreateApiAppOptions = {}) => {
@@ -190,10 +149,7 @@ export const createApiApp = (options: CreateApiAppOptions = {}) => {
 
   app.use(
     '/api/gyms',
-    createUnauthenticatedGymsRateLimitMiddleware(
-      createAuthServer,
-      options.unauthenticatedGymsRateLimit,
-    ),
+    createUnauthenticatedGymsRateLimitMiddleware(createAuthServer),
   );
 
   const protectedMiddleware = createProtectedUserMiddleware(createAuthServer);
@@ -212,7 +168,8 @@ export const createApiApp = (options: CreateApiAppOptions = {}) => {
     if (
       error instanceof SyncSessionInvalidLocationError ||
       error instanceof SyncSessionInvalidTimeRangeError ||
-      error instanceof SyncSessionInvalidImageMetadataError
+      error instanceof SyncSessionInvalidImageMetadataError ||
+      error instanceof SyncSessionDuplicateSequenceOrderError
     ) {
       return c.body(null, 400);
     }
@@ -223,9 +180,6 @@ export const createApiApp = (options: CreateApiAppOptions = {}) => {
   app.route(
     '/',
     createApiContract<ApiEnv>({
-      hello: () => ({
-        message: 'Hello from the Boulder API.',
-      }),
       getGyms: async (c) => {
         const db = getDb(c.env.DATABASE_URL);
         return await loadGyms(db);

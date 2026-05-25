@@ -102,6 +102,24 @@ describe('app Drizzle migrations', () => {
     );
   });
 
+  it('includes a migration that enforces unique session entry ordering per session', () => {
+    const sql = readFileSync(
+      join(migrationsDir, '0008_woozy_ultimo.sql'),
+      'utf8',
+    );
+
+    expect(sql).toContain('DROP INDEX "entries_session_sequence_idx"');
+    expect(sql).toContain(
+      'CREATE UNIQUE INDEX "entries_session_sequence_idx" ON "session_entries"',
+    );
+  });
+
+  it('registers the session entry sequence uniqueness migration in the drizzle journal', () => {
+    expect(migrationJournal.entries.map((entry) => entry.tag)).toContain(
+      '0008_woozy_ultimo',
+    );
+  });
+
   it('seeds the Sydney gym catalog with locations in migration 0003', () => {
     const sql = readFileSync(
       join(migrationsDir, '0003_omniscient_landau.sql'),

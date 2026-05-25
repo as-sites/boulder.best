@@ -2,7 +2,6 @@ import type { Context, Env } from 'hono';
 import type {
   GymsResponse,
   HealthResponse,
-  HelloResponse,
   PresignedUploadRequest,
   PresignedUploadResponse,
   SessionDetailResponse,
@@ -16,7 +15,6 @@ import type {
 type MaybePromise<T> = T | Promise<T>;
 
 export interface ApiContractHandlers<E extends Env = Env> {
-  hello: (c: Context<E>) => MaybePromise<HelloResponse>;
   health?: (c: Context<E>) => MaybePromise<HealthResponse>;
   getGyms: (c: Context<E>) => MaybePromise<GymsResponse>;
   createPresignedUpload: (
