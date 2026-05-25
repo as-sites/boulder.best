@@ -47,7 +47,7 @@ export const TrackerPage = () => {
       try {
         await finalizeStoppedSession(values);
         void navigate({
-          to: '/history/$sessionId',
+          to: '/sessions/$sessionId',
           params: { sessionId: values.id },
         });
       } catch (error) {

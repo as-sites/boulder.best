@@ -7,13 +7,13 @@ import {
 
 export interface AppNavItem {
   label: string;
-  to: '/tracker' | '/history' | '/settings';
+  to: '/tracker' | '/sessions' | '/settings';
   Icon: ComponentType<{ size: number }>;
 }
 
 export const appNavMainItems: AppNavItem[] = [
   { label: 'Tracker', to: '/tracker', Icon: TimerIcon },
-  { label: 'History', to: '/history', Icon: ClockCounterClockwiseIcon },
+  { label: 'History', to: '/sessions', Icon: ClockCounterClockwiseIcon },
   { label: 'Settings', to: '/settings', Icon: GearSixIcon },
 ];
 
@@ -23,4 +23,4 @@ export const APP_SHELL_DESKTOP_NAV_QUERY = '(min-width: 48em)';
 export const isAppNavItemActive = (
   pathname: string,
   item: AppNavItem,
-): boolean => pathname === item.to;
+): boolean => pathname === item.to || pathname.startsWith(`${item.to}/`);

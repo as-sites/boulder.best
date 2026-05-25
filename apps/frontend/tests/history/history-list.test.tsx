@@ -67,13 +67,13 @@ const renderWithRouter = async (ui: ReactNode) => {
     path: '/',
     component: (): JSX.Element => ui as JSX.Element,
   });
-  const historyDetailRoute = createRoute({
+  const sessionDetailRoute = createRoute({
     getParentRoute: () => rootRoute,
-    path: '/history/$sessionId',
+    path: '/sessions/$sessionId',
     component: () => null,
   });
   const router = createRouter({
-    routeTree: rootRoute.addChildren([indexRoute, historyDetailRoute]),
+    routeTree: rootRoute.addChildren([indexRoute, sessionDetailRoute]),
     history: createMemoryHistory({ initialEntries: ['/'] }),
   });
   await router.load();
@@ -118,7 +118,7 @@ describe('history list item', () => {
 
     expect(screen.getByRole('link')).toHaveAttribute(
       'href',
-      '/history/local-1',
+      '/sessions/local-1',
     );
   });
 });

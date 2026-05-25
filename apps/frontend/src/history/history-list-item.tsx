@@ -22,7 +22,7 @@ export const HistoryListItem = ({
       component={Link}
       p="md"
       radius="md"
-      to={`/history/${item.id}`}
+      to={`/sessions/${item.id}`}
       withBorder
     >
       <Stack gap="xs">
