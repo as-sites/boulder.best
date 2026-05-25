@@ -13,6 +13,30 @@ export interface LoadedSessionDetail {
   session: SessionDetailResponse;
 }
 
+/**
+ * Re-resolve local session gym names when the gyms cache loads after detail
+ * fetch.
+ */
+export const withResolvedGymName = (
+  detail: LoadedSessionDetail,
+  gymNamesById: Readonly<Record<string, string>>,
+): LoadedSessionDetail => {
+  if (detail.source === 'server') {
+    return detail;
+  }
+
+  const gymName = gymNamesById[detail.session.gymId] ?? detail.session.gymName;
+
+  if (gymName === detail.session.gymName) {
+    return detail;
+  }
+
+  return {
+    ...detail,
+    session: { ...detail.session, gymName },
+  };
+};
+
 const toLocalSessionDetail = (
   payload: SyncSessionPayload,
   gymName: string,

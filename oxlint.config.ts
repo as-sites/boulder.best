@@ -301,6 +301,7 @@ export default defineConfig({
     'jest/padding-around-after-all-blocks': 'error',
     'jest/padding-around-test-blocks': 'error',
     'jest/prefer-ending-with-an-expect': 'error',
+    'jest/valid-title': 'off',
     'jsdoc/check-access': 'error',
     'jsdoc/check-property-names': 'error',
     'jsdoc/check-tag-names': 'error',
@@ -735,6 +736,7 @@ export default defineConfig({
     'vitest/valid-describe-callback': 'error',
     'vitest/valid-expect': ['error', { maxArgs: 2 }],
     'vitest/valid-expect-in-promise': 'error',
+    'vitest/valid-title': ['error', { allowArguments: true }],
     'vitest/warn-todo': 'error',
   },
 });
