@@ -221,7 +221,14 @@ const buildAuth = (env: AuthEnvBindings): AuthServer => {
         enabled: true,
       },
     },
-  }) as unknown as AuthServer;
+    session: {
+      cookieCache: {
+        enabled: true,
+        maxAge: 30 * 60,
+        strategy: 'compact',
+      },
+    },
+  });
 };
 
 // Module-level cache — valid within a CF Worker isolate (shared across requests in the same instance)

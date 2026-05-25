@@ -123,6 +123,9 @@ const mockSession = (
   } as ReturnType<typeof authClient.useSession>);
 };
 
+const mockSignedOutHistoryResponse = () =>
+  sessionsGet.mockResolvedValue(new Response(null, { status: 401 }));
+
 describe('offline-first route access', () => {
   beforeEach(() => {
     sessionsGet.mockClear();
@@ -137,21 +140,30 @@ describe('offline-first route access', () => {
     ).resolves.toBeInTheDocument();
   });
 
+  // oxlint-disable-next-line vitest/prefer-ending-with-an-expect -- inside the `waitFor`
   it('renders history for signed-out users without redirecting home', async () => {
+    mockSignedOutHistoryResponse();
     await renderAt('/history');
 
     await expect(
       screen.findByRole('heading', { name: 'History' }),
     ).resolves.toBeInTheDocument();
-    expect(screen.getByText(/saved on this device only/i)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(
+        screen.getByText(/saved on this device only/i),
+      ).toBeInTheDocument();
+    });
   });
 
   it('shows only local history items when signed out', async () => {
+    mockSignedOutHistoryResponse();
     await renderAt('/history');
 
+    await waitFor(() => {
+      expect(sessionsGet).toHaveBeenCalled();
+    });
     await expect(screen.findByText('Unknown gym')).resolves.toBeInTheDocument();
     expect(screen.queryByText('Cloud Gym')).toBeNull();
-    expect(sessionsGet).not.toHaveBeenCalled();
   });
 
   it('allows signed-in users to view tracker', async () => {
@@ -167,6 +179,25 @@ describe('offline-first route access', () => {
   });
 
   it('allows signed-in users to view history and load cloud sessions', async () => {
+    sessionsGet.mockResolvedValue(
+      Response.json(
+        {
+          items: [
+            {
+              id: 'server-1',
+              gymId: 'gym-1',
+              gymName: 'Cloud Gym',
+              startTime: '2026-05-20T12:00:00.000Z',
+              endTime: '2026-05-20T13:00:00.000Z',
+              totalDurationMs: 3_600_000,
+              entryCount: 1,
+            },
+          ],
+          nextCursor: null,
+        },
+        { status: 200 },
+      ),
+    );
     mockSession({
       data: { user: { email: 'ally@example.com' } },
       isPending: false,

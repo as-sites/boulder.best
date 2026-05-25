@@ -1,7 +1,6 @@
 import type { SessionHistoryListResponse } from '@boulder/api-contract';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '../lib/api-client.js';
-import { authClient } from '../lib/auth-client.js';
 import {
   NetworkOfflineError,
   apiErrorFromResponse,
@@ -31,13 +30,8 @@ export const fetchSessionHistory =
     return await response.json();
   };
 
-export const useSessionHistoryQuery = () => {
-  const session = authClient.useSession();
-  const isAuthenticated = Boolean(session.data?.user);
-
-  return useQuery({
+export const useSessionHistoryQuery = () =>
+  useQuery({
     queryKey: sessionHistoryQueryKey,
     queryFn: fetchSessionHistory,
-    enabled: isAuthenticated,
   });
-};
