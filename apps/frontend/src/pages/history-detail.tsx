@@ -4,7 +4,10 @@ import { useQuery } from '@tanstack/react-query';
 import { useParams } from '@tanstack/react-router';
 import { PageError } from '../components/page-error.js';
 import { PageLoading } from '../components/page-loading.js';
-import { loadSessionDetail } from '../history/load-session-detail.js';
+import {
+  loadSessionDetail,
+  withResolvedGymName,
+} from '../history/load-session-detail.js';
 import { SessionDetailView } from '../history/session-detail-view.js';
 import { authClient } from '../lib/auth-client.js';
 import { useCachedGymsQuery } from '../tracker/use-cached-gyms-query.js';
@@ -31,6 +34,14 @@ export const HistoryDetailPage = () => {
     enabled: Boolean(sessionId),
   });
 
+  const resolvedDetail = useMemo(
+    () =>
+      detailQuery.data
+        ? withResolvedGymName(detailQuery.data, gymNamesById)
+        : null,
+    [detailQuery.data, gymNamesById],
+  );
+
   if (detailQuery.isPending || gymsQuery.isPending) {
     return <PageLoading message="Loading session..." />;
   }
@@ -47,7 +58,7 @@ export const HistoryDetailPage = () => {
     );
   }
 
-  if (!detailQuery.data) {
+  if (!resolvedDetail) {
     return (
       <Container py="xl" size="sm">
         <Title order={1}>Session not found</Title>
@@ -58,8 +69,8 @@ export const HistoryDetailPage = () => {
   return (
     <Container py="xl" size="sm">
       <SessionDetailView
-        session={detailQuery.data.session}
-        source={detailQuery.data.source}
+        session={resolvedDetail.session}
+        source={resolvedDetail.source}
       />
     </Container>
   );
