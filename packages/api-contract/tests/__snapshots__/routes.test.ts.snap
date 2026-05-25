@@ -310,6 +310,24 @@ exports[`OpenAPI document > serves OpenAPI JSON at /openapi.json > openapi-docum
         ],
         "type": "object",
       },
+      "SessionHistoryCursor": {
+        "nullable": true,
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "type": "string",
+          },
+          "startTime": {
+            "format": "date-time",
+            "type": "string",
+          },
+        },
+        "required": [
+          "startTime",
+          "id",
+        ],
+        "type": "object",
+      },
       "SessionHistoryListItem": {
         "properties": {
           "endTime": {
@@ -366,9 +384,7 @@ exports[`OpenAPI document > serves OpenAPI JSON at /openapi.json > openapi-docum
             "type": "array",
           },
           "nextCursor": {
-            "format": "date-time",
-            "nullable": true,
-            "type": "string",
+            "$ref": "#/components/schemas/SessionHistoryCursor",
           },
         },
         "required": [
@@ -707,14 +723,19 @@ exports[`OpenAPI document > serves OpenAPI JSON at /openapi.json > openapi-docum
             },
           },
           {
-            "description": "Pagination cursor based on session startTime",
+            "description": "Keyset pagination cursor from the previous page nextCursor (startTime + id tie-breaker)",
             "in": "query",
             "name": "cursor",
             "required": false,
             "schema": {
-              "description": "Pagination cursor based on session startTime",
-              "format": "date-time",
-              "type": "string",
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/SessionHistoryCursor",
+                },
+                {
+                  "description": "Keyset pagination cursor from the previous page nextCursor (startTime + id tie-breaker)",
+                },
+              ],
             },
           },
         ],

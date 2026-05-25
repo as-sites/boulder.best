@@ -94,12 +94,14 @@ describe('climb photo attachments', () => {
     expect(document.querySelector('input[type="file"]')).toBeNull();
   });
 
-  it('does not force camera capture for photo selection', () => {
+  it('uses camera capture only on the take-photo input', () => {
     renderAttachments();
 
-    const input = document.querySelector('input[type="file"]');
+    const inputs = document.querySelectorAll('input[type="file"]');
 
-    expect(input).not.toBeNull();
-    expect(input?.getAttribute('capture')).toBeNull();
+    expect(inputs).toHaveLength(2);
+    expect(inputs[0]?.getAttribute('capture')).toBe('environment');
+    expect(inputs[1]?.getAttribute('capture')).toBeNull();
+    expect(inputs[1]?.hasAttribute('multiple')).toBe(true);
   });
 });

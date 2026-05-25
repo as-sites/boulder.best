@@ -8,6 +8,7 @@ import {
 import { useDisclosure, useMediaQuery } from '@mantine/hooks';
 import { Outlet, useLocation } from '@tanstack/react-router';
 import { useActiveDraftSession } from '../offline/hooks/use-active-draft-session.js';
+import { SyncQueueCoordinator } from '../offline/hooks/use-sync-queue-coordinator.js';
 import { AppBrand } from './app-brand.js';
 import { APP_SHELL_DESKTOP_NAV_QUERY } from './app-nav-items.js';
 import { AppShellMainNavLinks } from './app-shell-nav.js';
@@ -45,70 +46,78 @@ export const AppShell = () => {
   }, [location.pathname, closeMobileNav]);
 
   return (
-    <MantineAppShell
-      header={{ height: `calc(${HEADER_HEIGHT}px + ${safeAreaTop})` }}
-      navbar={{
-        width: NAVBAR_WIDTH,
-        breakpoint: 'sm',
-        collapsed: {
-          mobile: !mobileNavOpened,
-          desktop: !desktopNavOpened,
-        },
-      }}
-      padding="md"
-      styles={{
-        header: {
-          paddingTop: safeAreaTop,
-        },
-        main: {
-          paddingBottom: `calc(var(--mantine-spacing-md) + ${safeAreaBottom})`,
-        },
-      }}
-    >
-      <MantineAppShell.Header>
-        <Flex
-          align="center"
-          h="100%"
-          justify="space-between"
-          px="md"
-          wrap="nowrap"
-        >
+    <>
+      <SyncQueueCoordinator />
+      <MantineAppShell
+        header={{ height: `calc(${HEADER_HEIGHT}px + ${safeAreaTop})` }}
+        navbar={{
+          width: NAVBAR_WIDTH,
+          breakpoint: 'sm',
+          collapsed: {
+            mobile: !mobileNavOpened,
+            desktop: !desktopNavOpened,
+          },
+        }}
+        padding="md"
+        styles={{
+          header: {
+            paddingTop: safeAreaTop,
+          },
+          main: {
+            paddingBottom: `calc(var(--mantine-spacing-md) + ${safeAreaBottom})`,
+          },
+        }}
+      >
+        <MantineAppShell.Header>
           <Flex
             align="center"
-            gap="sm"
-            style={{ flex: '1 1 auto', minWidth: 0 }}
+            h="100%"
+            justify="space-between"
+            px="md"
             wrap="nowrap"
           >
-            <Burger
-              aria-controls="app-shell-navbar"
-              aria-expanded={navOpened}
-              aria-haspopup={isDesktopNav ? undefined : 'dialog'}
-              aria-label={navToggleLabel}
-              onClick={toggleNav}
-              opened={navOpened}
-              size="sm"
-            />
-            <AppBrand onNavigate={closeMobileNav} size="lg" />
+            <Flex
+              align="center"
+              gap="sm"
+              style={{ flex: '1 1 auto', minWidth: 0 }}
+              wrap="nowrap"
+            >
+              <Burger
+                aria-controls="app-shell-navbar"
+                aria-expanded={navOpened}
+                aria-haspopup={isDesktopNav ? undefined : 'dialog'}
+                aria-label={navToggleLabel}
+                onClick={toggleNav}
+                opened={navOpened}
+                size="sm"
+              />
+              <AppBrand onNavigate={closeMobileNav} size="lg" />
+            </Flex>
+
+            <Flex
+              align="center"
+              gap="sm"
+              style={{ flexShrink: 0 }}
+              wrap="nowrap"
+            >
+              {showHeaderTimer ? (
+                <AppShellSessionTimer compact formData={activeFormData} />
+              ) : null}
+              <AppUserMenu />
+            </Flex>
           </Flex>
+        </MantineAppShell.Header>
 
-          <Flex align="center" gap="sm" style={{ flexShrink: 0 }} wrap="nowrap">
-            {showHeaderTimer ? (
-              <AppShellSessionTimer compact formData={activeFormData} />
-            ) : null}
-            <AppUserMenu />
-          </Flex>
-        </Flex>
-      </MantineAppShell.Header>
+        <MantineAppShell.Navbar id="app-shell-navbar" p="md">
+          <MantineAppShell.Section grow component={ScrollArea} type="auto">
+            <AppShellMainNavLinks onNavigate={closeMobileNav} />
+          </MantineAppShell.Section>
+        </MantineAppShell.Navbar>
 
-      <MantineAppShell.Navbar id="app-shell-navbar" p="md">
-        <MantineAppShell.Section grow component={ScrollArea} type="auto">
-          <AppShellMainNavLinks onNavigate={closeMobileNav} />
-        </MantineAppShell.Section>
-      </MantineAppShell.Navbar>
-
-      <MantineAppShell.Main>
-        <Outlet />
-      </MantineAppShell.Main>
-    </MantineAppShell>
+        <MantineAppShell.Main>
+          <Outlet />
+        </MantineAppShell.Main>
+      </MantineAppShell>
+    </>
   );
 };

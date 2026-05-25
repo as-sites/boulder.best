@@ -4,6 +4,7 @@ import type { AppDb } from '../src/db/index.js';
 import { createApiApp } from '../src/index.js';
 import type * as SyncSessionModule from '../src/sessions/sync-session.js';
 import {
+  SyncSessionConflictError,
   SyncSessionForbiddenError,
   SyncSessionInvalidLocationError,
 } from '../src/sessions/sync-session.js';
@@ -60,8 +61,10 @@ const syncSessionPayloadFixture = {
         {
           id: '223e4567-e89b-12d3-a456-426614174001',
           index: 0,
-          objectKey: 'user/session/entry/0.webp',
-          photoUrl: 'https://cdn.example.com/0.webp',
+          objectKey:
+            'user_123/987fcdeb-51a2-43d7-9012-345678901234/123e4567-e89b-12d3-a456-426614174000/1715600000000-0.webp',
+          photoUrl:
+            'https://cdn.example.com/user_123/987fcdeb-51a2-43d7-9012-345678901234/123e4567-e89b-12d3-a456-426614174000/1715600000000-0.webp',
           contentType: 'image/webp' as const,
           contentLength: 512_000,
         },
@@ -77,7 +80,12 @@ const syncSessionPayloadFixture = {
 } as const;
 
 const createMockDb = (
-  options: { existingUserId?: string; gymLocations?: string[] } = {},
+  options: {
+    existingUserId?: string;
+    gymLocations?: string[];
+    conflictingEntryIds?: string[];
+    conflictingImageIds?: string[];
+  } = {},
 ) => {
   const sessionUpserts: unknown[] = [];
   const entryUpserts: unknown[] = [];
@@ -101,6 +109,16 @@ const createMockDb = (
 
             if (tableName === 'gyms') {
               return [{ locations: options.gymLocations ?? ['Main Wall'] }];
+            }
+
+            if (tableName === 'session_entries') {
+              const conflictingId = options.conflictingEntryIds?.[0];
+              return conflictingId ? [{ id: conflictingId }] : [];
+            }
+
+            if (tableName === 'session_entry_images') {
+              const conflictingId = options.conflictingImageIds?.[0];
+              return conflictingId ? [{ id: conflictingId }] : [];
             }
 
             return [];
@@ -143,8 +161,15 @@ const createMockDb = (
     })),
   };
 
+  const db = {
+    ...tx,
+    batch: vi.fn(async (_operations: unknown[]) => {
+      /* empty */
+    }),
+  };
+
   return {
-    db: tx,
+    db,
     sessionUpserts,
     entryUpserts,
     imageUpserts,
@@ -243,6 +268,60 @@ describe('syncSession persistence', () => {
         syncSessionPayloadFixture,
       ),
     ).rejects.toBeInstanceOf(SyncSessionForbiddenError);
+  });
+
+  it('rejects entry ids that already belong to another user', async () => {
+    const mock = createMockDb({
+      conflictingEntryIds: [syncSessionPayloadFixture.entries[0].id],
+    });
+
+    await expect(
+      syncMocks.syncSession(
+        mock.db as never,
+        'user_123',
+        syncSessionPayloadFixture,
+      ),
+    ).rejects.toBeInstanceOf(SyncSessionConflictError);
+
+    expect(mock.sessionUpserts).toHaveLength(0);
+  });
+
+  it('rejects image ids that already belong to another session', async () => {
+    const mock = createMockDb({
+      conflictingImageIds: [syncSessionPayloadFixture.entries[0].images[0].id],
+    });
+
+    await expect(
+      syncMocks.syncSession(
+        mock.db as never,
+        'user_123',
+        syncSessionPayloadFixture,
+      ),
+    ).rejects.toBeInstanceOf(SyncSessionConflictError);
+
+    expect(mock.sessionUpserts).toHaveLength(0);
+  });
+
+  it('rejects image metadata with an unexpected object key', async () => {
+    const mock = createMockDb();
+
+    await expect(
+      syncMocks.syncSession(mock.db as never, 'user_123', {
+        ...syncSessionPayloadFixture,
+        entries: [
+          {
+            ...syncSessionPayloadFixture.entries[0],
+            images: [
+              {
+                ...syncSessionPayloadFixture.entries[0].images[0],
+                objectKey: 'other-user/other-session/other-entry/1-0.webp',
+              },
+            ],
+          },
+          syncSessionPayloadFixture.entries[1],
+        ],
+      }),
+    ).rejects.toMatchObject({ name: 'SyncSessionInvalidImageMetadataError' });
   });
 });
 

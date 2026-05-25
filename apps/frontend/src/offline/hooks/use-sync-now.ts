@@ -1,24 +1,22 @@
-import { useCallback, useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
-import { sessionHistoryQueryKey } from '../../history/use-session-history-query.js';
+import { useCallback } from 'react';
 import { authClient } from '../../lib/auth-client.js';
 import {
   useBrowserOnline,
   useManualOfflineMode,
   useSyncEligibility,
 } from '../../lib/settings/index.js';
-import { drainSyncQueue } from '../sync/drain-sync-queue.js';
+import { useSyncQueueMutation } from './use-sync-queue-mutation.js';
 import { useSyncQueueHasWork } from './use-sync-queue.js';
 
 export const useSyncNow = () => {
-  const queryClient = useQueryClient();
   const session = authClient.useSession();
   const isAuthenticated = Boolean(session.data?.user);
   const { enabled: manualOfflineMode } = useManualOfflineMode();
   const isOnline = useBrowserOnline();
   const eligibility = useSyncEligibility(isAuthenticated);
   const hasQueueWork = useSyncQueueHasWork();
-  const [isSyncing, setIsSyncing] = useState(false);
+
+  const { mutateAsync, isPending: isSyncing } = useSyncQueueMutation();
 
   const canSyncNow =
     eligibility.canAutoSync && hasQueueWork && !isSyncing && !session.isPending;
@@ -38,22 +36,14 @@ export const useSyncNow = () => {
       return;
     }
 
-    setIsSyncing(true);
-    try {
-      await drainSyncQueue({
-        manualOfflineMode,
-        isOnline,
-        isAuthenticated,
-        isAppForeground: true,
-        forceRetry: true,
-      });
-      await queryClient.invalidateQueries({
-        queryKey: sessionHistoryQueryKey,
-      });
-    } finally {
-      setIsSyncing(false);
-    }
-  }, [canSyncNow, isAuthenticated, isOnline, manualOfflineMode, queryClient]);
+    await mutateAsync({
+      manualOfflineMode,
+      isOnline,
+      isAuthenticated,
+      isAppForeground: true,
+      forceRetry: true,
+    });
+  }, [canSyncNow, isAuthenticated, isOnline, manualOfflineMode, mutateAsync]);
 
   return {
     canSyncNow,
