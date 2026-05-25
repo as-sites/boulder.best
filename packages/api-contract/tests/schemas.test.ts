@@ -237,11 +237,28 @@ describe('session history list query schema', () => {
     expect(sessionHistoryListQuerySchema.parse({})).toEqual({ limit: 20 });
 
     expect(
-      sessionHistoryListQuerySchema.safeParse({
+      sessionHistoryListQuerySchema.parse({
         limit: '10',
-        cursor: '2026-05-13T10:00:00.000Z',
+        cursor: {
+          startTime: '2026-05-13T10:00:00.000Z',
+          id: '987fcdeb-51a2-43d7-9012-345678901234',
+        },
+      }),
+    ).toEqual({
+      limit: 10,
+      cursor: {
+        startTime: '2026-05-13T10:00:00.000Z',
+        id: '987fcdeb-51a2-43d7-9012-345678901234',
+      },
+    });
+  });
+
+  it('rejects a partial cursor object', () => {
+    expect(
+      sessionHistoryListQuerySchema.safeParse({
+        cursor: { startTime: '2026-05-13T10:00:00.000Z' },
       }).success,
-    ).toBe(true);
+    ).toBe(false);
   });
 
   it('rejects limits outside 1-50 and invalid cursors', () => {
@@ -252,8 +269,12 @@ describe('session history list query schema', () => {
       false,
     );
     expect(
-      sessionHistoryListQuerySchema.safeParse({ cursor: 'not-a-datetime' })
-        .success,
+      sessionHistoryListQuerySchema.safeParse({
+        cursor: {
+          startTime: '2026-05-13T10:00:00.000Z',
+          id: 'not-a-uuid',
+        },
+      }).success,
     ).toBe(false);
   });
 });

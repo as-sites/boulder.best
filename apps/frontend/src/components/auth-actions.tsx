@@ -149,7 +149,7 @@ const SignUpForm = ({
 
 export const AuthActions = () => {
   const session = authClient.useSession();
-  const isAuthenticated = !!session.data?.user;
+  const isAuthenticated = Boolean(session.data?.user);
 
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
   const [passkeyName, setPasskeyName] = useState('');

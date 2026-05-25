@@ -4,7 +4,7 @@ import {
   type SessionHistoryListQuery,
   type SessionHistoryListResponse,
 } from '@boulder/api-contract';
-import { and, asc, count, desc, eq, lt } from 'drizzle-orm';
+import { and, asc, count, desc, eq, lt, or } from 'drizzle-orm';
 import type { AppDb } from '../db/index.js';
 import {
   climbAttempts,
@@ -13,7 +13,6 @@ import {
   sessionEntryImages,
   sessions,
 } from '../db/schema.js';
-
 export const listSessions = async (
   db: AppDb,
   userId: string,
@@ -22,7 +21,18 @@ export const listSessions = async (
   const conditions = [eq(sessions.userId, userId)];
 
   if (query.cursor) {
-    conditions.push(lt(sessions.startTime, new Date(query.cursor)));
+    const cursorStartTime = new Date(query.cursor.startTime);
+    const paginationCondition = or(
+      lt(sessions.startTime, cursorStartTime),
+      and(
+        eq(sessions.startTime, cursorStartTime),
+        lt(sessions.id, query.cursor.id),
+      ),
+    );
+
+    if (paginationCondition) {
+      conditions.push(paginationCondition);
+    }
   }
 
   const rows = await db
@@ -49,7 +59,7 @@ export const listSessions = async (
       sessions.endTime,
       sessions.totalDurationMs,
     )
-    .orderBy(desc(sessions.startTime))
+    .orderBy(desc(sessions.startTime), desc(sessions.id))
     .limit(query.limit + 1);
 
   const hasMore = rows.length > query.limit;
@@ -67,7 +77,13 @@ export const listSessions = async (
       totalDurationMs: row.totalDurationMs,
       entryCount: row.entryCount,
     })),
-    nextCursor: hasMore && lastRow ? lastRow.startTime.toISOString() : null,
+    nextCursor:
+      hasMore && lastRow
+        ? {
+            startTime: lastRow.startTime.toISOString(),
+            id: lastRow.id,
+          }
+        : null,
   };
 };
 

@@ -15,7 +15,9 @@ import {
   listSessions as loadSessionHistory,
 } from './sessions/session-history.js';
 import {
+  SyncSessionConflictError,
   SyncSessionForbiddenError,
+  SyncSessionInvalidImageMetadataError,
   SyncSessionInvalidLocationError,
   syncSession as persistSyncedSession,
 } from './sessions/sync-session.js';
@@ -199,11 +201,17 @@ export const createApiApp = (options: CreateApiAppOptions = {}) => {
   app.use('/api/sessions/*', protectedMiddleware);
 
   app.onError((error, c) => {
-    if (error instanceof SyncSessionForbiddenError) {
+    if (
+      error instanceof SyncSessionForbiddenError ||
+      error instanceof SyncSessionConflictError
+    ) {
       return c.body(null, 403);
     }
 
-    if (error instanceof SyncSessionInvalidLocationError) {
+    if (
+      error instanceof SyncSessionInvalidLocationError ||
+      error instanceof SyncSessionInvalidImageMetadataError
+    ) {
       return c.body(null, 400);
     }
 

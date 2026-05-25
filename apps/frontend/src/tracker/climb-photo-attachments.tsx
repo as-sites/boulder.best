@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import {
   ActionIcon,
   Button,
+  Group,
   Image,
   SimpleGrid,
   Stack,
@@ -47,7 +48,8 @@ export const ClimbPhotoAttachments = ({
   entryId,
   disabled = false,
 }: ClimbPhotoAttachmentsProps) => {
-  const inputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const libraryInputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
 
   const images = useLiveQuery(
@@ -83,8 +85,11 @@ export const ClimbPhotoAttachments = ({
       }
     }
 
-    if (inputRef.current) {
-      inputRef.current.value = '';
+    if (cameraInputRef.current) {
+      cameraInputRef.current.value = '';
+    }
+    if (libraryInputRef.current) {
+      libraryInputRef.current.value = '';
     }
   };
 
@@ -120,24 +125,47 @@ export const ClimbPhotoAttachments = ({
       {!disabled ? (
         <>
           <input
-            ref={inputRef}
+            ref={cameraInputRef}
             type="file"
             accept="image/*"
-            multiple
+            capture="environment"
             hidden
+            aria-label="Take climb photo"
             onChange={(event) => {
               void handleFiles(event.currentTarget.files);
             }}
           />
-          <Button
-            size="compact-sm"
-            variant="light"
-            onClick={() => {
-              inputRef.current?.click();
+          <input
+            ref={libraryInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            hidden
+            aria-label="Choose climb photos"
+            onChange={(event) => {
+              void handleFiles(event.currentTarget.files);
             }}
-          >
-            Add photo
-          </Button>
+          />
+          <Group gap="xs">
+            <Button
+              size="compact-sm"
+              variant="light"
+              onClick={() => {
+                cameraInputRef.current?.click();
+              }}
+            >
+              Take photo
+            </Button>
+            <Button
+              size="compact-sm"
+              variant="default"
+              onClick={() => {
+                libraryInputRef.current?.click();
+              }}
+            >
+              Choose photos
+            </Button>
+          </Group>
         </>
       ) : null}
 

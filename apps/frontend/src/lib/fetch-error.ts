@@ -1,8 +1,9 @@
 /**
  * Patterns that identify network / offline fetch failures across browsers.
- * These mirror the Sentry ignore list in `sentry.ts`.
+ * Shared with Sentry `ignoreErrors` so expected offline noise is filtered
+ * consistently.
  */
-const NETWORK_ERROR_PATTERNS = [
+export const OFFLINE_ERROR_IGNORE_PATTERNS = [
   /^Failed to fetch$/i,
   /^Network Error$/i,
   /^Load failed$/i,
@@ -24,8 +25,9 @@ export const isNetworkError = (error: unknown): boolean => {
 
   if (error instanceof TypeError) {
     return (
-      NETWORK_ERROR_PATTERNS.some((pattern) => pattern.test(error.message)) ||
-      error.message === ''
+      OFFLINE_ERROR_IGNORE_PATTERNS.some((pattern) =>
+        pattern.test(error.message),
+      ) || error.message === ''
     );
   }
 

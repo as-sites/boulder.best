@@ -209,10 +209,18 @@ export type SyncSessionPayload = z.infer<typeof syncSessionPayloadSchema>;
 
 // --- Session history list ---
 
+export const sessionHistoryCursorSchema = z
+  .object({
+    startTime: isoDateTimeSchema,
+    id: z.uuid(),
+  })
+  .openapi('SessionHistoryCursor');
+
 export const sessionHistoryListQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(50).default(20),
-  cursor: isoDateTimeSchema.optional().openapi({
-    description: 'Pagination cursor based on session startTime',
+  cursor: sessionHistoryCursorSchema.optional().openapi({
+    description:
+      'Keyset pagination cursor from the previous page nextCursor (startTime + id tie-breaker)',
   }),
 });
 
@@ -232,10 +240,11 @@ export const sessionHistoryListItemSchema = z
 export const sessionHistoryListResponseSchema = z
   .object({
     items: z.array(sessionHistoryListItemSchema),
-    nextCursor: isoDateTimeSchema.nullable(),
+    nextCursor: sessionHistoryCursorSchema.nullable(),
   })
   .openapi('SessionHistoryListResponse');
 
+export type SessionHistoryCursor = z.infer<typeof sessionHistoryCursorSchema>;
 export type SessionHistoryListQuery = z.infer<
   typeof sessionHistoryListQuerySchema
 >;

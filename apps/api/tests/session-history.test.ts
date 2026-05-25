@@ -58,6 +58,7 @@ const createListDb = (rows: Array<Record<string, unknown>>) => {
 
   const orderBy = vi.fn(() => ({ limit }));
   const groupBy = vi.fn(() => ({ orderBy }));
+  const orderBySpy = orderBy;
   const where = vi.fn(() => ({ groupBy }));
   const leftJoin = vi.fn(() => ({ where }));
   const innerJoin = vi.fn(() => ({ leftJoin }));
@@ -67,6 +68,7 @@ const createListDb = (rows: Array<Record<string, unknown>>) => {
   return {
     db: { select } as never,
     limit,
+    orderBy: orderBySpy,
     where,
   };
 };
@@ -199,6 +201,7 @@ describe('session history list persistence', () => {
       nextCursor: null,
     });
     expect(mock.limit).toHaveBeenCalledWith(21);
+    expect(mock.orderBy).toHaveBeenCalled();
   });
 
   it('returns a next cursor when more sessions exist', async () => {
@@ -229,7 +232,10 @@ describe('session history list persistence', () => {
     });
 
     expect(response.items).toHaveLength(1);
-    expect(response.nextCursor).toBe('2026-05-14T10:00:00.000Z');
+    expect(response.nextCursor).toEqual({
+      startTime: '2026-05-14T10:00:00.000Z',
+      id: sessionId,
+    });
     expect(mock.limit).toHaveBeenCalledWith(2);
   });
 });
