@@ -1,7 +1,8 @@
 import { useEffect, useMemo } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button, Group, Stack, Text, Title } from '@mantine/core';
-import { Select, Textarea } from '@trendcapital/react-hook-form-mantine';
+import { Select } from '@trendcapital/react-hook-form-mantine/Select';
+import { Textarea } from '@trendcapital/react-hook-form-mantine/Textarea';
 import {
   FormProvider,
   useFieldArray,

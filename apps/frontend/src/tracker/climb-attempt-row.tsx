@@ -9,7 +9,8 @@ import {
   TextInput as MantineTextInput,
 } from '@mantine/core';
 import { CheckIcon, PencilSimpleIcon } from '@phosphor-icons/react';
-import { Checkbox, Textarea } from '@trendcapital/react-hook-form-mantine';
+import { Checkbox } from '@trendcapital/react-hook-form-mantine/Checkbox';
+import { Textarea } from '@trendcapital/react-hook-form-mantine/Textarea';
 import { TimerDisplay } from '../components/timer/timer-display.js';
 import {
   elapsedDurationMs,

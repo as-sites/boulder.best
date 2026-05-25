@@ -1,9 +1,7 @@
 import { Button, Group, Paper, Stack, Text } from '@mantine/core';
-import {
-  Select,
-  TextInput,
-  Textarea,
-} from '@trendcapital/react-hook-form-mantine';
+import { Select } from '@trendcapital/react-hook-form-mantine/Select';
+import { Textarea } from '@trendcapital/react-hook-form-mantine/Textarea';
+import { TextInput } from '@trendcapital/react-hook-form-mantine/TextInput';
 import {
   useFieldArray,
   useFormContext,

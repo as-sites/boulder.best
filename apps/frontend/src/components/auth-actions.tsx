@@ -13,10 +13,8 @@ import {
   Title,
 } from '@mantine/core';
 import { FingerprintIcon } from '@phosphor-icons/react';
-import {
-  PasswordInput,
-  TextInput as FormTextInput,
-} from '@trendcapital/react-hook-form-mantine';
+import { PasswordInput } from '@trendcapital/react-hook-form-mantine/PasswordInput';
+import { TextInput as FormTextInput } from '@trendcapital/react-hook-form-mantine/TextInput';
 import { FormProvider, useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { authClient, type OAuthProvider } from '../lib/auth-client.js';
