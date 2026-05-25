@@ -143,7 +143,7 @@ describe('offline-first route access', () => {
   // oxlint-disable-next-line vitest/prefer-ending-with-an-expect -- inside the `waitFor`
   it('renders history for signed-out users without redirecting home', async () => {
     mockSignedOutHistoryResponse();
-    await renderAt('/history');
+    await renderAt('/sessions');
 
     await expect(
       screen.findByRole('heading', { name: 'History' }),
@@ -157,7 +157,7 @@ describe('offline-first route access', () => {
 
   it('shows only local history items when signed out', async () => {
     mockSignedOutHistoryResponse();
-    await renderAt('/history');
+    await renderAt('/sessions');
 
     await waitFor(() => {
       expect(sessionsGet).toHaveBeenCalled();
@@ -202,7 +202,7 @@ describe('offline-first route access', () => {
       data: { user: { email: 'ally@example.com' } },
       isPending: false,
     } as ReturnType<typeof authClient.useSession>);
-    await renderAt('/history');
+    await renderAt('/sessions');
 
     await expect(
       screen.findByRole('heading', { name: 'History' }),
@@ -242,7 +242,7 @@ describe('route shell smoke tests', () => {
       isPending: false,
     } as ReturnType<typeof authClient.useSession>);
 
-    await renderAt('/history');
+    await renderAt('/sessions');
 
     await expect(
       screen.findByRole('heading', { name: 'History' }),

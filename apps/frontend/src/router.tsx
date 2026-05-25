@@ -5,18 +5,18 @@ import {
 } from '@tanstack/react-router';
 import { RouteError } from './components/route-error.js';
 import { accountRoute } from './routes/account.js';
-import { historyDetailRoute } from './routes/history-detail.js';
-import { historyRoute } from './routes/history.js';
 import { homeRoute } from './routes/home.js';
 import { rootRoute } from './routes/root.js';
+import { sessionDetailRoute } from './routes/session-detail.js';
+import { sessionsRoute } from './routes/sessions.js';
 import { settingsRoute } from './routes/settings.js';
 import { trackerRoute } from './routes/tracker.js';
 
 const appRouteChildren = [
   homeRoute,
   trackerRoute,
-  historyRoute,
-  historyDetailRoute,
+  sessionsRoute,
+  sessionDetailRoute,
   settingsRoute,
   accountRoute,
 ] as const;

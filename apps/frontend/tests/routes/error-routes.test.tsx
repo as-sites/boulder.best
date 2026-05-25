@@ -131,7 +131,7 @@ describe('router not-found UI', () => {
       isPending: false,
     } as ReturnType<typeof authClient.useSession>);
 
-    await renderAt('/history/not-a-uuid');
+    await renderAt('/sessions/not-a-uuid');
 
     await expect(
       screen.findByRole('heading', { name: 'Session not found' }),

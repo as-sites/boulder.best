@@ -2,8 +2,8 @@ import { createRoute } from '@tanstack/react-router';
 import { HistoryPage } from '../pages/history.js';
 import { rootRoute } from './root.js';
 
-export const historyRoute = createRoute({
+export const sessionsRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/history',
+  path: '/sessions',
   component: HistoryPage,
 });
