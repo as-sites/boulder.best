@@ -1,0 +1,222 @@
+diff --git a/package.json b/package.json
+index 87d261656fa856850a4267a2d3172245604195e2..4f19c0e75f4aa21825ff0c15f695add07f06108e 100644
+--- a/package.json
++++ b/package.json
+@@ -26,6 +26,206 @@
+       "import": "./dist/index.mjs",
+       "require": "./dist/index.js",
+       "types": "./dist/index.d.ts"
++    },
++    "./AngleSlider": {
++      "import": "./dist/AngleSlider.mjs",
++      "require": "./dist/AngleSlider.js",
++      "types": "./dist/AngleSlider.d.ts"
++    },
++    "./Autocomplete": {
++      "import": "./dist/Autocomplete.mjs",
++      "require": "./dist/Autocomplete.js",
++      "types": "./dist/Autocomplete.d.ts"
++    },
++    "./Checkbox": {
++      "import": "./dist/Checkbox.mjs",
++      "require": "./dist/Checkbox.js",
++      "types": "./dist/Checkbox.d.ts"
++    },
++    "./CheckboxGroup": {
++      "import": "./dist/Checkbox/CheckBoxGroup/CheckBoxGroup.mjs",
++      "require": "./dist/Checkbox/CheckBoxGroup/CheckBoxGroup.js",
++      "types": "./dist/Checkbox/CheckBoxGroup/CheckBoxGroup.d.ts"
++    },
++    "./Chip": {
++      "import": "./dist/Chip.mjs",
++      "require": "./dist/Chip.js",
++      "types": "./dist/Chip.d.ts"
++    },
++    "./ChipGroup": {
++      "import": "./dist/Chip/ChipGroup/ChipGroup.mjs",
++      "require": "./dist/Chip/ChipGroup/ChipGroup.js",
++      "types": "./dist/Chip/ChipGroup/ChipGroup.d.ts"
++    },
++    "./ColorInput": {
++      "import": "./dist/ColorInput.mjs",
++      "require": "./dist/ColorInput.js",
++      "types": "./dist/ColorInput.d.ts"
++    },
++    "./ColorPicker": {
++      "import": "./dist/ColorPicker.mjs",
++      "require": "./dist/ColorPicker.js",
++      "types": "./dist/ColorPicker.d.ts"
++    },
++    "./DateInput": {
++      "import": "./dist/DateInput.mjs",
++      "require": "./dist/DateInput.js",
++      "types": "./dist/DateInput.d.ts"
++    },
++    "./DatePicker": {
++      "import": "./dist/DatePicker.mjs",
++      "require": "./dist/DatePicker.js",
++      "types": "./dist/DatePicker.d.ts"
++    },
++    "./DatePickerInput": {
++      "import": "./dist/DatePickerInput.mjs",
++      "require": "./dist/DatePickerInput.js",
++      "types": "./dist/DatePickerInput.d.ts"
++    },
++    "./DateTimePicker": {
++      "import": "./dist/DateTimePicker.mjs",
++      "require": "./dist/DateTimePicker.js",
++      "types": "./dist/DateTimePicker.d.ts"
++    },
++    "./FileInput": {
++      "import": "./dist/FileInput.mjs",
++      "require": "./dist/FileInput.js",
++      "types": "./dist/FileInput.d.ts"
++    },
++    "./Input": {
++      "import": "./dist/Input.mjs",
++      "require": "./dist/Input.js",
++      "types": "./dist/Input.d.ts"
++    },
++    "./InputBase": {
++      "import": "./dist/InputBase.mjs",
++      "require": "./dist/InputBase.js",
++      "types": "./dist/InputBase.d.ts"
++    },
++    "./JsonInput": {
++      "import": "./dist/JsonInput.mjs",
++      "require": "./dist/JsonInput.js",
++      "types": "./dist/JsonInput.d.ts"
++    },
++    "./MiniCalendar": {
++      "import": "./dist/MiniCalendar.mjs",
++      "require": "./dist/MiniCalendar.js",
++      "types": "./dist/MiniCalendar.d.ts"
++    },
++    "./MonthPicker": {
++      "import": "./dist/MonthPicker.mjs",
++      "require": "./dist/MonthPicker.js",
++      "types": "./dist/MonthPicker.d.ts"
++    },
++    "./MonthPickerInput": {
++      "import": "./dist/MonthPickerInput.mjs",
++      "require": "./dist/MonthPickerInput.js",
++      "types": "./dist/MonthPickerInput.d.ts"
++    },
++    "./MultiSelect": {
++      "import": "./dist/MultiSelect.mjs",
++      "require": "./dist/MultiSelect.js",
++      "types": "./dist/MultiSelect.d.ts"
++    },
++    "./NativeSelect": {
++      "import": "./dist/NativeSelect.mjs",
++      "require": "./dist/NativeSelect.js",
++      "types": "./dist/NativeSelect.d.ts"
++    },
++    "./NumberInput": {
++      "import": "./dist/NumberInput.mjs",
++      "require": "./dist/NumberInput.js",
++      "types": "./dist/NumberInput.d.ts"
++    },
++    "./PasswordInput": {
++      "import": "./dist/PasswordInput.mjs",
++      "require": "./dist/PasswordInput.js",
++      "types": "./dist/PasswordInput.d.ts"
++    },
++    "./PinInput": {
++      "import": "./dist/PinInput.mjs",
++      "require": "./dist/PinInput.js",
++      "types": "./dist/PinInput.d.ts"
++    },
++    "./Radio": {
++      "import": "./dist/Radio.mjs",
++      "require": "./dist/Radio.js",
++      "types": "./dist/Radio.d.ts"
++    },
++    "./RadioGroup": {
++      "import": "./dist/Radio/RadioGroup/RadioGroup.mjs",
++      "require": "./dist/Radio/RadioGroup/RadioGroup.js",
++      "types": "./dist/Radio/RadioGroup/RadioGroup.d.ts"
++    },
++    "./Rating": {
++      "import": "./dist/Rating.mjs",
++      "require": "./dist/Rating.js",
++      "types": "./dist/Rating.d.ts"
++    },
++    "./SegmentedControl": {
++      "import": "./dist/SegmentedControl.mjs",
++      "require": "./dist/SegmentedControl.js",
++      "types": "./dist/SegmentedControl.d.ts"
++    },
++    "./Select": {
++      "import": "./dist/Select.mjs",
++      "require": "./dist/Select.js",
++      "types": "./dist/Select.d.ts"
++    },
++    "./Slider": {
++      "import": "./dist/Slider.mjs",
++      "require": "./dist/Slider.js",
++      "types": "./dist/Slider.d.ts"
++    },
++    "./Switch": {
++      "import": "./dist/Switch.mjs",
++      "require": "./dist/Switch.js",
++      "types": "./dist/Switch.d.ts"
++    },
++    "./SwitchGroup": {
++      "import": "./dist/Switch/SwitchGroup/SwitchGroup.mjs",
++      "require": "./dist/Switch/SwitchGroup/SwitchGroup.js",
++      "types": "./dist/Switch/SwitchGroup/SwitchGroup.d.ts"
++    },
++    "./TagsInput": {
++      "import": "./dist/TagsInput.mjs",
++      "require": "./dist/TagsInput.js",
++      "types": "./dist/TagsInput.d.ts"
++    },
++    "./TextInput": {
++      "import": "./dist/TextInput.mjs",
++      "require": "./dist/TextInput.js",
++      "types": "./dist/TextInput.d.ts"
++    },
++    "./Textarea": {
++      "import": "./dist/Textarea.mjs",
++      "require": "./dist/Textarea.js",
++      "types": "./dist/Textarea.d.ts"
++    },
++    "./TimeGrid": {
++      "import": "./dist/TimeGrid.mjs",
++      "require": "./dist/TimeGrid.js",
++      "types": "./dist/TimeGrid.d.ts"
++    },
++    "./TimeInput": {
++      "import": "./dist/TimeInput.mjs",
++      "require": "./dist/TimeInput.js",
++      "types": "./dist/TimeInput.d.ts"
++    },
++    "./TimePicker": {
++      "import": "./dist/TimePicker.mjs",
++      "require": "./dist/TimePicker.js",
++      "types": "./dist/TimePicker.d.ts"
++    },
++    "./YearPicker": {
++      "import": "./dist/YearPicker.mjs",
++      "require": "./dist/YearPicker.js",
++      "types": "./dist/YearPicker.d.ts"
++    },
++    "./YearPickerInput": {
++      "import": "./dist/YearPickerInput.mjs",
++      "require": "./dist/YearPickerInput.js",
++      "types": "./dist/YearPickerInput.d.ts"
+     }
+   },
+   "types": "dist/index.d.ts",
+@@ -79,5 +279,10 @@
+     "react": ">=18.0.0",
+     "react-dom": ">=18.0.0",
+     "react-hook-form": ">=7.43.0"
++  },
++  "peerDependenciesMeta": {
++    "@mantine/dates": {
++      "optional": true
++    }
+   }
+ }

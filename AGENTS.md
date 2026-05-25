@@ -14,6 +14,7 @@ Before generating any code or suggesting architectural changes, you MUST read an
 ## **2\. Tech Stack Boundaries**
 
 - **Frontend:** React, Vite, TanStack Router, TanStack Query, Mantine (v9+), Phosphor Icons, react-hook-form \+ zod.
+- **Mantine + react-hook-form:** Use `@trendcapital/react-hook-form-mantine` with **deep imports only** (e.g. `@trendcapital/react-hook-form-mantine/TextInput`). Do **not** import from the package root (`@trendcapital/react-hook-form-mantine`) — barrel imports break the Vite build.
 - **Backend:** Cloudflare Workers (Edge runtime), Hono, @hono/zod-openapi.
 - **Database:** Neon (Serverless Postgres), Drizzle ORM.
 - **RPC/API:** We use native **Hono RPC (hono/client)**. Do NOT install or suggest tRPC or oRPC.
