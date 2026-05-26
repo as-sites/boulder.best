@@ -49,6 +49,7 @@ export {
   useActiveDraftSession,
   useSyncNow,
   useSyncQueueErrorCount,
+  useSyncQueueErrorList,
   useSyncQueueHasWork,
   useSyncQueueLastError,
   useSyncQueueList,
@@ -87,3 +88,11 @@ export {
   submitSyncSession,
 } from './sync/submit-sync-session.js';
 export { drainSyncQueue, SYNCING_STALE_MS } from './sync/drain-sync-queue.js';
+export {
+  buildFailedSyncExport,
+  buildFailedSyncExportFilename,
+  clearFailedSyncQueueItem,
+  downloadFailedSyncExport,
+  type FailedSyncExport,
+  type FailedSyncExportImageMeta,
+} from './sync/failed-sync-recovery.js';

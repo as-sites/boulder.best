@@ -23,6 +23,14 @@ export const useSyncQueueList = (): SyncQueueItem[] =>
     [],
   );
 
+export const useSyncQueueErrorList = (): SyncQueueItem[] =>
+  useLiveQuery(
+    async () =>
+      await db.syncQueue.where('status').equals('error').sortBy('createdAt'),
+    [],
+    [],
+  );
+
 /** Whether the queue has sessions that manual sync can process. */
 export const useSyncQueueHasWork = (): boolean =>
   useLiveQuery(
