@@ -424,9 +424,9 @@ describe('AppShell navigation', () => {
           'Open navigation menu',
         );
       });
-      expect(
-        screen.getByRole('heading', { name: /settings/i }),
-      ).toBeInTheDocument();
+      await expect(
+        screen.findByRole('heading', { name: /settings/i }),
+      ).resolves.toBeInTheDocument();
     });
 
     it('marks the active drawer link when on that route', async () => {

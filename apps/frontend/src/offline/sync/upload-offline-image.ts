@@ -3,8 +3,11 @@ import {
   type SyncedImage,
 } from '@boulder/api-contract';
 import { apiClient } from '../../lib/api-client.js';
+import { mapWithConcurrency } from '../../lib/map-with-concurrency.js';
 import type { OfflineImage } from '../db/types.js';
 import { offlineImagesRepository } from '../repositories/offline-images-repository.js';
+
+const OFFLINE_IMAGE_UPLOAD_CONCURRENCY = 3;
 
 export const isOfflineImageUploaded = (image: OfflineImage): boolean =>
   image.uploadStatus === 'uploaded' &&
@@ -83,11 +86,10 @@ export const uploadOfflineImagesForSession = async (
   sessionId: string,
 ): Promise<OfflineImage[]> => {
   const images = await offlineImagesRepository.listBySession(sessionId);
-  const uploaded: OfflineImage[] = [];
 
-  for (const image of images) {
-    uploaded.push(await uploadOfflineImage(image));
-  }
-
-  return uploaded;
+  return await mapWithConcurrency(
+    images,
+    OFFLINE_IMAGE_UPLOAD_CONCURRENCY,
+    uploadOfflineImage,
+  );
 };

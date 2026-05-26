@@ -77,14 +77,16 @@ API origin.
 
 ### Sentry (optional)
 
-Production builds emit browser source maps and, when CI secrets are set, upload
-them to Sentry during `frontend:build` (see `.github/workflows/deploy.yml`).
+Production builds emit browser source maps. When CI secrets are set, the deploy
+workflow uploads them with `frontend:sentry:sourcemaps` (sentry-cli). To upload
+during `frontend:build` locally instead, set `SENTRY_UPLOAD_SOURCEMAPS=1` (see
+`.github/workflows/deploy.yml`).
 
 | Variable                       | Where              | Purpose                                    |
 | ------------------------------ | ------------------ | ------------------------------------------ |
 | `VITE_SENTRY_DSN_FRONTEND`     | CI secret → build  | Enables the browser SDK                    |
 | `VITE_SENTRY_RELEASE_FRONTEND` | CI (`GITHUB_SHA`)  | Frontend release id; must match map upload |
-| `SENTRY_AUTH_TOKEN`            | CI secret → build  | Uploads source maps (frontend + API)       |
+| `SENTRY_AUTH_TOKEN`            | CI secret → deploy | Uploads source maps (frontend + API)       |
 | `SENTRY_ORG`                   | CI secret → build  | Organization slug                          |
 | `SENTRY_PROJECT_FRONTEND`      | CI secret → build  | Frontend project slug                      |
 | `SENTRY_PROJECT_API`           | CI secret → deploy | API project slug (source map upload)       |
@@ -92,8 +94,9 @@ them to Sentry during `frontend:build` (see `.github/workflows/deploy.yml`).
 | `SENTRY_RELEASE_API`           | CI (`GITHUB_SHA`)  | API release id for maps + runtime events   |
 
 Set the same values in the repo root `.env` to test uploads locally with
-`mise run frontend:build` (uploads via `@sentry/vite-plugin`) or
-`mise run frontend:sentry:sourcemaps` to re-upload without rebuilding. For the API,
+`mise run frontend:sentry:sourcemaps` (after `frontend:build`), or set
+`SENTRY_UPLOAD_SOURCEMAPS=1` to upload during `frontend:build` via
+`@sentry/vite-plugin`. For the API,
 use `mise run api:deploy` then `mise run api:sentry:sourcemaps`.
 
 The API uses [`@sentry/hono`](https://docs.sentry.io/platforms/javascript/guides/hono/)
