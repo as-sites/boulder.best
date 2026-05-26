@@ -52,6 +52,15 @@ export class SyncSessionInvalidTimeRangeError extends Error {
   }
 }
 
+export class SyncSessionDuplicateSequenceOrderError extends Error {
+  public readonly name = 'SyncSessionDuplicateSequenceOrderError';
+  public readonly status = 400;
+
+  constructor() {
+    super('Session entries must have unique sequenceOrder values');
+  }
+}
+
 type SyncSessionWriter = Pick<AppDb, 'insert' | 'select'>;
 type SyncBatchItem = Parameters<AppDb['batch']>[0][number];
 
@@ -75,6 +84,18 @@ const collectImageIds = (payload: SyncSessionPayload): string[] =>
   payload.entries.flatMap((entry) =>
     entry.type === 'climb' ? entry.images.map((image) => image.id) : [],
   );
+
+const assertUniqueEntrySequenceOrder = (payload: SyncSessionPayload): void => {
+  const sequenceOrders = new Set<number>();
+
+  for (const entry of payload.entries) {
+    if (sequenceOrders.has(entry.sequenceOrder)) {
+      throw new SyncSessionDuplicateSequenceOrderError();
+    }
+
+    sequenceOrders.add(entry.sequenceOrder);
+  }
+};
 
 const assertChildIdsOwnedBySession = async (
   db: SyncSessionWriter,
@@ -329,6 +350,8 @@ export const syncSession = async (
   if (endTime < startTime) {
     throw new SyncSessionInvalidTimeRangeError();
   }
+
+  assertUniqueEntrySequenceOrder(payload);
 
   const entryIds = collectEntryIds(payload);
   const imageIds = collectImageIds(payload);

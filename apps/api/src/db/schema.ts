@@ -79,7 +79,7 @@ export const sessionEntries = pgTable(
   (table) => [
     index('entries_session_id_idx').on(table.sessionId),
     index('entries_user_id_idx').on(table.userId),
-    index('entries_session_sequence_idx').on(
+    uniqueIndex('entries_session_sequence_idx').on(
       table.sessionId,
       table.sequenceOrder,
     ),

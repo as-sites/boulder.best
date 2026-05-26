@@ -15,6 +15,17 @@
           "preview_bucket_name": "boulder-dot-best"
         }
       ],
+      "ratelimits": [
+        {
+          "name": "GYMS_RATE_LIMITER",
+          // Replace with the Cloudflare Rate Limiting namespace for dev.
+          "namespace_id": "1001",
+          "simple": {
+            "limit": 60,
+            "period": 60
+          }
+        }
+      ],
       "vars": {
         "BETTER_AUTH_URL": "http://localhost:5173",
         "FRONTEND_URL": "http://localhost:5173",
@@ -53,6 +64,17 @@
           "binding": "MEDIA_BUCKET",
           // Apply CORS rules before deploying: mise run api:r2:cors:apply
           "bucket_name": "boulder-dot-best"
+        }
+      ],
+      "ratelimits": [
+        {
+          "name": "GYMS_RATE_LIMITER",
+          // Replace with the Cloudflare Rate Limiting namespace for production.
+          "namespace_id": "1001",
+          "simple": {
+            "limit": 60,
+            "period": 60
+          }
         }
       ],
       "vars": {

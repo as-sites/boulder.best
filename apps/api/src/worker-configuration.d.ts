@@ -19,6 +19,10 @@ declare global {
     R2_ACCESS_KEY_ID: string;
     /** R2 S3 API secret for presigned uploads */
     R2_SECRET_ACCESS_KEY: string;
+    /** Cloudflare Rate Limiting binding for unauthenticated /api/gyms access */
+    GYMS_RATE_LIMITER: {
+      limit: (options: { key: string }) => Promise<{ success: boolean }>;
+    };
   };
 }
 

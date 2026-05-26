@@ -15,7 +15,7 @@ export const createApiContract = <E extends Env = Env>(
   handlers: ApiContractHandlers<E>,
 ) => {
   const healthHandler = async (
-    c: Parameters<ApiContractHandlers<E>['hello']>[0],
+    c: Parameters<NonNullable<ApiContractHandlers<E>['health']>>[0],
   ) => {
     const response = await handlers.health?.(c);
     return c.json(response ?? { ok: true });
@@ -23,7 +23,6 @@ export const createApiContract = <E extends Env = Env>(
 
   const app = $(
     new OpenAPIHono<E>()
-      .get('/api/hello', async (c) => c.json(await handlers.hello(c)))
       .get('/api/health', healthHandler)
       .get('/health', healthHandler),
   );

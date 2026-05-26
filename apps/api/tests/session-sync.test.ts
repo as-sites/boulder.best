@@ -1,10 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { AuthEnvBindings } from '@boulder/auth';
 import { getTableName } from 'drizzle-orm';
 import type { AppDb } from '../src/db/index.js';
 import { createApiApp } from '../src/index.js';
 import type * as SyncSessionModule from '../src/sessions/sync-session.js';
 import {
   SyncSessionConflictError,
+  SyncSessionDuplicateSequenceOrderError,
   SyncSessionForbiddenError,
   SyncSessionInvalidLocationError,
   SyncSessionInvalidTimeRangeError,
@@ -31,6 +33,19 @@ vi.mock(import('../src/db/index.js'), () => ({
 }));
 
 const gymId = 'a1b2c3d4-e5f6-4789-a234-56789abcdef0';
+const apiEnv = {
+  GYMS_RATE_LIMITER: {
+    limit: vi.fn().mockResolvedValue({ success: true }),
+  },
+  BETTER_AUTH_SECRET: 'x'.repeat(32),
+  BETTER_AUTH_URL: 'http://localhost:8787',
+  FRONTEND_URL: 'http://localhost:5173',
+  DATABASE_URL: 'postgresql://user:pass@host/db',
+} satisfies AuthEnvBindings & {
+  GYMS_RATE_LIMITER: {
+    limit: (options: { key: string }) => Promise<{ success: boolean }>;
+  };
+};
 
 const syncSessionPayloadFixture = {
   id: '987fcdeb-51a2-43d7-9012-345678901234',
@@ -262,6 +277,25 @@ describe('syncSession persistence', () => {
     ).rejects.toBeInstanceOf(SyncSessionInvalidLocationError);
   });
 
+  it('rejects duplicate sequenceOrder values in session entries', async () => {
+    const mock = createMockDb();
+
+    await expect(
+      syncMocks.syncSession(mock.db as never, 'user_123', {
+        ...syncSessionPayloadFixture,
+        entries: [
+          syncSessionPayloadFixture.entries[0],
+          {
+            ...syncSessionPayloadFixture.entries[1],
+            sequenceOrder: syncSessionPayloadFixture.entries[0].sequenceOrder,
+          },
+        ],
+      }),
+    ).rejects.toBeInstanceOf(SyncSessionDuplicateSequenceOrderError);
+
+    expect(mock.sessionUpserts).toHaveLength(0);
+  });
+
   it('accepts null location when the gym has catalog locations', async () => {
     const mock = createMockDb();
 
@@ -363,5 +397,35 @@ describe('session sync route', () => {
 
     expect(response.status).toBe(401);
     expect(syncMocks.syncSession).not.toHaveBeenCalled();
+  });
+
+  it('returns 400 when sync payload has duplicate sequenceOrder values', async () => {
+    syncMocks.syncSession.mockRejectedValueOnce(
+      new SyncSessionDuplicateSequenceOrderError(),
+    );
+
+    const app = createApiApp({
+      createAuthServer: () => ({
+        handler: () => new Response(null),
+        api: {
+          getSession: vi.fn().mockResolvedValue({
+            user: { id: 'user_123' },
+            session: { id: 'auth_session' },
+          }),
+        },
+      }),
+    });
+
+    const response = await app.request(
+      '/api/sessions/sync',
+      {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(syncSessionPayloadFixture),
+      },
+      apiEnv,
+    );
+
+    expect(response.status).toBe(400);
   });
 });

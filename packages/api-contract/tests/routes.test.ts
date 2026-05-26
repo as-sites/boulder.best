@@ -16,8 +16,6 @@ import {
 
 const stubHandlers: ApiContractHandlers = {
   // oxlint-disable-next-line typescript/require-await
-  hello: async () => ({ message: 'test' }),
-  // oxlint-disable-next-line typescript/require-await
   getGyms: async () => [
     {
       ...gymFixture,

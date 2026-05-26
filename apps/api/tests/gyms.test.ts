@@ -1,20 +1,18 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { AuthEnvBindings } from '@boulder/auth';
 import type { AppDb } from '../src/db/index.js';
-import type * as ListGymsModule from '../src/gyms/list-gyms.js';
 import { createApiApp } from '../src/index.js';
 
 const gymMocks = vi.hoisted(() => ({
   listGyms: vi.fn(),
-  restoreImplementations: (() => {
+  restoreImplementations: () => {
     /* empty */
-  }) as () => void,
+  },
 }));
 
 const mockCreateDb = vi.hoisted(() => vi.fn((): AppDb => ({}) as AppDb));
 
 vi.mock(import('../src/gyms/list-gyms.js'), async (importOriginal) => {
-  const actual = await importOriginal<typeof ListGymsModule>();
+  const actual = await importOriginal();
   const restore = () => {
     gymMocks.listGyms.mockImplementation(actual.listGyms);
   };
@@ -31,11 +29,18 @@ vi.mock(import('../src/db/index.js'), () => ({
 }));
 
 const env = {
+  GYMS_RATE_LIMITER: {
+    limit: vi
+      .fn<CloudflareBindings['GYMS_RATE_LIMITER']['limit']>()
+      .mockResolvedValue({ success: true }),
+  },
   BETTER_AUTH_SECRET: 'x'.repeat(32),
   BETTER_AUTH_URL: 'http://localhost:8787',
   FRONTEND_URL: 'http://localhost:5173',
   DATABASE_URL: 'postgresql://user:pass@host/db',
-} satisfies AuthEnvBindings;
+} satisfies Partial<CloudflareBindings>;
+
+const { limit: rateLimitMock } = env.GYMS_RATE_LIMITER;
 
 const gymId = 'a1b2c3d4-e5f6-4789-a234-56789abcdef0';
 const updatedAt = new Date('2026-05-13T08:00:00.000Z');
@@ -109,6 +114,7 @@ describe('gyms routes', () => {
     gymMocks.listGyms.mockClear();
     mockCreateDb.mockClear();
     gymMocks.restoreImplementations();
+    rateLimitMock.mockReset().mockResolvedValue({ success: true });
   });
 
   afterEach(() => {
@@ -148,13 +154,10 @@ describe('gyms routes', () => {
     ];
     gymMocks.listGyms.mockResolvedValue(gyms);
 
-    const app = createAuthedApp(null, {
-      unauthenticatedGymsRateLimit: {
-        maxRequests: 1,
-        windowMs: 60_000,
-        now: () => 0,
-      },
-    });
+    const app = createAuthedApp(null);
+    rateLimitMock
+      .mockResolvedValueOnce({ success: true })
+      .mockResolvedValueOnce({ success: false });
 
     const first = await app.request(
       '/api/gyms',
@@ -181,7 +184,6 @@ describe('gyms routes', () => {
       success: false,
       error: 'Too many unauthenticated requests',
     });
-    expect(second.headers.get('retry-after')).toBe('60');
     expect(gymMocks.listGyms).toHaveBeenCalledOnce();
   });
 
@@ -218,13 +220,8 @@ describe('gyms routes', () => {
     ];
     gymMocks.listGyms.mockResolvedValue(gyms);
 
-    const app = createAuthedApp('user_123', {
-      unauthenticatedGymsRateLimit: {
-        maxRequests: 1,
-        windowMs: 60_000,
-        now: () => 0,
-      },
-    });
+    const app = createAuthedApp('user_123');
+    rateLimitMock.mockResolvedValueOnce({ success: false });
 
     const first = await app.request('/api/gyms', undefined, env);
     const second = await app.request('/api/gyms', undefined, env);
@@ -232,5 +229,6 @@ describe('gyms routes', () => {
     expect(first.status).toBe(200);
     expect(second.status).toBe(200);
     expect(gymMocks.listGyms).toHaveBeenCalledTimes(2);
+    expect(rateLimitMock).not.toHaveBeenCalled();
   });
 });
