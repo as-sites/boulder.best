@@ -7,7 +7,6 @@ run = "node scripts/generate-icons.ts"
 alias = ["frontend:dev"]
 description = "Start the frontend Vite dev server"
 run = "vite"
-raw = true
 
 [tasks.build]
 alias = ["frontend:build"]
