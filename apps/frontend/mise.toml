@@ -15,11 +15,12 @@ run = "vite build"
 env.CLOUDFLARE_ENV = "production"
 # Matches the git SHA used as Sentry release in CI (deploy workflow sets GITHUB_SHA).
 env.VITE_SENTRY_RELEASE_FRONTEND = "{{ env.GITHUB_SHA | default(value='') }}"
-# Source maps upload during this task when SENTRY_AUTH_TOKEN is set (@sentry/vite-plugin).
+# Source maps are not uploaded during build unless SENTRY_UPLOAD_SOURCEMAPS=1
+# (@sentry/vite-plugin). CI uses frontend:sentry:sourcemaps (sentry-cli) instead.
 
 [tasks."sentry:sourcemaps"]
 alias = ["frontend:sentry:sourcemaps"]
-description = "Upload frontend source maps to Sentry (no-op without SENTRY_AUTH_TOKEN; normally runs during frontend:build)"
+description = "Upload frontend source maps to Sentry via sentry-cli (no-op without SENTRY_AUTH_TOKEN; used in CI deploy)"
 depends = ["build"]
 env.VITE_SENTRY_RELEASE_FRONTEND = "{{ env.VITE_SENTRY_RELEASE_FRONTEND | default(value=env.GITHUB_SHA | default(value='')) }}"
 run = [

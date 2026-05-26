@@ -70,6 +70,9 @@ jobs:
       - name: Deploy frontend Worker
         run: mise run frontend:deploy
 
+      - name: Upload frontend source maps to Sentry
+        run: mise run frontend:sentry:sourcemaps
+
       - name: Apply database migrations
         run: mise run api:db:migrate
 

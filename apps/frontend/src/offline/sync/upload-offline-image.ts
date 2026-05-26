@@ -2,9 +2,12 @@ import {
   presignedUploadResponseSchema,
   type SyncedImage,
 } from '@boulder/api-contract';
+import pLimit from 'p-limit';
 import { apiClient } from '../../lib/api-client.js';
 import type { OfflineImage } from '../db/types.js';
 import { offlineImagesRepository } from '../repositories/offline-images-repository.js';
+
+const OFFLINE_IMAGE_UPLOAD_CONCURRENCY = 3;
 
 export const isOfflineImageUploaded = (image: OfflineImage): boolean =>
   image.uploadStatus === 'uploaded' &&
@@ -83,11 +86,11 @@ export const uploadOfflineImagesForSession = async (
   sessionId: string,
 ): Promise<OfflineImage[]> => {
   const images = await offlineImagesRepository.listBySession(sessionId);
-  const uploaded: OfflineImage[] = [];
+  const limit = pLimit(OFFLINE_IMAGE_UPLOAD_CONCURRENCY);
 
-  for (const image of images) {
-    uploaded.push(await uploadOfflineImage(image));
-  }
-
-  return uploaded;
+  return await Promise.all(
+    images.map(
+      async (image) => await limit(async () => await uploadOfflineImage(image)),
+    ),
+  );
 };

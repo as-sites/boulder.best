@@ -1,3 +1,4 @@
+import { setTimeout } from 'node:timers/promises';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type * as apiClientModule from '../../src/lib/api-client.js';
 import {
@@ -163,6 +164,52 @@ describe('upload offline image', () => {
     await expect(uploadOfflineImage(image)).rejects.toThrow(
       'Presign response failed validation',
     );
+  });
+
+  it('uploads session images with bounded concurrency', async () => {
+    let inFlight = 0;
+    let maxInFlight = 0;
+
+    presignPost.mockImplementation(async () => {
+      inFlight += 1;
+      maxInFlight = Math.max(maxInFlight, inFlight);
+      await setTimeout(5);
+      inFlight -= 1;
+      return {
+        ok: true,
+        // oxlint-disable-next-line typescript/require-await -- mock matches Response.json shape
+        json: async () => presignedUploadResponseFixture,
+      };
+    });
+    fetchMock.mockResolvedValue({ ok: true });
+
+    const imageIds = [
+      '33333333-3333-4333-8333-333333333301',
+      '33333333-3333-4333-8333-333333333302',
+      '33333333-3333-4333-8333-333333333303',
+      '33333333-3333-4333-8333-333333333304',
+    ] as const;
+    const images = imageIds.map((pendingImageId, index) =>
+      mapFileToOfflineImage({
+        file: new File([`img-${index}`], `img-${index}.jpg`, {
+          type: 'image/jpeg',
+        }),
+        sessionId,
+        entryId,
+        index,
+        imageId: pendingImageId,
+      }),
+    );
+    for (const image of images) {
+      await offlineImagesRepository.put(image);
+    }
+
+    const uploaded = await uploadOfflineImagesForSession(sessionId);
+
+    expect(uploaded).toHaveLength(4);
+    expect(maxInFlight).toBeLessThanOrEqual(3);
+    expect(presignPost).toHaveBeenCalledTimes(4);
+    expect(fetchMock).toHaveBeenCalledTimes(4);
   });
 
   it('uploads every image for a session', async () => {

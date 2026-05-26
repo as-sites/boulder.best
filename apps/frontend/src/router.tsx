@@ -1,5 +1,6 @@
 import {
   type AnyRoute,
+  createBrowserHistory,
   createMemoryHistory,
   createRouter,
 } from '@tanstack/react-router';
@@ -35,11 +36,9 @@ export const createAppRouter = (options: CreateAppRouterOptions = {}) => {
   return createRouter({
     defaultErrorComponent: RouteError,
     routeTree: createAppRouteTree(extraRoutes),
-    ...(initialEntries
-      ? {
-          history: createMemoryHistory({ initialEntries }),
-        }
-      : {}),
+    history: initialEntries
+      ? createMemoryHistory({ initialEntries })
+      : createBrowserHistory(),
   });
 };
 

@@ -86,4 +86,4 @@ See additional info in the `plans` directory:
 
 - The test in `packages/api-contract/tests/rpc-client.test.ts` requires the TypeScript `dist/` output. Run `mise typecheck` before `mise test` if `dist/` doesn't exist yet.
 - The wrangler dev server warns about missing optional secrets (Google/Discord OAuth, Resend). These are non-blocking for core local dev; auth sign-up/sign-in flows that touch the DB require a valid `DATABASE_URL`.
-- The frontend uses `createMemoryHistory` from TanStack Router (in-memory routing, not browser history).
+- Production routing uses `createBrowserHistory()`; tests pass `initialEntries` to get `createMemoryHistory`.

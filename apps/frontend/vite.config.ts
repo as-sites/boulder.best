@@ -7,11 +7,24 @@ import { renderColorSchemeScriptMarkup } from './vite/render-color-scheme-script
 
 const {
   SENTRY_AUTH_TOKEN: sentryAuthToken,
+  SENTRY_UPLOAD_SOURCEMAPS: sentryUploadSourcemaps,
   VITE_SENTRY_RELEASE_FRONTEND: sentryRelease,
   SENTRY_ORG: sentryOrg,
   SENTRY_PROJECT_FRONTEND: sentryProjectFrontend,
   // oxlint-disable-next-line node/no-process-env
 } = process.env;
+
+const sentrySourceMapUploadConfig =
+  sentryUploadSourcemaps === '1' &&
+  sentryAuthToken &&
+  sentryOrg &&
+  sentryProjectFrontend
+    ? {
+        authToken: sentryAuthToken,
+        org: sentryOrg,
+        project: sentryProjectFrontend,
+      }
+    : undefined;
 
 const colorSchemeBootstrapPlugin = (): Plugin => ({
   name: 'color-scheme-bootstrap',
@@ -59,12 +72,10 @@ export default defineConfig({
       },
     }),
     cloudflare(),
-    ...(sentryAuthToken && sentryOrg && sentryProjectFrontend
+    ...(sentrySourceMapUploadConfig
       ? [
           sentryVitePlugin({
-            authToken: sentryAuthToken,
-            org: sentryOrg,
-            project: sentryProjectFrontend,
+            ...sentrySourceMapUploadConfig,
             telemetry: false,
             ...(sentryRelease
               ? { release: { name: sentryRelease, inject: true } }
