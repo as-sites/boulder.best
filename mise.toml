@@ -124,7 +124,7 @@ run = 'vitest run --root="." --config="vitest.config.ts" {% if usage.project %} 
 [tasks.dev]
 alias = 'dev'
 description = "Start the frontend and API dev servers"
-depends = ["//apps/api:dev", "//apps/frontend:dev"]
+depends = ["//apps/frontend:dev", "//apps/api:dev"]
 
 [tasks.typecheck]
 alias = 'tsc'
