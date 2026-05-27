@@ -3,13 +3,19 @@ import {
   ActionIcon,
   Box,
   Button,
+  Collapse,
   Group,
   Paper,
   Stack,
   Text,
   Tooltip,
 } from '@mantine/core';
-import { RowsPlusBottomIcon, TrashIcon } from '@phosphor-icons/react';
+import {
+  CaretDownIcon,
+  CaretUpIcon,
+  RowsPlusBottomIcon,
+  TrashIcon,
+} from '@phosphor-icons/react';
 import { Select } from '@trendcapital/react-hook-form-mantine/Select';
 import { Textarea } from '@trendcapital/react-hook-form-mantine/Textarea';
 import {
@@ -141,6 +147,13 @@ export interface ClimbRowProps {
   onRemove: () => void;
 }
 
+const formatClimbSummary = (grade: string, attemptCount: number): string => {
+  const attemptsLabel =
+    attemptCount === 1 ? '1 attempt' : `${attemptCount} attempts`;
+  const trimmedGrade = grade.trim();
+  return trimmedGrade ? `${trimmedGrade} · ${attemptsLabel}` : attemptsLabel;
+};
+
 const hasDirtyField = (dirty: unknown): boolean => {
   if (dirty === true) {
     return true;
@@ -160,6 +173,7 @@ export const ClimbRow = ({
   defaultName,
   onRemove,
 }: ClimbRowProps) => {
+  const [isExpanded, setIsExpanded] = useState(!isFinalized);
   const { setValue, getValues, formState } =
     useFormContext<SessionFormValues>();
   const { enabled: showTimerMilliseconds } = useTimerDisplayMilliseconds();
@@ -215,6 +229,14 @@ export const ClimbRow = ({
     attemptsField.append(createClimbAttempt(nextOrder));
   };
 
+  const climbSummary = formatClimbSummary(
+    climb.grade,
+    climb.climbAttempts.length,
+  );
+  const expandToggleLabel = isExpanded
+    ? `Collapse ${defaultName}`
+    : `Expand ${defaultName}`;
+
   return (
     <Paper p="md" withBorder>
       <Stack gap="sm">
@@ -228,96 +250,126 @@ export const ClimbRow = ({
                 setValue(`${entryPath}.name`, nextName, { shouldDirty: true });
               }}
             />
+            {!isExpanded ? (
+              <Text size="xs" c="dimmed" mt={4}>
+                {climbSummary}
+              </Text>
+            ) : null}
           </Box>
-          {!isFinalized ? (
-            <Tooltip label="Remove climb" withArrow>
+          <Group gap="xs" wrap="nowrap">
+            <Tooltip label={expandToggleLabel} withArrow>
               <ActionIcon
-                color="red"
-                variant="light"
+                variant="subtle"
                 size="lg"
-                aria-label="Remove climb"
+                aria-label={expandToggleLabel}
+                aria-expanded={isExpanded}
                 onClick={() => {
-                  if (confirmRemoval('Remove this climb?')) {
-                    onRemove();
-                  }
+                  setIsExpanded((expanded) => !expanded);
                 }}
               >
-                <TrashIcon aria-hidden size={20} />
+                {isExpanded ? (
+                  <CaretUpIcon aria-hidden size={20} />
+                ) : (
+                  <CaretDownIcon aria-hidden size={20} />
+                )}
               </ActionIcon>
             </Tooltip>
-          ) : null}
+            {!isFinalized ? (
+              <Tooltip label="Remove climb" withArrow>
+                <ActionIcon
+                  color="red"
+                  variant="light"
+                  size="lg"
+                  aria-label="Remove climb"
+                  onClick={() => {
+                    if (confirmRemoval('Remove this climb?')) {
+                      onRemove();
+                    }
+                  }}
+                >
+                  <TrashIcon aria-hidden size={20} />
+                </ActionIcon>
+              </Tooltip>
+            ) : null}
+          </Group>
         </Group>
 
-        <Select<SessionFormValues>
-          label="Grade"
-          name={`${entryPath}.grade`}
-          disabled={isFinalized}
-          comboboxProps={{ withinPortal: false }}
-          data={grades}
-          clearable
-          searchable
-          onChange={(grade) => {
-            setValue(`${entryPath}.grade`, grade ?? '', { shouldDirty: true });
-          }}
-        />
+        <Collapse expanded={isExpanded}>
+          <Stack gap="sm" pt="sm">
+            <Select<SessionFormValues>
+              label="Grade"
+              name={`${entryPath}.grade`}
+              disabled={isFinalized}
+              comboboxProps={{ withinPortal: false }}
+              data={grades}
+              clearable
+              searchable
+              onChange={(grade) => {
+                setValue(`${entryPath}.grade`, grade ?? '', {
+                  shouldDirty: true,
+                });
+              }}
+            />
 
-        <Textarea<SessionFormValues>
-          label="Climb notes"
-          name={`${entryPath}.notes`}
-          disabled={isFinalized}
-          minRows={2}
-        />
+            <Textarea<SessionFormValues>
+              label="Climb notes"
+              name={`${entryPath}.notes`}
+              disabled={isFinalized}
+              minRows={2}
+            />
 
-        <ClimbPhotoAttachments
-          sessionId={sessionId}
-          entryId={climb.id}
-          disabled={isFinalized}
-        />
+            <ClimbPhotoAttachments
+              sessionId={sessionId}
+              entryId={climb.id}
+              disabled={isFinalized}
+            />
 
-        <Stack gap="xs">
-          <Text size="sm" fw={500}>
-            Attempts
-          </Text>
-          {attemptsField.fields.map((field, attemptIndex) => {
-            const attempt = climb.climbAttempts[attemptIndex];
-            if (!attempt) {
-              return null;
-            }
+            <Stack gap="xs">
+              <Text size="sm" fw={500}>
+                Attempts
+              </Text>
+              {attemptsField.fields.map((field, attemptIndex) => {
+                const attempt = climb.climbAttempts[attemptIndex];
+                if (!attempt) {
+                  return null;
+                }
 
-            return (
-              <ClimbAttemptRow
-                key={field.id}
-                entryPath={entryPath}
-                attemptIndex={attemptIndex}
-                attempt={attempt}
-                isFinalized={isFinalized}
-                showTimerMilliseconds={showTimerMilliseconds}
-                canRemove={!isFinalized && climb.climbAttempts.length > 1}
-                onRemove={() => {
-                  handleRemoveAttempt(attemptIndex);
-                }}
-                onTimerChange={updateAttemptTimer}
-                onDurationMsChange={(attemptIdx, durationMs) => {
-                  setValue(
-                    `${entryPath}.climbAttempts.${attemptIdx}.durationMs`,
-                    durationMs,
-                    { shouldDirty: true },
-                  );
-                }}
-              />
-            );
-          })}
-          {!isFinalized ? (
-            <Button
-              size="sm"
-              variant="light"
-              onClick={handleAddAttempt}
-              rightSection={<RowsPlusBottomIcon aria-hidden size={20} />}
-            >
-              Add attempt
-            </Button>
-          ) : null}
-        </Stack>
+                return (
+                  <ClimbAttemptRow
+                    key={field.id}
+                    entryPath={entryPath}
+                    attemptIndex={attemptIndex}
+                    attempt={attempt}
+                    isFinalized={isFinalized}
+                    showTimerMilliseconds={showTimerMilliseconds}
+                    canRemove={!isFinalized && climb.climbAttempts.length > 1}
+                    onRemove={() => {
+                      handleRemoveAttempt(attemptIndex);
+                    }}
+                    onTimerChange={updateAttemptTimer}
+                    onDurationMsChange={(attemptIdx, durationMs) => {
+                      setValue(
+                        `${entryPath}.climbAttempts.${attemptIdx}.durationMs`,
+                        durationMs,
+                        { shouldDirty: true },
+                      );
+                    }}
+                  />
+                );
+              })}
+              {!isFinalized ? (
+                <Button
+                  size="sm"
+                  variant="light"
+                  onClick={handleAddAttempt}
+                  rightSection={<RowsPlusBottomIcon aria-hidden size={20} />}
+                >
+                  Add attempt
+                </Button>
+              ) : null}
+            </Stack>
+          </Stack>
+        </Collapse>
       </Stack>
     </Paper>
   );
