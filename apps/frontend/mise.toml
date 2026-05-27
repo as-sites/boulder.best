@@ -8,6 +8,12 @@ alias = ["frontend:dev"]
 description = "Start the frontend Vite dev server"
 run = "vite"
 
+[tasks."dev:tunnel"]
+alias = ["frontend:dev:tunnel"]
+description = "Start Vite for cloudflared dev (allows TUNNEL_HOSTNAME)"
+run = "vite --host"
+env.TUNNEL_HOSTNAME = "{{ env.TUNNEL_HOSTNAME | default(value='local.boulder.best') }}"
+
 [tasks.build]
 alias = ["frontend:build"]
 description = "Build the frontend Worker static assets app"

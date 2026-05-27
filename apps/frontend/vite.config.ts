@@ -32,64 +32,71 @@ const colorSchemeBootstrapPlugin = (): Plugin => ({
     html.replace('</head>', `\n ${renderColorSchemeScriptMarkup()} \n </head>`),
 });
 
-export default defineConfig({
-  build: {
-    sourcemap: true,
-  },
-  plugins: [
-    colorSchemeBootstrapPlugin(),
-    react(),
-    VitePWA({
-      registerType: 'prompt',
-      manifest: false,
-      includeAssets: [
-        'favicon.svg',
-        'apple-touch-icon.png',
-        'icon-192.png',
-        'icon-512.png',
-        'site.webmanifest',
-      ],
-      workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,webmanifest}'],
-        // Replace waiting workers immediately so OAuth fixes reach users without a manual update prompt.
-        skipWaiting: true,
-        clientsClaim: true,
-        // OAuth callbacks are full-page navigations to /api/auth/callback/* — must hit the API Worker.
-        navigateFallbackDenylist: [/^\/api/],
-        // Never cache API/auth traffic (fetch or navigation); only the denylist above is not enough
-        // when an older service worker is still controlling the page.
-        runtimeCaching: [
-          {
-            urlPattern: /\/api\//,
-            handler: 'NetworkOnly',
-          },
-          {
-            urlPattern: /\/api\//,
-            handler: 'NetworkOnly',
-            method: 'POST',
-          },
+export default defineConfig(() => {
+  // Read at config load time — top-level destructuring can be inlined when Vite bundles this file.
+  // oxlint-disable-next-line node/no-process-env
+  const tunnelHostname = process.env.TUNNEL_HOSTNAME;
+
+  return {
+    build: {
+      sourcemap: true,
+    },
+    plugins: [
+      colorSchemeBootstrapPlugin(),
+      react(),
+      VitePWA({
+        registerType: 'prompt',
+        manifest: false,
+        includeAssets: [
+          'favicon.svg',
+          'apple-touch-icon.png',
+          'icon-192.png',
+          'icon-512.png',
+          'site.webmanifest',
         ],
-      },
-    }),
-    cloudflare({ inspectorPort: 9230 }),
-    ...(sentrySourceMapUploadConfig
-      ? [
-          sentryVitePlugin({
-            ...sentrySourceMapUploadConfig,
-            telemetry: false,
-            ...(sentryRelease
-              ? { release: { name: sentryRelease, inject: true } }
-              : {}),
-          }),
-        ]
-      : []),
-  ],
-  server: {
-    proxy: {
-      '/api': {
-        target: 'http://localhost:8787',
-        changeOrigin: true,
+        workbox: {
+          globPatterns: ['**/*.{js,css,html,ico,png,svg,webmanifest}'],
+          // Replace waiting workers immediately so OAuth fixes reach users without a manual update prompt.
+          skipWaiting: true,
+          clientsClaim: true,
+          // OAuth callbacks are full-page navigations to /api/auth/callback/* — must hit the API Worker.
+          navigateFallbackDenylist: [/^\/api/],
+          // Never cache API/auth traffic (fetch or navigation); only the denylist above is not enough
+          // when an older service worker is still controlling the page.
+          runtimeCaching: [
+            {
+              urlPattern: /\/api\//,
+              handler: 'NetworkOnly',
+            },
+            {
+              urlPattern: /\/api\//,
+              handler: 'NetworkOnly',
+              method: 'POST',
+            },
+          ],
+        },
+      }),
+      cloudflare({ inspectorPort: 9230 }),
+      ...(sentrySourceMapUploadConfig
+        ? [
+            sentryVitePlugin({
+              ...sentrySourceMapUploadConfig,
+              telemetry: false,
+              ...(sentryRelease
+                ? { release: { name: sentryRelease, inject: true } }
+                : {}),
+            }),
+          ]
+        : []),
+    ],
+    server: {
+      ...(tunnelHostname ? { host: true, allowedHosts: [tunnelHostname] } : {}),
+      proxy: {
+        '/api': {
+          target: 'http://localhost:8787',
+          changeOrigin: true,
+        },
       },
     },
-  },
+  };
 });

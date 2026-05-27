@@ -68,6 +68,8 @@ See additional info in the `plans` directory:
 
 `mise dev` starts both in parallel.
 
+**Public HTTPS dev (phone testing, OAuth on a real hostname):** run `mise run tunnel:create` once (after `cloudflared tunnel login`), then `mise run dev:tunnel`. Exposes `https://local.boulder.best` via cloudflared → Vite `:5173` (API uses wrangler `tunnel` env). Register OAuth callbacks for that host.
+
 ### Environment setup
 
 - **mise** is the task runner. Activate it with `eval "$(mise activate bash)"` in any new shell. The update script handles `mise install` and `pnpm install`.
@@ -81,6 +83,7 @@ See additional info in the `plans` directory:
 - **Test:** `mise test` (vitest, 4 projects: frontend, api, api-contract, auth)
 - **Typecheck:** `mise typecheck` (runs `tsc -b` across all workspaces)
 - **Build:** `mise build`
+- **Tunnel dev:** `mise run tunnel:create` (once), `mise run dev:tunnel`
 
 ### Gotchas
 

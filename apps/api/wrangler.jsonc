@@ -50,6 +50,48 @@
         ]
       }
     },
+    "tunnel": {
+      "name": "boulder-api-dev",
+      "r2_buckets": [
+        {
+          "binding": "MEDIA_BUCKET",
+          "bucket_name": "boulder-dot-best",
+          "preview_bucket_name": "boulder-dot-best"
+        }
+      ],
+      "ratelimits": [
+        {
+          "name": "GYMS_RATE_LIMITER",
+          "namespace_id": "1001",
+          "simple": {
+            "limit": 60,
+            "period": 60
+          }
+        }
+      ],
+      "vars": {
+        "BETTER_AUTH_URL": "https://local.boulder.best",
+        "FRONTEND_URL": "https://local.boulder.best",
+        "PASSKEY_RP_ID": "boulder.best",
+        "PASSKEY_ORIGIN": "https://local.boulder.best",
+        "PUBLIC_PHOTO_URL_BASE": "https://cdn.boulder.best",
+        "R2_BUCKET_NAME": "boulder-dot-best"
+      },
+      "secrets": {
+        "required": [
+          "DATABASE_URL",
+          "BETTER_AUTH_SECRET",
+          "R2_ACCOUNT_ID",
+          "R2_ACCESS_KEY_ID",
+          "R2_SECRET_ACCESS_KEY",
+          "GOOGLE_CLIENT_ID",
+          "GOOGLE_CLIENT_SECRET",
+          "RESEND_API_KEY",
+          "DISCORD_CLIENT_ID",
+          "DISCORD_CLIENT_SECRET"
+        ]
+      }
+    },
     "production": {
       "name": "boulder-api",
       // Zone route (not custom_domain): more specific than the frontend custom domain.
