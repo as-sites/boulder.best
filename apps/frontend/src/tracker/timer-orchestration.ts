@@ -107,6 +107,47 @@ export const applyBreakEnd = (
   return nextEntries;
 };
 
+export const applyBreakRemove = (
+  entries: SessionFormEntry[],
+  breakIndex: number,
+): SessionFormEntry[] => {
+  const breakEntry = entries[breakIndex];
+
+  if (breakEntry?.type !== 'break') {
+    return entries;
+  }
+
+  const isActiveBreak =
+    breakEntry.timer.status === 'running' ||
+    breakEntry.timer.status === 'paused';
+  const withoutBreak = entries.filter((_, index) => index !== breakIndex);
+
+  if (!isActiveBreak) {
+    return withoutBreak;
+  }
+
+  const previousClimbIndex = findPreviousClimbIndex(entries, breakIndex);
+
+  if (previousClimbIndex === null) {
+    return withoutBreak;
+  }
+
+  const previousClimb = withoutBreak[previousClimbIndex];
+
+  if (
+    previousClimb?.type !== 'climb' ||
+    previousClimb.timer.status !== 'paused'
+  ) {
+    return withoutBreak;
+  }
+
+  return withoutBreak.map((entry, index) =>
+    index === previousClimbIndex
+      ? { ...previousClimb, timer: resumeTimer(previousClimb.timer) }
+      : entry,
+  );
+};
+
 export const finalizeEntryTimers = (
   entries: SessionFormEntry[],
 ): SessionFormEntry[] =>

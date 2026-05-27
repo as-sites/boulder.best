@@ -11,6 +11,7 @@ catalog:
   zod: 4.4.3
   hono: 4.12.23
   wrangler: 4.95.0
+  clsx: 2.1.1
 
 catalogs:
   vitest:
@@ -47,6 +48,7 @@ patchedDependencies:
 
 overrides:
   wrangler: 'catalog:'
+  clsx: 'catalog:'
 
 minimumReleaseAgeExclude:
   - miniflare@4.20260526.0

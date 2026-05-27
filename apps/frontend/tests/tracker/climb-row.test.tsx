@@ -42,9 +42,10 @@ describe(ClimbRow, () => {
       </MantineProvider>,
     );
 
+    // Duration is always shown as a readonly display field
     expect(
-      screen.queryByRole('textbox', { name: /duration/i }),
-    ).not.toBeInTheDocument();
+      screen.getByRole('textbox', { name: /duration/i }),
+    ).toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: 'Edit duration' }),
     ).toBeInTheDocument();
@@ -77,12 +78,14 @@ describe(ClimbRow, () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Start' }));
 
+    // Edit button hidden while timer is running (can't edit a live timer)
     expect(
       screen.queryByRole('button', { name: 'Edit duration' }),
     ).not.toBeInTheDocument();
+    // Duration display remains visible (readonly)
     expect(
-      screen.queryByRole('textbox', { name: /duration/i }),
-    ).not.toBeInTheDocument();
+      screen.getByRole('textbox', { name: /duration/i }),
+    ).toBeInTheDocument();
   });
 
   it('hides manual duration input when finalized', () => {
@@ -109,10 +112,10 @@ describe(ClimbRow, () => {
     fireEvent.change(input, { target: { value: '1:30' } });
     fireEvent.blur(input);
 
-    // Manual input should be hidden because the timer is now stopped
-    expect(
-      screen.queryByRole('textbox', { name: /duration/i }),
-    ).not.toBeInTheDocument();
+    // Edit mode closed — duration reverts to readonly display
+    expect(screen.getByRole('textbox', { name: /duration/i })).toHaveAttribute(
+      'readonly',
+    );
 
     // Timer controls should be gone (stopped timer renders null in TimerControls)
     expect(
@@ -153,10 +156,10 @@ describe(ClimbRow, () => {
     const input = screen.getByRole('textbox', { name: /duration/i });
     fireEvent.blur(input);
 
-    // Timer still idle, edit mode closed
-    expect(
-      screen.queryByRole('textbox', { name: /duration/i }),
-    ).not.toBeInTheDocument();
+    // Timer still idle, edit mode closed — duration reverts to readonly display
+    expect(screen.getByRole('textbox', { name: /duration/i })).toHaveAttribute(
+      'readonly',
+    );
     expect(screen.getByRole('button', { name: 'Start' })).toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: 'Edit duration' }),
@@ -175,9 +178,9 @@ describe(ClimbRow, () => {
     fireEvent.change(input, { target: { value: '2:00' } });
     fireEvent.keyDown(input, { key: 'Enter' });
 
-    // Timer should now be stopped, manual input hidden
-    expect(
-      screen.queryByRole('textbox', { name: /duration/i }),
-    ).not.toBeInTheDocument();
+    // Timer should now be stopped, edit mode closed — duration reverts to readonly display
+    expect(screen.getByRole('textbox', { name: /duration/i })).toHaveAttribute(
+      'readonly',
+    );
   });
 });

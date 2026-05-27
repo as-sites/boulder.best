@@ -1,0 +1,7 @@
+.timerGrid > *:only-child {
+  grid-column: 1 / -1;
+}
+
+.timerGrid > *:nth-child(2):last-child {
+  grid-column: 2 / -1;
+}

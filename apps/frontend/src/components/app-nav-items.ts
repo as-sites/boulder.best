@@ -2,12 +2,13 @@ import type { ComponentType } from 'react';
 import {
   ClockCounterClockwiseIcon,
   GearSixIcon,
+  InfoIcon,
   TimerIcon,
 } from '@phosphor-icons/react';
 
 export interface AppNavItem {
   label: string;
-  to: '/tracker' | '/sessions' | '/settings';
+  to: '/tracker' | '/sessions' | '/settings' | '/about';
   Icon: ComponentType<{ size: number }>;
 }
 
@@ -15,6 +16,7 @@ export const appNavMainItems: AppNavItem[] = [
   { label: 'Tracker', to: '/tracker', Icon: TimerIcon },
   { label: 'History', to: '/sessions', Icon: ClockCounterClockwiseIcon },
   { label: 'Settings', to: '/settings', Icon: GearSixIcon },
+  { label: 'About', to: '/about', Icon: InfoIcon },
 ];
 
 /** Mantine `sm` — matches default theme breakpoint for desktop shell nav. */

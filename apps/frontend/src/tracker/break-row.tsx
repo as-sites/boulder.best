@@ -46,7 +46,7 @@ export const BreakRow = ({
           </Button>
         ) : null}
 
-        {!isFinalized && entry.timer.status === 'idle' ? (
+        {!isFinalized ? (
           <Button
             size="compact-sm"
             variant="subtle"

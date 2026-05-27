@@ -1,6 +1,15 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Button, Group, Stack, Text, Title } from '@mantine/core';
+import {
+  Box,
+  Button,
+  Container,
+  Group,
+  Stack,
+  Text,
+  Title,
+} from '@mantine/core';
+import { CoffeeIcon, MountainsIcon } from '@phosphor-icons/react';
 import { Select } from '@trendcapital/react-hook-form-mantine/Select';
 import { Textarea } from '@trendcapital/react-hook-form-mantine/Textarea';
 import {
@@ -23,7 +32,11 @@ import {
 } from './entry-factory.js';
 import { sessionFormSchema } from './session-form-schema.js';
 import { startSession, stopSession } from './session-form-state.js';
-import { applyBreakEnd, applyBreakStart } from './timer-orchestration.js';
+import {
+  applyBreakEnd,
+  applyBreakRemove,
+  applyBreakStart,
+} from './timer-orchestration.js';
 import { useCachedGymsQuery } from './use-cached-gyms-query.js';
 
 export interface SessionFormProps {
@@ -78,6 +91,7 @@ export const SessionForm = ({ initialValues, onStopped }: SessionFormProps) => {
     control: form.control,
     name: 'entries',
   });
+  const pendingScrollEntryIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     let timeoutId: number;
@@ -93,6 +107,21 @@ export const SessionForm = ({ initialValues, onStopped }: SessionFormProps) => {
       window.clearTimeout(timeoutId);
     };
   }, [form]);
+
+  useEffect(() => {
+    const entryId = pendingScrollEntryIdRef.current;
+    if (!entryId) {
+      return;
+    }
+
+    const element = document.querySelector(`[data-entry-id="${entryId}"]`);
+    if (!element) {
+      return;
+    }
+
+    pendingScrollEntryIdRef.current = null;
+    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [entries]);
 
   const gymOptions =
     gymsQuery.data?.map((gym) => ({
@@ -136,18 +165,23 @@ export const SessionForm = ({ initialValues, onStopped }: SessionFormProps) => {
   const handleAddClimb = () => {
     const currentEntries = form.getValues('entries');
     const climbNumber = countClimbsInEntries(currentEntries);
-    entriesField.append(
-      createClimbEntry(currentEntries.length, defaultClimbName(climbNumber)),
+    const climbEntry = createClimbEntry(
+      currentEntries.length,
+      defaultClimbName(climbNumber),
     );
+    pendingScrollEntryIdRef.current = climbEntry.id;
+    entriesField.append(climbEntry);
   };
 
   const handleAddBreak = () => {
     const currentEntries = form.getValues('entries');
     const breakIndex = currentEntries.length;
+    const breakEntry = createBreakEntry(breakIndex);
     const withBreak = [
       ...currentEntries,
-      createBreakEntry(breakIndex),
+      breakEntry,
     ] as SessionFormValues['entries'];
+    pendingScrollEntryIdRef.current = breakEntry.id;
     form.setValue('entries', applyBreakStart(withBreak, breakIndex), {
       shouldDirty: true,
     });
@@ -161,7 +195,12 @@ export const SessionForm = ({ initialValues, onStopped }: SessionFormProps) => {
   };
 
   const handleRemoveEntry = (index: number) => {
-    const entry = form.getValues(`entries.${index}`);
+    const currentEntries = form.getValues('entries');
+    const entry = currentEntries[index];
+    if (!entry) {
+      return;
+    }
+
     const needsConfirm =
       entry.type === 'climb'
         ? entry.timer.status === 'running' ||
@@ -173,58 +212,70 @@ export const SessionForm = ({ initialValues, onStopped }: SessionFormProps) => {
       return;
     }
 
-    entriesField.remove(index);
-    form.setValue('entries', resequenceEntries(form.getValues('entries')), {
+    const nextEntries =
+      entry.type === 'break'
+        ? applyBreakRemove(currentEntries, index)
+        : currentEntries.filter((_, entryIndex) => entryIndex !== index);
+
+    form.setValue('entries', resequenceEntries(nextEntries), {
       shouldDirty: true,
     });
   };
 
+  const isActive = status === 'active';
+  const stopFooterPadding =
+    'calc(3.5rem + var(--mantine-spacing-md) + env(safe-area-inset-bottom, 0px))';
+  const entryScrollMarginBottom = isActive ? stopFooterPadding : undefined;
+
   let climbOrdinal = 0;
 
-  return (
-    <FormProvider {...form}>
+  const sessionFields = (
+    <>
+      <Title order={2}>Session</Title>
+
+      <Select<SessionFormValues>
+        label="Gym"
+        name="gymId"
+        comboboxProps={{ withinPortal: false }}
+        placeholder={gymsQuery.isLoading ? 'Loading gyms...' : 'Select a gym'}
+        data={gymOptions}
+        disabled={status !== 'not_started'}
+        onChange={() => {
+          form.setValue('location', null, { shouldDirty: true });
+        }}
+        searchable
+        nothingFoundMessage="No gyms found"
+      />
+
+      <Select<SessionFormValues>
+        label="Location"
+        name="location"
+        comboboxProps={{ withinPortal: false }}
+        placeholder={locationPlaceholder}
+        data={locationOptions}
+        disabled={!canEditLocation}
+        searchable={canEditLocation}
+        nothingFoundMessage="No locations found"
+      />
+
+      <Textarea<SessionFormValues>
+        label="Session notes"
+        name="notes"
+        placeholder="Optional notes for this session"
+        disabled={isFinalized}
+        minRows={2}
+      />
+
       <Stack gap="md">
-        <Title order={2}>Session</Title>
-
-        <Select<SessionFormValues>
-          label="Gym"
-          name="gymId"
-          comboboxProps={{ withinPortal: false }}
-          placeholder={gymsQuery.isLoading ? 'Loading gyms...' : 'Select a gym'}
-          data={gymOptions}
-          disabled={status !== 'not_started'}
-          onChange={() => {
-            form.setValue('location', null, { shouldDirty: true });
-          }}
-          searchable
-          nothingFoundMessage="No gyms found"
-        />
-
-        <Select<SessionFormValues>
-          label="Location"
-          name="location"
-          comboboxProps={{ withinPortal: false }}
-          placeholder={locationPlaceholder}
-          data={locationOptions}
-          disabled={!canEditLocation}
-          searchable={canEditLocation}
-          nothingFoundMessage="No locations found"
-        />
-
-        <Textarea<SessionFormValues>
-          label="Session notes"
-          name="notes"
-          placeholder="Optional notes for this session"
-          disabled={isFinalized}
-          minRows={2}
-        />
-
-        <Stack gap="md">
-          {entries.map((entry, index) => {
-            if (entry.type === 'break') {
-              return (
+        {entries.map((entry, index) => {
+          if (entry.type === 'break') {
+            return (
+              <Box
+                data-entry-id={entry.id}
+                key={entry.id}
+                style={{ scrollMarginBottom: entryScrollMarginBottom }}
+              >
                 <BreakRow
-                  key={entry.id}
                   control={form.control}
                   index={index}
                   isFinalized={isFinalized}
@@ -235,15 +286,20 @@ export const SessionForm = ({ initialValues, onStopped }: SessionFormProps) => {
                     handleRemoveEntry(index);
                   }}
                 />
-              );
-            }
+              </Box>
+            );
+          }
 
-            const defaultName = defaultClimbName(climbOrdinal);
-            climbOrdinal += 1;
+          const defaultName = defaultClimbName(climbOrdinal);
+          climbOrdinal += 1;
 
-            return (
+          return (
+            <Box
+              data-entry-id={entry.id}
+              key={entry.id}
+              style={{ scrollMarginBottom: entryScrollMarginBottom }}
+            >
               <ClimbRow
-                key={entry.id}
                 control={form.control}
                 index={index}
                 sessionId={sessionId}
@@ -254,36 +310,78 @@ export const SessionForm = ({ initialValues, onStopped }: SessionFormProps) => {
                   handleRemoveEntry(index);
                 }}
               />
-            );
-          })}
-        </Stack>
+            </Box>
+          );
+        })}
+      </Stack>
 
-        {canEditEntries ? (
-          <Group>
-            <Button size="compact-sm" variant="light" onClick={handleAddClimb}>
-              Add climb
-            </Button>
-            <Button size="compact-sm" variant="light" onClick={handleAddBreak}>
-              Add break
-            </Button>
-          </Group>
-        ) : null}
-
-        {form.formState.errors.root?.message ? (
-          <Text c="red" size="sm">
-            {form.formState.errors.root.message}
-          </Text>
-        ) : null}
-
-        <Group>
-          <Button disabled={!canStart} onClick={handleStart}>
-            Start session
+      {canEditEntries ? (
+        <Group grow gap="xs">
+          <Button
+            leftSection={<MountainsIcon aria-hidden size={20} />}
+            size="sm"
+            variant="light"
+            color="green"
+            onClick={handleAddClimb}
+          >
+            Add climb
           </Button>
-          <Button color="red" disabled={!canStop} onClick={handleStop}>
-            Stop session
+          <Button
+            leftSection={<CoffeeIcon aria-hidden size={20} />}
+            size="sm"
+            variant="light"
+            color="yellow"
+            onClick={handleAddBreak}
+          >
+            Add break
           </Button>
         </Group>
+      ) : null}
+    </>
+  );
+
+  const rootError = form.formState.errors.root?.message ? (
+    <Text c="red" size="sm">
+      {form.formState.errors.root.message}
+    </Text>
+  ) : null;
+
+  return (
+    <FormProvider {...form}>
+      <Stack gap="md" {...(isActive ? { pb: stopFooterPadding } : {})}>
+        {sessionFields}
+        {rootError}
+        {status === 'not_started' ? (
+          <Button fullWidth disabled={!canStart} onClick={handleStart}>
+            Start session
+          </Button>
+        ) : null}
       </Stack>
+
+      {isActive ? (
+        <Box
+          bg="var(--mantine-color-body)"
+          bottom={0}
+          left={0}
+          pos="fixed"
+          pt="xs"
+          pb="calc(var(--mantine-spacing-md) + env(safe-area-inset-bottom, 0px))"
+          px="md"
+          right={0}
+          style={{ zIndex: 200 }}
+        >
+          <Container size="sm">
+            <Button
+              fullWidth
+              color="red"
+              disabled={!canStop}
+              onClick={handleStop}
+            >
+              Stop session
+            </Button>
+          </Container>
+        </Box>
+      ) : null}
     </FormProvider>
   );
 };

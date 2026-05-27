@@ -90,7 +90,7 @@ describe('climb photo attachments', () => {
   it('hides attach controls when finalized', () => {
     renderAttachments(true);
 
-    expect(screen.queryByRole('button', { name: /add photo/i })).toBeNull();
+    expect(screen.queryByRole('button', { name: /^photos$/i })).toBeNull();
     expect(document.querySelector('input[type="file"]')).toBeNull();
   });
 

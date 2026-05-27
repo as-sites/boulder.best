@@ -6,9 +6,28 @@ import 'fake-indexeddb/auto';
 import { Temporal } from '@js-temporal/polyfill';
 import { cleanup } from '@testing-library/react';
 
-if (globalThis.Temporal === undefined) {
-  globalThis.Temporal = Temporal;
+// happy-dom doesn't implement document.fonts; Mantine's Autosize Textarea needs it.
+// Always define it unconditionally so it isn't left as undefined if happy-dom partially
+// initialises the property before our setup runs.
+if (typeof document !== 'undefined') {
+  Object.defineProperty(document, 'fonts', {
+    value: {
+      addEventListener: () => {
+        /* empty */
+      },
+      removeEventListener: () => {
+        /* empty */
+      },
+      ready: async () => {
+        /* empty */
+      },
+    },
+    configurable: true,
+    writable: true,
+  });
 }
+
+globalThis.Temporal ??= Temporal as unknown as typeof globalThis.Temporal;
 
 // oxlint-disable-next-line vitest/require-top-level-describe -- intentional
 afterEach(() => {

@@ -2,17 +2,20 @@ import { useRef, useState } from 'react';
 import {
   ActionIcon,
   Button,
-  Group,
   Image,
+  Menu,
   SimpleGrid,
   Stack,
   Text,
 } from '@mantine/core';
+import { CaretDownIcon, ImageIcon } from '@phosphor-icons/react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useBlobObjectUrl } from '../hooks/use-blob-object-url.js';
 import { mapFileToOfflineImage } from '../offline/images/map-file-to-offline-image.js';
 import { ImageValidationError } from '../offline/images/validate-image.js';
 import { offlineImagesRepository } from '../offline/repositories/offline-images-repository.js';
+
+const PREVIEW_SIZE = 72;
 
 export interface ClimbPhotoAttachmentsProps {
   sessionId: string;
@@ -32,8 +35,8 @@ const ClimbPhotoPreview = ({ blob }: { blob: Blob }) => {
       src={src}
       alt="Climb photo preview"
       radius="sm"
-      h={72}
-      w={72}
+      h={PREVIEW_SIZE}
+      w={PREVIEW_SIZE}
       fit="cover"
     />
   );
@@ -93,36 +96,16 @@ export const ClimbPhotoAttachments = ({
     }
   };
 
+  const hasPhotos = images.length > 0;
+  const showAddMenu = !disabled;
+
+  if (!hasPhotos && !showAddMenu) {
+    return null;
+  }
+
   return (
     <Stack gap="xs">
-      <Text size="sm" fw={500}>
-        Photos
-      </Text>
-
-      {images.length > 0 ? (
-        <SimpleGrid cols={{ base: 3, xs: 4 }} spacing="xs">
-          {images.map((image) => (
-            <Stack key={image.id} gap={4} align="center">
-              <ClimbPhotoPreview blob={image.blob} />
-              {!disabled ? (
-                <ActionIcon
-                  size="sm"
-                  variant="subtle"
-                  color="red"
-                  aria-label="Delete photo"
-                  onClick={() => {
-                    void handleDelete(image.id);
-                  }}
-                >
-                  ×
-                </ActionIcon>
-              ) : null}
-            </Stack>
-          ))}
-        </SimpleGrid>
-      ) : null}
-
-      {!disabled ? (
+      {showAddMenu ? (
         <>
           <input
             ref={cameraInputRef}
@@ -146,27 +129,59 @@ export const ClimbPhotoAttachments = ({
               void handleFiles(event.currentTarget.files);
             }}
           />
-          <Group gap="xs">
-            <Button
-              size="compact-sm"
-              variant="light"
-              onClick={() => {
-                cameraInputRef.current?.click();
-              }}
-            >
-              Take photo
-            </Button>
-            <Button
-              size="compact-sm"
-              variant="default"
-              onClick={() => {
-                libraryInputRef.current?.click();
-              }}
-            >
-              Choose photos
-            </Button>
-          </Group>
+          <Menu position="bottom-end" withinPortal={false}>
+            <Menu.Target>
+              <Button
+                fullWidth
+                variant="outline"
+                color="blue"
+                leftSection={<ImageIcon size={18} aria-hidden />}
+                rightSection={<CaretDownIcon size={14} aria-hidden />}
+              >
+                Photos
+              </Button>
+            </Menu.Target>
+            <Menu.Dropdown>
+              <Menu.Item
+                onClick={() => {
+                  cameraInputRef.current?.click();
+                }}
+              >
+                Take photo
+              </Menu.Item>
+              <Menu.Item
+                onClick={() => {
+                  libraryInputRef.current?.click();
+                }}
+              >
+                Choose photos
+              </Menu.Item>
+            </Menu.Dropdown>
+          </Menu>
         </>
+      ) : null}
+
+      {hasPhotos ? (
+        <SimpleGrid cols={{ base: 3, xs: 4 }} spacing="xs">
+          {images.map((image) => (
+            <Stack key={image.id} gap={4} align="center">
+              <ClimbPhotoPreview blob={image.blob} />
+              {!disabled ? (
+                <ActionIcon
+                  size="sm"
+                  variant="subtle"
+                  color="red"
+                  aria-label="Delete photo"
+                  onClick={() => {
+                    void handleDelete(image.id);
+                  }}
+                >
+                  ×
+                </ActionIcon>
+              ) : null}
+            </Stack>
+          ))}
+        </SimpleGrid>
       ) : null}
 
       {error ? (

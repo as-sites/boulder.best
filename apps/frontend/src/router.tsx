@@ -5,6 +5,7 @@ import {
   createRouter,
 } from '@tanstack/react-router';
 import { RouteError } from './components/route-error.js';
+import { aboutRoute } from './routes/about.js';
 import { accountRoute } from './routes/account.js';
 import { homeRoute } from './routes/home.js';
 import { rootRoute } from './routes/root.js';
@@ -19,6 +20,7 @@ const appRouteChildren = [
   sessionsRoute,
   sessionDetailRoute,
   settingsRoute,
+  aboutRoute,
   accountRoute,
 ] as const;
 
