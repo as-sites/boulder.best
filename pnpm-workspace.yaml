@@ -26,6 +26,7 @@ catalogs:
     '@mantine/core': &mantine_version 9.2.1
     '@mantine/dates': *mantine_version
     '@mantine/hooks': *mantine_version
+    '@mantine/modals': *mantine_version
     '@mantine/notifications': *mantine_version
 
 autoInstallPeers: false

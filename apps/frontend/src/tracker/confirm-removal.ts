@@ -1,13 +1,20 @@
-type ConfirmRemoval = (message: string) => boolean;
+import { modals } from '@mantine/modals';
 
-const defaultConfirmRemoval: ConfirmRemoval = (message) =>
-  // oxlint-disable-next-line eslint/no-alert -- MVP native confirm for remove guards
-  globalThis.confirm(message);
+type ConfirmRemoval = (message: string, onConfirm: () => void) => void;
+
+const defaultConfirmRemoval: ConfirmRemoval = (message, onConfirm) => {
+  modals.openConfirmModal({
+    children: message,
+    labels: { confirm: 'Remove', cancel: 'Cancel' },
+    confirmProps: { color: 'red' },
+    onConfirm,
+  });
+};
 
 let confirmRemovalImpl: ConfirmRemoval = defaultConfirmRemoval;
 
-export const confirmRemoval: ConfirmRemoval = (message) =>
-  confirmRemovalImpl(message);
+export const confirmRemoval: ConfirmRemoval = (message, onConfirm) =>
+  confirmRemovalImpl(message, onConfirm);
 
 /** Test hook to stub confirmation without native dialogs. */
 export const setConfirmRemovalForTests = (impl: ConfirmRemoval): void => {
