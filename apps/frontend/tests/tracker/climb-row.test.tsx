@@ -4,18 +4,23 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { FormProvider, useForm } from 'react-hook-form';
 import type { SessionFormValues } from '../../src/offline/db/types.js';
 import { ClimbRow } from '../../src/tracker/climb-row.js';
-import { createClimbEntry } from '../../src/tracker/entry-factory.js';
+import {
+  createClimbAttempt,
+  createClimbEntry,
+} from '../../src/tracker/entry-factory.js';
 import { createEmptySessionForm } from '../../src/tracker/session-form-state.js';
 
 const ClimbRowWrapper = ({
   isFinalized = false,
+  climbEntry = createClimbEntry(0, 'Test Climb'),
 }: {
   isFinalized?: boolean;
+  climbEntry?: ReturnType<typeof createClimbEntry>;
 }) => {
   const form = useForm<SessionFormValues>({
     defaultValues: {
       ...createEmptySessionForm(),
-      entries: [createClimbEntry(0, 'Test Climb')],
+      entries: [climbEntry],
     },
   });
 
@@ -27,7 +32,7 @@ const ClimbRowWrapper = ({
         sessionId="test-session-id"
         grades={['V0', 'V1']}
         isFinalized={isFinalized}
-        defaultName="Test Climb"
+        defaultName="Climb 1"
         onRemove={vi.fn()}
       />
     </FormProvider>
@@ -35,6 +40,71 @@ const ClimbRowWrapper = ({
 };
 
 describe(ClimbRow, () => {
+  it('starts expanded in active sessions and shows climb details', () => {
+    render(
+      <MantineProvider>
+        <ClimbRowWrapper />
+      </MantineProvider>,
+    );
+
+    expect(screen.getByRole('combobox', { name: 'Grade' })).toBeVisible();
+    expect(screen.getByLabelText('Climb notes')).toBeVisible();
+    expect(
+      screen.getByRole('button', { name: 'Collapse Climb 1' }),
+    ).toHaveAttribute('aria-expanded', 'true');
+  });
+
+  it('starts collapsed in finalized sessions with a summary line', () => {
+    const climbEntry = {
+      ...createClimbEntry(0, 'Test Climb'),
+      grade: 'V4',
+      climbAttempts: [
+        createClimbAttempt(0),
+        createClimbAttempt(1),
+        createClimbAttempt(2),
+      ],
+    };
+
+    render(
+      <MantineProvider>
+        <ClimbRowWrapper isFinalized climbEntry={climbEntry} />
+      </MantineProvider>,
+    );
+
+    expect(screen.getByText('V4 · 3 attempts')).toBeInTheDocument();
+    expect(
+      screen.queryByRole('combobox', { name: 'Grade' }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Expand Climb 1' }),
+    ).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  it('toggles collapsed rendering when the expand control is clicked', () => {
+    render(
+      <MantineProvider>
+        <ClimbRowWrapper />
+      </MantineProvider>,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Collapse Climb 1' }));
+
+    expect(
+      screen.queryByRole('combobox', { name: 'Grade' }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByText('1 attempt')).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Expand Climb 1' }),
+    ).toHaveAttribute('aria-expanded', 'false');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Expand Climb 1' }));
+
+    expect(screen.getByRole('combobox', { name: 'Grade' })).toBeVisible();
+    expect(
+      screen.getByRole('button', { name: 'Collapse Climb 1' }),
+    ).toHaveAttribute('aria-expanded', 'true');
+  });
+
   it('shows timer + edit controls when timer is idle', () => {
     render(
       <MantineProvider>
