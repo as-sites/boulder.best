@@ -3,7 +3,10 @@ import type { Gym } from '@boulder/api-contract';
 import { MantineProvider } from '@mantine/core';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { createClimbEntry } from '../../src/tracker/entry-factory.js';
+import {
+  createBreakEntry,
+  createClimbEntry,
+} from '../../src/tracker/entry-factory.js';
 import { createEmptySessionForm } from '../../src/tracker/session-form-state.js';
 import { SessionForm } from '../../src/tracker/session-form.js';
 
@@ -265,5 +268,60 @@ describe(SessionForm, () => {
       screen.getByRole('button', { name: 'Pause timer' }),
     ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Stop' })).toBeInTheDocument();
+  });
+
+  it('ends a running break when a new climb is added', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+
+    const runningBreak = {
+      ...createBreakEntry(0),
+      timer: {
+        status: 'running' as const,
+        accumulatedDurationMs: 0,
+        activeStartTime: Temporal.Now.instant().toString(),
+      },
+    };
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MantineProvider>
+          <SessionForm
+            initialValues={{
+              ...createEmptySessionForm(),
+              gymId: gymFixture[0].id,
+              location: 'Main Wall',
+              status: 'active',
+              startTime: Temporal.Now.instant().toString(),
+              entries: [runningBreak],
+            }}
+          />
+        </MantineProvider>
+      </QueryClientProvider>,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /add climb/i }));
+
+    await vi.advanceTimersByTimeAsync(300);
+
+    await waitFor(() => {
+      expect(autosaveMocks.autosaveActiveDraft).toHaveBeenCalledWith(
+        expect.objectContaining({
+          entries: expect.arrayContaining([
+            expect.objectContaining({
+              type: 'break',
+              timer: expect.objectContaining({ status: 'stopped' }),
+            }),
+            expect.objectContaining({ type: 'climb' }),
+          ]),
+        }),
+      );
+    });
+
+    vi.useRealTimers();
+    expect(vi.isFakeTimers()).toBe(false);
   });
 });

@@ -170,7 +170,19 @@ export const SessionForm = ({ initialValues, onStopped }: SessionFormProps) => {
       defaultClimbName(climbNumber),
     );
     pendingScrollEntryIdRef.current = climbEntry.id;
-    entriesField.append(climbEntry);
+
+    const runningBreakIndex = currentEntries.findIndex(
+      (entry) => entry.type === 'break' && entry.timer.status === 'running',
+    );
+
+    if (runningBreakIndex !== -1) {
+      const withBreakEnded = applyBreakEnd(currentEntries, runningBreakIndex);
+      form.setValue('entries', [...withBreakEnded, climbEntry], {
+        shouldDirty: true,
+      });
+    } else {
+      entriesField.append(climbEntry);
+    }
   };
 
   const handleAddBreak = () => {
