@@ -26,7 +26,7 @@ export const SettingsPage = () => {
   const autoSyncBlocked = manualOfflineMode || !isOnline;
 
   return (
-    <Container py="xl" size="sm">
+    <Container size="sm">
       <Stack gap="lg">
         <Stack gap="xs">
           <Title order={1}>Settings</Title>

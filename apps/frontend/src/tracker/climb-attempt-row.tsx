@@ -1,17 +1,15 @@
 import { useState } from 'react';
+import { ActionIcon, Badge, Box, Group, Paper, Stack } from '@mantine/core';
 import {
-  ActionIcon,
-  Button,
-  Group,
-  Paper,
-  Stack,
-  Text,
-  TextInput as MantineTextInput,
-} from '@mantine/core';
-import { CheckIcon, PencilSimpleIcon } from '@phosphor-icons/react';
+  CheckIcon,
+  ClockIcon,
+  PencilSimpleIcon,
+  TrashIcon,
+} from '@phosphor-icons/react';
 import { Checkbox } from '@trendcapital/react-hook-form-mantine/Checkbox';
 import { Textarea } from '@trendcapital/react-hook-form-mantine/Textarea';
-import { TimerDisplay } from '../components/timer/timer-display.js';
+import cx from 'clsx';
+import { TimerDurationInput } from '../components/timer/timer-duration-input.js';
 import {
   elapsedDurationMs,
   formatDurationMs,
@@ -26,46 +24,10 @@ import type {
   SessionFormValues,
   TimerState,
 } from '../offline/db/types.js';
+import classes from './climb-attempt-row.module.css';
 import { TimerControls } from './timer-controls.js';
 
-interface ManualDurationInputProps {
-  value: string;
-  error: string | null;
-  placeholder: string;
-  onChange: (value: string) => void;
-  onCommit: () => void;
-  onCancel: () => void;
-}
-
-const ManualDurationInput = ({
-  value,
-  error,
-  placeholder,
-  onChange,
-  onCommit,
-  onCancel,
-}: ManualDurationInputProps) => (
-  <MantineTextInput
-    placeholder={placeholder}
-    size="xs"
-    w={86}
-    value={value}
-    error={error}
-    aria-label="Duration (MM:SS)"
-    onChange={(event) => {
-      onChange(event.currentTarget.value);
-    }}
-    onBlur={onCommit}
-    onKeyDown={(event) => {
-      if (event.key === 'Enter') {
-        onCommit();
-      }
-      if (event.key === 'Escape') {
-        onCancel();
-      }
-    }}
-  />
-);
+const TIMER_VALUE_ICON_SIZE = 16;
 
 export interface ClimbAttemptRowProps {
   entryPath: `entries.${number}`;
@@ -98,11 +60,10 @@ export const ClimbAttemptRow = ({
 
   const canEditManualDuration =
     attempt.timer.status === 'idle' || attempt.timer.status === 'stopped';
+  // Timer is always stopped/idle when editing is allowed, so this is stable.
   const initialDurationValue = formatDurationMs(
     elapsedDurationMs(attempt.timer),
-    {
-      showMilliseconds: showTimerMilliseconds,
-    },
+    { showMilliseconds: showTimerMilliseconds },
   );
 
   const closeManualDurationEditor = () => {
@@ -141,100 +102,167 @@ export const ClimbAttemptRow = ({
   };
 
   return (
-    <Paper p="sm" withBorder>
-      <Stack gap="xs">
-        <Group justify="space-between">
-          <Text size="sm">Attempt {attemptIndex + 1}</Text>
-          <Group gap={6}>
-            {isEditingManualDuration && canEditManualDuration ? (
-              <ManualDurationInput
-                value={manualDurationDraft}
-                error={manualDurationError}
-                placeholder={formatDurationMs(0, {
-                  showMilliseconds: showTimerMilliseconds,
-                })}
-                onChange={(value) => {
-                  setManualDurationDraft(value);
-                  setManualDurationError(null);
-                }}
-                onCommit={commitManualDuration}
-                onCancel={closeManualDurationEditor}
-              />
-            ) : (
-              <TimerDisplay
-                timer={attempt.timer}
-                size="sm"
-                showMilliseconds={showTimerMilliseconds}
-              />
-            )}
-            {!isFinalized && canEditManualDuration ? (
+    <Paper
+      p="sm"
+      withBorder
+      {...(attempt.completed
+        ? {
+            style: {
+              borderColor: 'var(--mantine-color-green-6)',
+            },
+          }
+        : {})}
+    >
+      <Stack gap="sm">
+        <Group justify="space-between" align="center" wrap="nowrap" gap="xs">
+          <Group gap={8} wrap="nowrap">
+            <Badge
+              variant="light"
+              size="md"
+              color={attempt.completed ? 'green' : 'gray'}
+            >
+              Attempt {attemptIndex + 1}
+            </Badge>
+            {!isFinalized && canRemove ? (
               <ActionIcon
                 size="sm"
-                variant="subtle"
-                color={isEditingManualDuration ? 'green' : 'gray'}
-                aria-label={
-                  isEditingManualDuration ? 'Confirm duration' : 'Edit duration'
-                }
-                onMouseDown={(event) => {
-                  if (isEditingManualDuration) {
-                    event.preventDefault();
-                  }
-                }}
-                onClick={() => {
-                  if (isEditingManualDuration) {
-                    commitManualDuration();
-                    return;
-                  }
-                  openManualDurationEditor();
-                }}
+                variant="light"
+                color="red"
+                aria-label="Remove attempt"
+                onClick={onRemove}
               >
-                {isEditingManualDuration ? (
-                  <CheckIcon aria-hidden size={14} />
-                ) : (
-                  <PencilSimpleIcon aria-hidden size={14} />
-                )}
+                <TrashIcon aria-hidden size={16} />
               </ActionIcon>
             ) : null}
-            {!isFinalized && !isEditingManualDuration ? (
-              <TimerControls
-                timer={attempt.timer}
-                onStart={() => {
-                  onTimerChange(attemptIndex, startTimer(attempt.timer));
-                }}
-                onResume={() => {
-                  onTimerChange(attemptIndex, resumeTimer(attempt.timer));
-                }}
-                onPause={() => {
-                  onTimerChange(attemptIndex, pauseTimer(attempt.timer));
-                }}
-                onStop={() => {
-                  onTimerChange(attemptIndex, stopTimer(attempt.timer));
-                }}
-              />
-            ) : null}
           </Group>
+          <Checkbox<SessionFormValues>
+            label="Completed"
+            labelPosition="left"
+            name={`${entryPath}.climbAttempts.${attemptIndex}.completed`}
+            disabled={isFinalized}
+          />
         </Group>
+
         <Textarea<SessionFormValues>
-          label="Attempt note"
+          label="Notes"
+          placeholder="What happened on this attempt?"
           name={`${entryPath}.climbAttempts.${attemptIndex}.notes`}
           disabled={isFinalized}
-          minRows={1}
+          minRows={2}
+          autosize
+          maxRows={4}
         />
-        <Checkbox<SessionFormValues>
-          label="Completed"
-          name={`${entryPath}.climbAttempts.${attemptIndex}.completed`}
-          disabled={isFinalized}
-        />
-        {!isFinalized && canRemove ? (
-          <Button
-            size="compact-xs"
-            variant="subtle"
-            color="red"
-            onClick={onRemove}
-          >
-            Remove attempt
-          </Button>
-        ) : null}
+
+        <Box
+          className={cx(classes.timerGrid)}
+          style={{
+            display: 'grid',
+            gridTemplateColumns: '4fr 1.5fr 3fr',
+            gap: 4,
+            alignItems: 'center',
+          }}
+        >
+          <TimerDurationInput
+            timer={attempt.timer}
+            size="sm"
+            variant="filled"
+            showMilliseconds={showTimerMilliseconds}
+            aria-label={`Duration (M:SS${showTimerMilliseconds ? '.mmm' : ''})`}
+            readOnly={!(isEditingManualDuration && canEditManualDuration)}
+            value={
+              isEditingManualDuration && canEditManualDuration
+                ? manualDurationDraft
+                : undefined
+            }
+            error={
+              isEditingManualDuration
+                ? (manualDurationError ?? undefined)
+                : undefined
+            }
+            leftSection={<ClockIcon aria-hidden size={TIMER_VALUE_ICON_SIZE} />}
+            rightSectionPointerEvents="all"
+            rightSection={
+              !isFinalized && canEditManualDuration ? (
+                <ActionIcon
+                  size="sm"
+                  variant="subtle"
+                  color={isEditingManualDuration ? 'green' : 'gray'}
+                  aria-label={
+                    isEditingManualDuration
+                      ? 'Confirm duration'
+                      : 'Edit duration'
+                  }
+                  onMouseDown={(event) => {
+                    if (isEditingManualDuration) {
+                      event.preventDefault();
+                    }
+                  }}
+                  onClick={() => {
+                    if (isEditingManualDuration) {
+                      commitManualDuration();
+                      return;
+                    }
+                    openManualDurationEditor();
+                  }}
+                >
+                  {isEditingManualDuration ? (
+                    <CheckIcon aria-hidden size={14} />
+                  ) : (
+                    <PencilSimpleIcon aria-hidden size={14} />
+                  )}
+                </ActionIcon>
+              ) : null
+            }
+            onChange={(event) => {
+              if (!(isEditingManualDuration && canEditManualDuration)) {
+                return;
+              }
+              setManualDurationDraft(event.currentTarget.value);
+              setManualDurationError(null);
+            }}
+            onBlur={() => {
+              if (isEditingManualDuration && canEditManualDuration) {
+                commitManualDuration();
+              }
+            }}
+            onKeyDown={(event) => {
+              if (!(isEditingManualDuration && canEditManualDuration)) {
+                return;
+              }
+              if (event.key === 'Enter') {
+                commitManualDuration();
+              }
+              if (event.key === 'Escape') {
+                closeManualDurationEditor();
+              }
+            }}
+            onFocus={(event) => {
+              if (!(isEditingManualDuration && canEditManualDuration)) {
+                event.currentTarget.blur();
+                return;
+              }
+              event.currentTarget.select();
+            }}
+          />
+
+          {!isFinalized && !isEditingManualDuration ? (
+            <TimerControls
+              timer={attempt.timer}
+              onStart={() => {
+                onTimerChange(attemptIndex, startTimer(attempt.timer));
+              }}
+              onResume={() => {
+                onTimerChange(attemptIndex, resumeTimer(attempt.timer));
+              }}
+              onPause={() => {
+                onTimerChange(attemptIndex, pauseTimer(attempt.timer));
+              }}
+              onStop={() => {
+                onTimerChange(attemptIndex, stopTimer(attempt.timer));
+              }}
+            />
+          ) : null}
+        </Box>
       </Stack>
     </Paper>
   );

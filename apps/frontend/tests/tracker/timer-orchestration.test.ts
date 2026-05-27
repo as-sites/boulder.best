@@ -12,6 +12,7 @@ import {
 } from '../../src/tracker/entry-factory.js';
 import {
   applyBreakEnd,
+  applyBreakRemove,
   applyBreakStart,
   pauseAllRunningClimbs,
 } from '../../src/tracker/timer-orchestration.js';
@@ -65,6 +66,27 @@ describe('timer orchestration', () => {
     expect(next[1]?.type).toBe('break');
     expect(next[1]?.timer.status).toBe('stopped');
 
+    expect(next[0]?.type).toBe('climb');
+    expect(next[0]?.timer.status).toBe('running');
+  });
+
+  it('removes an active break and resumes the previous paused climb', () => {
+    const climb = runningClimb();
+    const pausedClimb = {
+      ...climb,
+      timer: pauseTimer(climb.timer, fixedNow(1000)),
+    };
+    const entries = [
+      pausedClimb,
+      {
+        ...createBreakEntry(1),
+        timer: startTimer(createIdleTimer(), fixedNow(1000)),
+      },
+    ];
+
+    const next = applyBreakRemove(entries, 1);
+
+    expect(next).toHaveLength(1);
     expect(next[0]?.type).toBe('climb');
     expect(next[0]?.timer.status).toBe('running');
   });

@@ -12,7 +12,7 @@ export interface PageErrorProps {
 }
 
 export const PageError = ({ message, title, pb }: PageErrorProps) => (
-  <Container py="xl" {...(pb !== undefined ? { pb } : {})} size="sm">
+  <Container {...(pb !== undefined ? { pb } : {})} size="sm">
     <Stack gap="sm">
       {title ? <Title order={1}>{title}</Title> : null}
       <Text c="red" size="sm">

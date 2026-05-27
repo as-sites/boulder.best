@@ -3,7 +3,7 @@ import { Link } from '@tanstack/react-router';
 
 /** Router-level 404 shown inside AppShell when no route matches. */
 export const RouteNotFound = () => (
-  <Container py="xl" size="sm">
+  <Container size="sm">
     <Stack gap="lg">
       <Stack gap="xs">
         <Title order={1}>Page not found</Title>

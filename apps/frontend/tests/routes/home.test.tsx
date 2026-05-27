@@ -158,6 +158,10 @@ describe('home route', () => {
     expect(
       within(main).getByRole('link', { name: 'Settings' }),
     ).toHaveAttribute('href', '/settings');
+    expect(within(main).getByRole('link', { name: 'About' })).toHaveAttribute(
+      'href',
+      '/about',
+    );
     expect(helloGet).not.toHaveBeenCalled();
     expect(screen.queryByRole('button', { name: /refresh api/i })).toBeNull();
     expect(screen.queryByText(/loading api message/i)).toBeNull();

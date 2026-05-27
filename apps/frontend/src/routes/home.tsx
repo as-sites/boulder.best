@@ -9,7 +9,7 @@ const Home = () => {
   const welcomeName = user?.name.trim() || user?.email;
 
   return (
-    <Container py="xl" size="sm">
+    <Container size="sm">
       <Stack gap="lg">
         <Stack gap="xs">
           <Title order={1}>Boulder Best</Title>
@@ -39,6 +39,9 @@ const Home = () => {
             </Button>
             <Button component={Link} to="/settings" variant="light">
               Settings
+            </Button>
+            <Button component={Link} to="/about" variant="light">
+              About
             </Button>
           </Group>
         </Stack>

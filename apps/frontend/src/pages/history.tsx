@@ -26,7 +26,7 @@ export const HistoryPage = () => {
   }
 
   return (
-    <Container py="xl" size="sm">
+    <Container size="sm">
       <Stack gap="md">
         <Stack gap={4}>
           <Title order={1}>History</Title>

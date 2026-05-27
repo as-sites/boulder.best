@@ -16,7 +16,7 @@ export const PageLoading = ({
   pb,
   spinner = true,
 }: PageLoadingProps) => (
-  <Container py="xl" {...(pb !== undefined ? { pb } : {})} size="sm">
+  <Container {...(pb !== undefined ? { pb } : {})} size="sm">
     <Stack align="center" gap="sm">
       {spinner ? <Loader size="sm" /> : null}
       <Text c="dimmed" size="sm">

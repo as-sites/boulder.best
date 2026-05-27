@@ -1,7 +1,17 @@
-import { Button, Group, Paper, Stack, Text } from '@mantine/core';
+import { useLayoutEffect, useRef, useState } from 'react';
+import {
+  ActionIcon,
+  Box,
+  Button,
+  Group,
+  Paper,
+  Stack,
+  Text,
+  Tooltip,
+} from '@mantine/core';
+import { RowsPlusBottomIcon, TrashIcon } from '@phosphor-icons/react';
 import { Select } from '@trendcapital/react-hook-form-mantine/Select';
 import { Textarea } from '@trendcapital/react-hook-form-mantine/Textarea';
-import { TextInput } from '@trendcapital/react-hook-form-mantine/TextInput';
 import {
   useFieldArray,
   useFormContext,
@@ -15,6 +25,112 @@ import { ClimbPhotoAttachments } from './climb-photo-attachments.js';
 import { confirmRemoval } from './confirm-removal.js';
 import { createClimbAttempt } from './entry-factory.js';
 
+const MAX_CLIMB_NAME_LENGTH = 255;
+
+interface ClimbNameHeadingProps {
+  defaultName: string;
+  disabled: boolean;
+  name: string;
+  onNameChange: (name: string) => void;
+}
+
+const ClimbNameHeading = ({
+  defaultName,
+  disabled,
+  name,
+  onNameChange,
+}: ClimbNameHeadingProps) => {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [isFocused, setIsFocused] = useState(false);
+  const [draft, setDraft] = useState('');
+  const storedName = name.trim();
+  const displayName = storedName || defaultName;
+  const isPlaceholder = !storedName;
+  const shownValue = isFocused ? draft : displayName;
+
+  const syncTextareaHeight = () => {
+    const textarea = textareaRef.current;
+    if (!textarea) {
+      return;
+    }
+    textarea.style.height = '0';
+    textarea.style.height = `${textarea.scrollHeight}px`;
+  };
+
+  useLayoutEffect(() => {
+    syncTextareaHeight();
+  }, [shownValue, isFocused]);
+
+  if (disabled) {
+    return (
+      <Text fw={600} {...(isPlaceholder ? { c: 'dimmed' } : {})}>
+        {displayName}
+      </Text>
+    );
+  }
+
+  return (
+    <Box
+      ref={textareaRef}
+      aria-label="Climb name"
+      component="textarea"
+      maxLength={MAX_CLIMB_NAME_LENGTH}
+      rows={1}
+      value={shownValue}
+      fw={600}
+      {...(isPlaceholder && !isFocused ? { c: 'dimmed' } : {})}
+      onChange={(event) => {
+        if (!isFocused) {
+          return;
+        }
+        const textarea = event.currentTarget;
+        setDraft(textarea.value);
+        textarea.style.height = '0';
+        textarea.style.height = `${textarea.scrollHeight}px`;
+      }}
+      onBlur={() => {
+        setIsFocused(false);
+        const raw = draft
+          .replaceAll(/\s+/g, ' ')
+          .trim()
+          .slice(0, MAX_CLIMB_NAME_LENGTH);
+        onNameChange(raw);
+      }}
+      onFocus={() => {
+        setIsFocused(true);
+        setDraft(isPlaceholder ? '' : storedName);
+      }}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          textareaRef.current?.blur();
+        }
+      }}
+      style={{
+        outline: 'none',
+        cursor: 'text',
+        minWidth: '4ch',
+        border: 'none',
+        background: 'transparent',
+        marginTop: '2px',
+        padding: 0,
+        width: '100%',
+        font: 'inherit',
+        color: 'inherit',
+        resize: 'none',
+        overflow: 'hidden',
+        lineHeight: 'inherit',
+        ...(isFocused
+          ? {
+              boxShadow: '0 0 0 1px var(--mantine-primary-color-filled)',
+              borderRadius: 'var(--mantine-radius-sm)',
+            }
+          : {}),
+      }}
+    />
+  );
+};
+
 export interface ClimbRowProps {
   control: Control<SessionFormValues>;
   index: number;
@@ -25,6 +141,16 @@ export interface ClimbRowProps {
   onRemove: () => void;
 }
 
+const hasDirtyField = (dirty: unknown): boolean => {
+  if (dirty === true) {
+    return true;
+  }
+  if (typeof dirty === 'object' && dirty !== null) {
+    return Object.values(dirty).some((f) => hasDirtyField(f));
+  }
+  return false;
+};
+
 export const ClimbRow = ({
   control,
   index,
@@ -34,7 +160,8 @@ export const ClimbRow = ({
   defaultName,
   onRemove,
 }: ClimbRowProps) => {
-  const { setValue, getValues } = useFormContext<SessionFormValues>();
+  const { setValue, getValues, formState } =
+    useFormContext<SessionFormValues>();
   const { enabled: showTimerMilliseconds } = useTimerDisplayMilliseconds();
   const entryPath = `entries.${index}` as const;
   const climb = useWatch({ control, name: entryPath });
@@ -63,10 +190,14 @@ export const ClimbRow = ({
       return;
     }
 
+    const dirtyEntry = formState.dirtyFields.entries?.[index] as
+      | { climbAttempts?: unknown[] }
+      | undefined;
+    const dirtyAttemptFields = dirtyEntry?.climbAttempts?.[attemptIndex];
     const needsConfirm =
       attempt.timer.status === 'running' ||
       attempt.timer.status === 'paused' ||
-      Boolean(attempt.notes.trim());
+      hasDirtyField(dirtyAttemptFields);
 
     if (needsConfirm && !confirmRemoval('Remove this attempt?')) {
       return;
@@ -87,16 +218,35 @@ export const ClimbRow = ({
   return (
     <Paper p="md" withBorder>
       <Stack gap="sm">
-        <Group justify="space-between">
-          <Text fw={600}>{climb.name || defaultName}</Text>
+        <Group justify="space-between" align="flex-start" wrap="nowrap">
+          <Box style={{ flex: 1, minWidth: 0 }}>
+            <ClimbNameHeading
+              defaultName={defaultName}
+              disabled={isFinalized}
+              name={climb.name}
+              onNameChange={(nextName) => {
+                setValue(`${entryPath}.name`, nextName, { shouldDirty: true });
+              }}
+            />
+          </Box>
+          {!isFinalized ? (
+            <Tooltip label="Remove climb" withArrow>
+              <ActionIcon
+                color="red"
+                variant="light"
+                size="lg"
+                aria-label="Remove climb"
+                onClick={() => {
+                  if (confirmRemoval('Remove this climb?')) {
+                    onRemove();
+                  }
+                }}
+              >
+                <TrashIcon aria-hidden size={20} />
+              </ActionIcon>
+            </Tooltip>
+          ) : null}
         </Group>
-
-        <TextInput<SessionFormValues>
-          label="Name"
-          name={`${entryPath}.name`}
-          disabled={isFinalized}
-          placeholder={defaultName}
-        />
 
         <Select<SessionFormValues>
           label="Grade"
@@ -159,25 +309,15 @@ export const ClimbRow = ({
           })}
           {!isFinalized ? (
             <Button
-              size="compact-sm"
+              size="sm"
               variant="light"
               onClick={handleAddAttempt}
+              rightSection={<RowsPlusBottomIcon aria-hidden size={20} />}
             >
               Add attempt
             </Button>
           ) : null}
         </Stack>
-
-        {!isFinalized ? (
-          <Button
-            size="compact-sm"
-            variant="subtle"
-            color="red"
-            onClick={onRemove}
-          >
-            Remove climb
-          </Button>
-        ) : null}
       </Stack>
     </Paper>
   );

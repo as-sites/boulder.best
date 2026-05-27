@@ -265,6 +265,22 @@ describe('route shell smoke tests', () => {
     ).toBeInTheDocument();
   });
 
+  it('renders the about route with FAQ content', async () => {
+    await renderAt('/about');
+
+    await expect(
+      screen.findByRole('heading', { name: 'About' }),
+    ).resolves.toBeInTheDocument();
+    expect(
+      screen.getByRole('button', {
+        name: /how is my data stored on this device/i,
+      }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /how does offline mode work/i }),
+    ).toBeInTheDocument();
+  });
+
   it('renders the account route placeholder', async () => {
     await renderAt('/auth/account');
 

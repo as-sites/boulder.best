@@ -224,8 +224,14 @@ describe(SessionForm, () => {
     await waitFor(() => expect(stopButton).not.toBeDisabled());
     fireEvent.click(stopButton);
 
-    await waitFor(() => expect(startButton).toBeDisabled());
-    expect(stopButton).toBeDisabled();
+    await waitFor(() =>
+      expect(
+        screen.queryByRole('button', { name: /start session/i }),
+      ).not.toBeInTheDocument(),
+    );
+    expect(
+      screen.queryByRole('button', { name: /stop session/i }),
+    ).not.toBeInTheDocument();
   });
 
   // oxlint-disable-next-line typescript/require-await

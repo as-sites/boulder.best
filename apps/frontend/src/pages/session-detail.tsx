@@ -54,14 +54,14 @@ export const SessionDetailPage = () => {
 
   if (!resolvedDetail) {
     return (
-      <Container py="xl" size="sm">
+      <Container size="sm">
         <Title order={1}>Session not found</Title>
       </Container>
     );
   }
 
   return (
-    <Container py="xl" size="sm">
+    <Container size="sm">
       <SessionDetailView
         session={resolvedDetail.session}
         source={resolvedDetail.source}

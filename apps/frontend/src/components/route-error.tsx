@@ -10,7 +10,7 @@ export const RouteError = ({ error, reset }: ErrorComponentProps) => {
     error instanceof Error ? error.message : 'Something went wrong';
 
   return (
-    <Container py="xl" size="sm">
+    <Container size="sm">
       <Stack gap="lg">
         <Stack gap="xs">
           <Title order={1}>Something went wrong</Title>

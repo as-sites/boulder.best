@@ -70,7 +70,7 @@ export const TrackerPage = () => {
 
   return (
     <Container
-      py="xl"
+      px={0}
       pb="calc(var(--mantine-spacing-xl) + env(safe-area-inset-bottom))"
       size="sm"
     >
