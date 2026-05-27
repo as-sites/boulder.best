@@ -71,7 +71,7 @@ export default defineConfig({
         ],
       },
     }),
-    cloudflare(),
+    cloudflare({ inspectorPort: 9230 }),
     ...(sentrySourceMapUploadConfig
       ? [
           sentryVitePlugin({

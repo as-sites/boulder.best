@@ -34,7 +34,6 @@ gt = "1.8.6"
 usage = "3.3.0"
 hk = "1.45.0"
 pkl = "0.31.1"
-wrangler = "4.95.0"
 
 [tool_alias]
 gt = "npm:@withgraphite/graphite-cli"
