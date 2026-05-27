@@ -208,18 +208,23 @@ export const SessionForm = ({ initialValues, onStopped }: SessionFormProps) => {
           Boolean(entry.notes.trim())
         : entry.timer.status === 'running' || entry.timer.status === 'paused';
 
-    if (needsConfirm && !confirmRemoval('Remove this entry?')) {
+    const removeEntry = () => {
+      const nextEntries =
+        entry.type === 'break'
+          ? applyBreakRemove(currentEntries, index)
+          : currentEntries.filter((_, entryIndex) => entryIndex !== index);
+
+      form.setValue('entries', resequenceEntries(nextEntries), {
+        shouldDirty: true,
+      });
+    };
+
+    if (needsConfirm) {
+      confirmRemoval('Remove this entry?', removeEntry);
       return;
     }
 
-    const nextEntries =
-      entry.type === 'break'
-        ? applyBreakRemove(currentEntries, index)
-        : currentEntries.filter((_, entryIndex) => entryIndex !== index);
-
-    form.setValue('entries', resequenceEntries(nextEntries), {
-      shouldDirty: true,
-    });
+    removeEntry();
   };
 
   const isActive = status === 'active';
