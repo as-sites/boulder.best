@@ -170,7 +170,19 @@ export const SessionForm = ({ initialValues, onStopped }: SessionFormProps) => {
       defaultClimbName(climbNumber),
     );
     pendingScrollEntryIdRef.current = climbEntry.id;
-    entriesField.append(climbEntry);
+
+    const runningBreakIndex = currentEntries.findIndex(
+      (entry) => entry.type === 'break' && entry.timer.status === 'running',
+    );
+
+    if (runningBreakIndex !== -1) {
+      const withBreakEnded = applyBreakEnd(currentEntries, runningBreakIndex);
+      form.setValue('entries', [...withBreakEnded, climbEntry], {
+        shouldDirty: true,
+      });
+    } else {
+      entriesField.append(climbEntry);
+    }
   };
 
   const handleAddBreak = () => {
@@ -208,18 +220,23 @@ export const SessionForm = ({ initialValues, onStopped }: SessionFormProps) => {
           Boolean(entry.notes.trim())
         : entry.timer.status === 'running' || entry.timer.status === 'paused';
 
-    if (needsConfirm && !confirmRemoval('Remove this entry?')) {
+    const removeEntry = () => {
+      const nextEntries =
+        entry.type === 'break'
+          ? applyBreakRemove(currentEntries, index)
+          : currentEntries.filter((_, entryIndex) => entryIndex !== index);
+
+      form.setValue('entries', resequenceEntries(nextEntries), {
+        shouldDirty: true,
+      });
+    };
+
+    if (needsConfirm) {
+      confirmRemoval('Remove this entry?', removeEntry);
       return;
     }
 
-    const nextEntries =
-      entry.type === 'break'
-        ? applyBreakRemove(currentEntries, index)
-        : currentEntries.filter((_, entryIndex) => entryIndex !== index);
-
-    form.setValue('entries', resequenceEntries(nextEntries), {
-      shouldDirty: true,
-    });
+    removeEntry();
   };
 
   const isActive = status === 'active';
@@ -362,7 +379,7 @@ export const SessionForm = ({ initialValues, onStopped }: SessionFormProps) => {
         <Box
           bg="var(--mantine-color-body)"
           bottom={0}
-          left={0}
+          left="var(--app-shell-navbar-width, 0px)"
           pos="fixed"
           pt="xs"
           pb="calc(var(--mantine-spacing-md) + env(safe-area-inset-bottom, 0px))"

@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 import {
   ActionIcon,
   Button,
@@ -6,8 +6,8 @@ import {
   Menu,
   SimpleGrid,
   Stack,
-  Text,
 } from '@mantine/core';
+import { notifications } from '@mantine/notifications';
 import { CaretDownIcon, ImageIcon } from '@phosphor-icons/react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useBlobObjectUrl } from '../hooks/use-blob-object-url.js';
@@ -53,7 +53,6 @@ export const ClimbPhotoAttachments = ({
 }: ClimbPhotoAttachmentsProps) => {
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const libraryInputRef = useRef<HTMLInputElement>(null);
-  const [error, setError] = useState<string | null>(null);
 
   const images = useLiveQuery(
     async () => await offlineImagesRepository.listByEntry(sessionId, entryId),
@@ -66,7 +65,6 @@ export const ClimbPhotoAttachments = ({
       return;
     }
 
-    setError(null);
     let nextIndex = Math.max(-1, ...images.map((img) => img.index)) + 1;
 
     for (const file of Array.from(files)) {
@@ -80,11 +78,14 @@ export const ClimbPhotoAttachments = ({
         nextIndex += 1;
         await offlineImagesRepository.put(image);
       } catch (attachError) {
-        setError(
-          attachError instanceof ImageValidationError
-            ? attachError.message
-            : 'Unable to add photo',
-        );
+        notifications.show({
+          color: 'red',
+          title: 'Unable to add photo',
+          message:
+            attachError instanceof ImageValidationError
+              ? attachError.message
+              : 'Please try again.',
+        });
       }
     }
 
@@ -182,12 +183,6 @@ export const ClimbPhotoAttachments = ({
             </Stack>
           ))}
         </SimpleGrid>
-      ) : null}
-
-      {error ? (
-        <Text c="red" size="xs">
-          {error}
-        </Text>
       ) : null}
     </Stack>
   );
