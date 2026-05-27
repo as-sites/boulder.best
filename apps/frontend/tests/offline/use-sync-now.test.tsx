@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ReactNode } from 'react';
+import { notifications } from '@mantine/notifications';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, renderHook } from '@testing-library/react';
 import {
@@ -85,9 +86,13 @@ const createWrapper = (queryClient: QueryClient) => {
   return Wrapper;
 };
 
+const showNotificationMock = vi.spyOn(notifications, 'show');
+
 describe('manual sync hook', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    showNotificationMock.mockReset();
+    showNotificationMock.mockReturnValue('notification-id');
     eligibleSyncContext();
   });
 
@@ -150,6 +155,14 @@ describe('manual sync hook', () => {
     });
 
     expect(invalidateSpy).not.toHaveBeenCalled();
+    expect(showNotificationMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: 'sync-queue-failure',
+        color: 'red',
+        title: 'Sync failed',
+        message: 'Sync interrupted',
+      }),
+    );
   });
 });
 
