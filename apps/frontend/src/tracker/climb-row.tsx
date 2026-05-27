@@ -199,15 +199,20 @@ export const ClimbRow = ({
       attempt.timer.status === 'paused' ||
       hasDirtyField(dirtyAttemptFields);
 
-    if (needsConfirm && !confirmRemoval('Remove this attempt?')) {
+    const removeAttempt = () => {
+      attemptsField.remove(attemptIndex);
+      const reordered = getValues(`${entryPath}.climbAttempts`).map(
+        (item, sequenceOrder) => ({ ...item, sequenceOrder }),
+      );
+      setValue(`${entryPath}.climbAttempts`, reordered, { shouldDirty: true });
+    };
+
+    if (needsConfirm) {
+      confirmRemoval('Remove this attempt?', removeAttempt);
       return;
     }
 
-    attemptsField.remove(attemptIndex);
-    const reordered = getValues(`${entryPath}.climbAttempts`).map(
-      (item, sequenceOrder) => ({ ...item, sequenceOrder }),
-    );
-    setValue(`${entryPath}.climbAttempts`, reordered, { shouldDirty: true });
+    removeAttempt();
   };
 
   const handleAddAttempt = () => {
@@ -237,9 +242,7 @@ export const ClimbRow = ({
                 size="lg"
                 aria-label="Remove climb"
                 onClick={() => {
-                  if (confirmRemoval('Remove this climb?')) {
-                    onRemove();
-                  }
+                  confirmRemoval('Remove this climb?', onRemove);
                 }}
               >
                 <TrashIcon aria-hidden size={20} />
