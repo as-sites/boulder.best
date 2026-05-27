@@ -1,5 +1,6 @@
 import { MantineProvider } from '@mantine/core';
 import { ModalsProvider } from '@mantine/modals';
+import { Notifications } from '@mantine/notifications';
 import {
   QueryClient,
   QueryClientProvider,
@@ -21,6 +22,7 @@ export const AppProviders = ({
 }) => (
   <MantineProvider {...appMantineProviderProps}>
     <ModalsProvider>
+      <Notifications />
       <QueryClientProvider client={providerQueryClient}>
         <RouterProvider router={providerRouter} />
       </QueryClientProvider>

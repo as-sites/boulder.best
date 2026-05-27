@@ -1,5 +1,6 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { MantineProvider } from '@mantine/core';
+import { notifications } from '@mantine/notifications';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import {
   mapFileToOfflineImage,
@@ -10,6 +11,7 @@ import { ClimbPhotoAttachments } from '../../src/tracker/climb-photo-attachments
 
 const sessionId = 'a1b2c3d4-e5f6-4789-a234-56789abcdef0';
 const entryId = 'b2c3d4e5-f6a7-4890-b345-6789abcdef01';
+const showNotificationMock = vi.spyOn(notifications, 'show');
 
 const renderAttachments = (disabled = false) =>
   render(
@@ -25,6 +27,8 @@ const renderAttachments = (disabled = false) =>
 describe('climb photo attachments', () => {
   beforeEach(async () => {
     await resetOfflineDatabase();
+    showNotificationMock.mockReset();
+    showNotificationMock.mockReturnValue('notification-id');
   });
 
   it('renders previews for multiple stored photos', async () => {
@@ -103,5 +107,29 @@ describe('climb photo attachments', () => {
     expect(inputs[0]?.getAttribute('capture')).toBe('environment');
     expect(inputs[1]?.getAttribute('capture')).toBeNull();
     expect(inputs[1]?.hasAttribute('multiple')).toBe(true);
+  });
+
+  it('shows a notification when a selected file is invalid', async () => {
+    renderAttachments();
+
+    const libraryInput = screen.getByLabelText(/choose climb photos/i);
+
+    fireEvent.change(libraryInput, {
+      target: {
+        files: [new File(['not-an-image'], 'bad.txt', { type: 'text/plain' })],
+      },
+    });
+
+    await waitFor(() => {
+      expect(showNotificationMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          color: 'red',
+          title: 'Unable to add photo',
+          message: 'Only JPEG, PNG, and WebP images are supported',
+        }),
+      );
+    });
+
+    expect(showNotificationMock).toHaveBeenCalledOnce();
   });
 });
