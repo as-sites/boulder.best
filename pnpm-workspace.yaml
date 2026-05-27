@@ -10,6 +10,7 @@ catalog:
   '@types/node': 24.12.4
   zod: 4.4.3
   hono: 4.12.23
+  wrangler: 4.95.0
 
 catalogs:
   vitest:
@@ -43,3 +44,10 @@ allowBuilds:
   workerd: true
 patchedDependencies:
   '@trendcapital/react-hook-form-mantine': patches/@trendcapital__react-hook-form-mantine.patch
+
+overrides:
+  wrangler: 'catalog:'
+
+minimumReleaseAgeExclude:
+  - miniflare@4.20260526.0
+  - wrangler@4.95.0

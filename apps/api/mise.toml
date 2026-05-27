@@ -1,7 +1,7 @@
 [tasks.dev]
 alias = ["api:dev"]
 description = "Start the API Worker dev server"
-run = "wrangler dev --env dev"
+run = "wrangler dev --env dev --inspector-port 9229"
 env.FORCE_COLOR = "1'"
 
 
