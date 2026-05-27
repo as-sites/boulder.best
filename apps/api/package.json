@@ -12,11 +12,11 @@
     "@sentry/hono": "10.53.1",
     "drizzle-orm": "^0.45.2",
     "hono": "catalog:",
-    "s3mini": "0.9.4",
+    "s3mini": "0.9.5",
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@sentry/cli": "2.58.6",
+    "@sentry/cli": "3.4.3",
     "drizzle-kit": "0.31.10"
   }
 }

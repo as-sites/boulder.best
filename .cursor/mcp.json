@@ -6,12 +6,8 @@
     },
     "mise": {
       "type": "stdio",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-Command",
-        "Set-Location -LiteralPath 'P:\\boulder.best'; $env:MISE_EXPERIMENTAL='1'; mise mcp"
-      ],
+      "command": "mise",
+      "args": ["mcp"],
       "env": {
         "MISE_EXPERIMENTAL": "1"
       }

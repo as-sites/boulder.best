@@ -7,9 +7,9 @@ catalog:
   react-dom: 19.2.6
   '@types/react': 19.2.15
   '@types/react-dom': 19.2.3
-  '@types/node': 24.12.3
+  '@types/node': 24.12.4
   zod: 4.4.3
-  hono: 4.12.21
+  hono: 4.12.23
 
 catalogs:
   vitest:
