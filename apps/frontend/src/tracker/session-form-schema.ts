@@ -56,6 +56,7 @@ export const sessionFormSchema = z.object({
   notes: z.string(),
   status: z.enum(['not_started', 'active', 'stopped']),
   entries: z.array(sessionFormEntrySchema),
+  deletedEntryIds: z.array(z.uuid()),
 });
 
 export type SessionFormSchema = z.infer<typeof sessionFormSchema>;

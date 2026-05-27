@@ -90,6 +90,7 @@ export const buildSyncSessionPayload = (
     totalDurationMs: Math.round(form.totalDurationMs),
     notes: form.notes,
     entries: form.entries.map((entry) => toSyncEntry(entry, now)),
+    deletedEntryIds: form.deletedEntryIds,
   };
 };
 

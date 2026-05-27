@@ -12,6 +12,7 @@ export const createEmptySessionForm = (): SessionFormValues => ({
   notes: '',
   status: 'not_started',
   entries: [],
+  deletedEntryIds: [],
 });
 
 /** Merge persisted draft data with defaults for fields added after save. */
@@ -21,6 +22,7 @@ export const hydrateSessionForm = (
   ...createEmptySessionForm(),
   ...formData,
   location: formData.location ?? null,
+  deletedEntryIds: formData.deletedEntryIds ?? [],
 });
 
 /** Running session timer derived from `startTime` for display only. */

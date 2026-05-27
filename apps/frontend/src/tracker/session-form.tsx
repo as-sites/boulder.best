@@ -217,6 +217,14 @@ export const SessionForm = ({ initialValues, onStopped }: SessionFormProps) => {
         ? applyBreakRemove(currentEntries, index)
         : currentEntries.filter((_, entryIndex) => entryIndex !== index);
 
+    const deletedEntryIds = form.getValues('deletedEntryIds');
+    form.setValue(
+      'deletedEntryIds',
+      deletedEntryIds.includes(entry.id)
+        ? deletedEntryIds
+        : [...deletedEntryIds, entry.id],
+      { shouldDirty: true },
+    );
     form.setValue('entries', resequenceEntries(nextEntries), {
       shouldDirty: true,
     });

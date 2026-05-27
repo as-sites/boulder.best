@@ -17,6 +17,7 @@ export const normalizeSyncSessionPayload = (
   payload: SyncSessionPayload,
 ): SyncSessionPayload => ({
   ...payload,
+  deletedEntryIds: payload.deletedEntryIds ?? [],
   startTime: toApiIsoDateTime(payload.startTime),
   endTime: toApiIsoDateTime(payload.endTime),
   totalDurationMs: roundMs(payload.totalDurationMs),

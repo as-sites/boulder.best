@@ -61,7 +61,7 @@ export class SyncSessionDuplicateSequenceOrderError extends Error {
   }
 }
 
-type SyncSessionWriter = Pick<AppDb, 'insert' | 'select'>;
+type SyncSessionWriter = Pick<AppDb, 'delete' | 'insert' | 'select'>;
 type SyncBatchItem = Parameters<AppDb['batch']>[0][number];
 
 const assertValidSessionLocation = (
@@ -79,6 +79,13 @@ const assertValidSessionLocation = (
 
 const collectEntryIds = (payload: SyncSessionPayload): string[] =>
   payload.entries.map((entry) => entry.id);
+
+const collectDeletedEntryIds = (payload: SyncSessionPayload): string[] => {
+  const activeEntryIds = new Set(collectEntryIds(payload));
+  const deletedEntryIds = payload.deletedEntryIds ?? [];
+
+  return deletedEntryIds.filter((entryId) => !activeEntryIds.has(entryId));
+};
 
 const collectImageIds = (payload: SyncSessionPayload): string[] =>
   payload.entries.flatMap((entry) =>
@@ -417,6 +424,19 @@ export const syncSession = async (
   }
 
   await db.batch(batchOperations as [SyncBatchItem, ...SyncBatchItem[]]);
+
+  const deletedEntryIds = collectDeletedEntryIds(payload);
+  if (deletedEntryIds.length > 0) {
+    await db
+      .delete(sessionEntries)
+      .where(
+        and(
+          eq(sessionEntries.sessionId, payload.id),
+          eq(sessionEntries.userId, userId),
+          inArray(sessionEntries.id, deletedEntryIds),
+        ),
+      );
+  }
 
   return { success: true, sessionId: payload.id };
 };

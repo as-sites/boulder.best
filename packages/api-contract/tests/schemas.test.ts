@@ -201,6 +201,19 @@ describe('sync session payload schema', () => {
     ).toBe(false);
   });
 
+  it('accepts optional deletedEntryIds', () => {
+    expect(
+      syncSessionPayloadSchema.safeParse(syncSessionPayloadFixture).success,
+    ).toBe(true);
+
+    expect(
+      syncSessionPayloadSchema.safeParse({
+        ...syncSessionPayloadFixture,
+        deletedEntryIds: [syncSessionPayloadFixture.entries[1].id],
+      }).success,
+    ).toBe(true);
+  });
+
   it('accepts null location and rejects empty location strings', () => {
     expect(
       syncSessionPayloadSchema.safeParse({

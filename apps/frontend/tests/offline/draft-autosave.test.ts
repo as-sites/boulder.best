@@ -17,6 +17,7 @@ const sessionFormFixture = (): SessionFormValues => ({
   totalDurationMs: 0,
   notes: '',
   status: 'active',
+  deletedEntryIds: [],
   entries: [
     {
       id: 'climb-1',
@@ -52,6 +53,7 @@ const activeSessionWithoutEntriesFixture = (): SessionFormValues => ({
   totalDurationMs: 0,
   notes: 'Warming up',
   status: 'active',
+  deletedEntryIds: [],
   entries: [],
 });
 
@@ -64,6 +66,7 @@ const preStartSessionFixture = (): SessionFormValues => ({
   totalDurationMs: 0,
   notes: 'Planning projects',
   status: 'not_started',
+  deletedEntryIds: [],
   entries: [],
 });
 

@@ -18,6 +18,7 @@ const stoppedSessionFixture = (): SessionFormValues => ({
   totalDurationMs: 7_200_000,
   notes: '',
   status: 'stopped',
+  deletedEntryIds: [],
   entries: [
     {
       id: 'climb-1',
@@ -62,6 +63,17 @@ const stoppedSessionFixture = (): SessionFormValues => ({
 describe('finalize stopped session', () => {
   beforeEach(async () => {
     await resetOfflineDatabase();
+  });
+
+  it('includes deletedEntryIds in the sync payload', async () => {
+    const form = {
+      ...stoppedSessionFixture(),
+      deletedEntryIds: ['removed-entry-id'],
+    };
+
+    const queueItem = await finalizeStoppedSession(form);
+
+    expect(queueItem.payload.deletedEntryIds).toEqual(['removed-entry-id']);
   });
 
   it('enqueues a payload and clears the active draft', async () => {

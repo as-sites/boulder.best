@@ -108,6 +108,7 @@ const createMockDb = (
   const imageUpserts: unknown[] = [];
   const attemptInserts: Array<{ entryId: string; sequenceOrder: number }> = [];
   const attemptConflictUpdates: unknown[] = [];
+  const deletedEntryIds: string[][] = [];
 
   const tx = {
     select: vi.fn(() => ({
@@ -175,6 +176,11 @@ const createMockDb = (
         };
       }),
     })),
+    delete: vi.fn(() => ({
+      where: vi.fn((condition: unknown) => {
+        deletedEntryIds.push(condition as string[]);
+      }),
+    })),
   };
 
   const db = {
@@ -191,6 +197,7 @@ const createMockDb = (
     imageUpserts,
     attemptInserts,
     attemptConflictUpdates,
+    deletedEntryIds,
   };
 };
 
@@ -231,6 +238,36 @@ describe('syncSession persistence', () => {
         sequenceOrder: 1,
       },
     ]);
+  });
+
+  it('deletes entries listed in deletedEntryIds after upserts on re-sync', async () => {
+    const removedEntryId = syncSessionPayloadFixture.entries[1].id;
+    const mock = createMockDb();
+
+    await syncMocks.syncSession(
+      mock.db as never,
+      'user_123',
+      syncSessionPayloadFixture,
+    );
+    await syncMocks.syncSession(mock.db as never, 'user_123', {
+      ...syncSessionPayloadFixture,
+      entries: [syncSessionPayloadFixture.entries[0]],
+      deletedEntryIds: [removedEntryId],
+    });
+
+    expect(mock.entryUpserts).toHaveLength(3);
+    expect(mock.deletedEntryIds).toHaveLength(1);
+  });
+
+  it('does not delete entry ids that are still present in entries', async () => {
+    const mock = createMockDb();
+
+    await syncMocks.syncSession(mock.db as never, 'user_123', {
+      ...syncSessionPayloadFixture,
+      deletedEntryIds: [syncSessionPayloadFixture.entries[0].id],
+    });
+
+    expect(mock.deletedEntryIds).toHaveLength(0);
   });
 
   it('updates existing climb attempts on retry instead of inserting duplicates', async () => {

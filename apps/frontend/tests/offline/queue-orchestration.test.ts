@@ -16,6 +16,7 @@ const payloadFixture = (): SyncSessionPayload => ({
   endTime: '2026-05-18T12:00:00Z',
   totalDurationMs: 7_200_000,
   notes: '',
+  deletedEntryIds: [],
   entries: [],
 });
 

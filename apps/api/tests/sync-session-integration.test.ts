@@ -13,6 +13,7 @@ const userPayload = {
   totalDurationMs: 1433,
   notes: 's',
   entries: [],
+  deletedEntryIds: [],
 } satisfies SyncSessionPayload;
 
 const databaseUrl = env.DATABASE_URL ?? '';

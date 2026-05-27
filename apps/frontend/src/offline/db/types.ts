@@ -64,6 +64,7 @@ export interface SessionFormValues extends Pick<
   endTime: string | null;
   status: 'not_started' | 'active' | 'stopped';
   entries: SessionFormEntry[];
+  deletedEntryIds: string[];
 }
 
 export const ACTIVE_DRAFT_SESSION_ID = 'active' as const;

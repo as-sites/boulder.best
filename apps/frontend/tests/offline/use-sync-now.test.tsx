@@ -165,6 +165,7 @@ describe('post-sync merged history', () => {
         endTime: '2026-05-22T11:00:00.000Z',
         totalDurationMs: 3_600_000,
         notes: '',
+        deletedEntryIds: [],
         entries: [],
       },
       status: 'pending',

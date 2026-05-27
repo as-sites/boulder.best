@@ -42,6 +42,7 @@ export const syncSessionPayloadFixture = {
   endTime: '2026-05-13T12:00:00.000Z',
   totalDurationMs: 7_200_000,
   notes: 'Felt strong today.',
+  deletedEntryIds: [],
   entries: [
     {
       id: entryId,

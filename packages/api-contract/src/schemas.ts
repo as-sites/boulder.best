@@ -193,6 +193,11 @@ export const syncSessionPayloadSchema = z
     entries: z.array(syncSessionEntrySchema).openapi({
       description: 'Chronological list of climbs and breaks for this session',
     }),
+    deletedEntryIds: z.array(z.uuid()).optional().openapi({
+      description:
+        'Entry IDs removed on the client since the last sync; purged server-side after upserts',
+      example: [],
+    }),
   })
   .openapi('SyncSessionPayload');
 

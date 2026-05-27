@@ -30,6 +30,7 @@ const sessionFormFixture = (): SessionFormValues => ({
   totalDurationMs: 0,
   notes: '',
   status: 'active',
+  deletedEntryIds: [],
   entries: [],
 });
 
@@ -40,6 +41,7 @@ const syncPayloadFixture = (): SyncSessionPayload => ({
   endTime: '2026-05-18T12:00:00Z',
   totalDurationMs: 7_200_000,
   notes: '',
+  deletedEntryIds: [],
   entries: [
     {
       id: 'entry-1',

@@ -544,6 +544,15 @@ exports[`OpenAPI document > serves OpenAPI JSON at /openapi.json > openapi-docum
       },
       "SyncSessionPayload": {
         "properties": {
+          "deletedEntryIds": {
+            "description": "Entry IDs removed on the client since the last sync; purged server-side after upserts",
+            "example": [],
+            "items": {
+              "format": "uuid",
+              "type": "string",
+            },
+            "type": "array",
+          },
           "endTime": {
             "example": "2026-05-13T12:00:00.000Z",
             "format": "date-time",
