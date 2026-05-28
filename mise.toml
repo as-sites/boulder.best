@@ -64,6 +64,7 @@ _.path = [
   "{{config_root}}/node_modules/.bin",
   "{{config_root}}/apps/frontend/node_modules/.bin",
   "{{config_root}}/apps/api/node_modules/.bin",
+  "{{config_root}}/apps/preview-gateway/node_modules/.bin",
 ]
 
 [hooks]

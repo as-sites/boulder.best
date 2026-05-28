@@ -197,3 +197,86 @@ mise run api:r2:cors:list
 `cdn` DNS record and certificate; no dashboard “Connect domain” step needed.
 
 `apps/api/r2-cors.json` is the source-controlled CORS rule file.
+
+## Preview deployments (pull requests)
+
+Per-PR previews use [Cloudflare Preview URLs](https://developers.cloudflare.com/workers/configuration/previews/) (`wrangler versions upload --preview-alias pr-<n>`) for `boulder-api` and `boulder-frontend`, plus a permanent gateway Worker on `*.preview.boulder.best` that reverse-proxies to the aliased `workers.dev` backends. Reviewers open a stable URL such as `https://pr-<n>.preview.boulder.best` with same-origin `/api` routing (like production), so email/password auth and passkeys work with `PASSKEY_RP_ID=boulder.best`.
+
+Production and PR previews both deploy automatically from `.github/workflows/deploy.yml` after CI passes. Main uses `wrangler deploy`; pull requests use `wrangler versions upload` with preview aliases (production routes on `boulder.best` are untouched).
+
+### Architecture
+
+```text
+Browser → pr-<n>.preview.boulder.best (boulder-preview-gateway)
+  /api/*  → https://pr-<n>-boulder-api.<subdomain>.workers.dev
+  /*      → https://pr-<n>-boulder-frontend.<subdomain>.workers.dev
+```
+
+Each preview API version uses a dedicated Neon branch (`pr-<n>`) for `DATABASE_URL`. Other Worker secrets inherit from the production Worker account (v1).
+
+### One-time gateway setup
+
+Deploy the gateway Worker once and set your account `workers.dev` subdomain:
+
+```powershell
+# Subdomain is shown by `wrangler whoami` (e.g. boulder-dot-best)
+mise run preview-gateway:deploy
+```
+
+Update `WORKERS_SUBDOMAIN` in `apps/preview-gateway/wrangler.jsonc` (production vars) or override via the dashboard if it differs from the committed placeholder. Wrangler attaches the wildcard route `*.preview.boulder.best/*` on the `boulder.best` zone.
+
+### GitHub Actions
+
+`.github/workflows/deploy.yml` runs after CI succeeds:
+
+| Trigger                     | Job               | Action                                              |
+| --------------------------- | ----------------- | --------------------------------------------------- |
+| Push to `main` (CI success) | `deploy`          | Production `wrangler deploy`                        |
+| Pull request (CI success)   | `preview`         | Neon branch, migrate, `versions upload`, PR comment |
+| Pull request closed         | `preview-cleanup` | Delete Neon branch `pr-<number>`                    |
+
+Preview deploy steps:
+
+1. Creates (or reuses) Neon branch `pr-<number>`
+2. Runs `mise run api:db:migrate` against the branch
+3. Uploads API + frontend preview versions with alias `pr-<number>`
+4. Comments on the PR with `https://pr-<number>.preview.boulder.best`
+
+**Repository secrets / variables:**
+
+| Name                    | Type     | Purpose                     |
+| ----------------------- | -------- | --------------------------- |
+| `CLOUDFLARE_API_TOKEN`  | secret   | Versions upload (existing)  |
+| `CLOUDFLARE_ACCOUNT_ID` | secret   | Wrangler account (existing) |
+| `NEON_API_KEY`          | secret   | Neon branch create/delete   |
+| `NEON_PROJECT_ID`       | variable | Neon project ID             |
+
+### Local preview upload (manual)
+
+```powershell
+$env:PREVIEW_ALIAS = "pr-123"
+$env:PREVIEW_ORIGIN = "https://pr-123.preview.boulder.best"
+$env:PREVIEW_SECRETS_FILE = ".env"   # must include DATABASE_URL
+mise run api:preview:upload
+mise run frontend:preview:upload
+```
+
+Do not set `VITE_API_BASE_URL` for preview frontend builds — the gateway serves API routes on the same origin.
+
+### Manual smoke test
+
+1. Open a test PR and wait for the preview bot comment.
+2. Load the SPA at `https://pr-<n>.preview.boulder.best`.
+3. `GET /api/health` should return `{ "ok": true }` (or the current health payload).
+4. Exercise email/password sign-up and sign-in.
+5. Optional: passkey register + sign-in (`PASSKEY_RP_ID=boulder.best`).
+6. Confirm `https://boulder.best` is unchanged after a preview upload.
+
+Preview deploys use the same Sentry repository secrets as production (`VITE_SENTRY_DSN_FRONTEND`, `SENTRY_AUTH_TOKEN`, org/project slugs). Release IDs use the PR head commit SHA. API runtime reporting uses the production Worker `SENTRY_DSN_API` secret (inherited on `versions upload`).
+
+### Known limitations (v1)
+
+- OAuth redirect URIs are not registered for preview hosts.
+- Preview Worker logs are limited compared to routed production Workers.
+- R2 uses the shared production bucket.
+- Underlying `*.workers.dev` preview URLs remain publicly reachable; use the gateway URL for review.

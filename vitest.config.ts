@@ -52,6 +52,13 @@ export default defineConfig({
       },
       {
         test: {
+          name: 'apps/preview-gateway',
+          include: ['apps/preview-gateway/tests/**/*.test.ts'],
+          environment: 'node',
+        },
+      },
+      {
+        test: {
           name: 'packages/api-contract',
           include: ['packages/api-contract/tests/**/*.test.{ts,tsx}'],
           environment: 'node',

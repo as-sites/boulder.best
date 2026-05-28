@@ -1,21 +1,21 @@
 {
   "$schema": "https://unpkg.com/wrangler@latest/config-schema.json",
-  "name": "boulder-frontend",
-  "preview_urls": true,
+  "name": "boulder-preview-gateway",
+  "main": "src/index.ts",
   "compatibility_date": "2026-05-13",
-  "assets": {
-    "directory": "./dist",
-    "not_found_handling": "single-page-application"
-  },
   "env": {
     "production": {
-      "name": "boulder-frontend",
+      "name": "boulder-preview-gateway",
       "routes": [
         {
-          "pattern": "boulder.best",
-          "custom_domain": true
+          "pattern": "*.preview.boulder.best/*",
+          "zone_name": "boulder.best"
         }
-      ]
+      ],
+      "vars": {
+        // Set to your account workers.dev subdomain (from `wrangler whoami`).
+        "WORKERS_SUBDOMAIN": ""
+      }
     }
   },
   "observability": {

@@ -129,3 +129,21 @@ depends = ["r2:domain:ensure", "r2:cors:apply"]
 alias = ["api:auth:generate-schema"]
 description = "Regenerate better-auth Drizzle schema (re-run after adding plugins)"
 run = "pnpm dlx @better-auth/cli generate --output ../../packages/auth/src/schema.ts"
+
+[tasks."preview:upload"]
+alias = ["api:preview:upload"]
+description = "Upload a preview API Worker version (PREVIEW_ALIAS, PREVIEW_ORIGIN, PREVIEW_SECRETS_FILE)"
+depends = ["build"]
+run = '''
+: "${PREVIEW_ALIAS:?PREVIEW_ALIAS is required}"
+: "${PREVIEW_ORIGIN:?PREVIEW_ORIGIN is required}"
+: "${PREVIEW_SECRETS_FILE:?PREVIEW_SECRETS_FILE is required}"
+wrangler versions upload --env production --outdir dist \
+  --preview-alias "$PREVIEW_ALIAS" \
+  --secrets-file "$PREVIEW_SECRETS_FILE" \
+  --var "BETTER_AUTH_URL:$PREVIEW_ORIGIN" \
+  --var "FRONTEND_URL:$PREVIEW_ORIGIN" \
+  --var "PASSKEY_ORIGIN:$PREVIEW_ORIGIN" \
+  --var "PASSKEY_RP_ID:boulder.best" \
+  --var "SENTRY_RELEASE_API:${SENTRY_RELEASE_API:-${GITHUB_SHA:-}}"
+'''

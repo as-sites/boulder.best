@@ -1,10 +1,14 @@
-# Deploy boulder-frontend and boulder-api to Cloudflare after CI passes on main.
+# Deploy production (main) and PR previews after CI passes.
+#
+# Production (push to main): wrangler deploy for frontend + API.
+# Pull requests: Neon branch + wrangler versions upload with preview alias pr-<n>.
 #
 # Required repository secrets (Settings → Secrets and variables → Actions):
 #   CLOUDFLARE_API_TOKEN  — API token with Workers Scripts + Workers Routes + R2 (zone boulder.best)
 #   CLOUDFLARE_ACCOUNT_ID — Cloudflare account ID (wrangler whoami)
 #   CLOUDFLARE_ZONE_ID    — Zone ID for boulder.best (R2 custom domain / wrangler tasks)
 #   DATABASE_URL          — Neon connection string for production migrations (api:db:migrate)
+#   NEON_API_KEY          — Neon API key (PR preview branch create/delete)
 #   VITE_SENTRY_DSN_FRONTEND     — Sentry DSN baked into the production frontend bundle
 #   SENTRY_AUTH_TOKEN            — Sentry auth token with release + org:read + project:releases
 #   SENTRY_ORG                   — Sentry organization slug
@@ -13,33 +17,52 @@
 #   SENTRY_DSN_API               — API Worker Sentry DSN (wrangler secret; not used in this workflow)
 #   DISCORD_DEPLOY_WEBHOOK_URL   — Discord webhook URL for deploy failure alerts
 #
+# Required repository variables:
+#   NEON_PROJECT_ID       — Neon project ID (PR previews)
+#
 # API Worker runtime secrets (DATABASE_URL, BETTER_AUTH_SECRET, OAuth keys, etc.) are set on
 # the Worker in Cloudflare, not from this workflow. Sync once locally: mise run secrets:sync:cloudflare
 
 name: Deploy
 
 on:
+  pull_request:
+    types: [closed]
+    branches-ignore:
+      - '**/graphite-base/**'
   workflow_run:
     workflows: [CI]
     types: [completed]
-    branches: [main]
   workflow_dispatch:
 
 concurrency:
-  group: deploy-${{ github.workflow }}-${{ github.event.workflow_run.head_branch || github.ref_name }}
+  group: >-
+    ${{
+      github.event_name == 'pull_request' &&
+        format('preview-cleanup-pr-{0}', github.event.pull_request.number) ||
+      github.event.workflow_run.event == 'pull_request' &&
+        format('preview-pr-{0}', github.event.workflow_run.pull_requests[0].number) ||
+      format('deploy-{0}', github.event.workflow_run.head_branch || github.ref_name)
+    }}
   cancel-in-progress: true
 
 permissions:
   actions: read
   contents: read
   deployments: write
+  pull-requests: write
 
 jobs:
   deploy:
     name: Deploy to Cloudflare
     if: >-
       github.event_name == 'workflow_dispatch' ||
-      github.event.workflow_run.conclusion == 'success'
+      (
+        github.event_name == 'workflow_run' &&
+        github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.event == 'push' &&
+        github.event.workflow_run.head_branch == 'main'
+      )
     runs-on: blacksmith-2vcpu-ubuntu-2404
     timeout-minutes: 30
     environment:
@@ -154,3 +177,127 @@ jobs:
             -X POST \
             --data "$payload" \
             "$DISCORD_DEPLOY_WEBHOOK_URL"
+
+  preview:
+    name: Deploy PR preview
+    if: >-
+      github.event_name == 'workflow_run' &&
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.pull_requests[0] != null
+    runs-on: blacksmith-2vcpu-ubuntu-2404
+    timeout-minutes: 30
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      GITHUB_SHA: ${{ github.event.workflow_run.head_sha }}
+      PR_NUMBER: ${{ github.event.workflow_run.pull_requests[0].number }}
+      PREVIEW_ALIAS: pr-${{ github.event.workflow_run.pull_requests[0].number }}
+      PREVIEW_ORIGIN: https://pr-${{ github.event.workflow_run.pull_requests[0].number }}.preview.boulder.best
+      VITE_SENTRY_RELEASE_FRONTEND: ${{ github.event.workflow_run.head_sha }}
+      VITE_SENTRY_DSN_FRONTEND: ${{ secrets.VITE_SENTRY_DSN_FRONTEND }}
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+      SENTRY_PROJECT_FRONTEND: ${{ secrets.SENTRY_PROJECT_FRONTEND }}
+      SENTRY_PROJECT_API: ${{ secrets.SENTRY_PROJECT_API }}
+      SENTRY_RELEASE_API: ${{ github.event.workflow_run.head_sha }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Setup CI
+        uses: ./.github/actions/setup-ci
+
+      - name: Create Neon branch
+        id: neon-branch
+        uses: neondatabase/create-branch-action@v6
+        with:
+          api_key: ${{ secrets.NEON_API_KEY }}
+          project_id: ${{ vars.NEON_PROJECT_ID }}
+          branch_name: ${{ env.PREVIEW_ALIAS }}
+
+      - name: Apply database migrations
+        env:
+          DATABASE_URL: ${{ steps.neon-branch.outputs.db_url_pooled }}
+        run: mise run api:db:migrate
+
+      - name: Write preview secrets file
+        env:
+          DATABASE_URL: ${{ steps.neon-branch.outputs.db_url_pooled }}
+        run: |
+          printf 'DATABASE_URL=%s\n' "$DATABASE_URL" > preview.secrets.env
+
+      - name: Upload API preview version
+        env:
+          PREVIEW_SECRETS_FILE: ${{ github.workspace }}/preview.secrets.env
+          DATABASE_URL: ${{ steps.neon-branch.outputs.db_url_pooled }}
+        run: mise run //apps/api:preview:upload
+
+      - name: Upload API source maps to Sentry
+        run: mise run api:sentry:sourcemaps
+
+      - name: Upload frontend preview version
+        run: mise run //apps/frontend:preview:upload
+
+      - name: Comment preview URL on pull request
+        uses: actions/github-script@ed597411d8f324910dbc2ad2aeeb9e1348ebb560 # v8
+        env:
+          PREVIEW_URL: ${{ env.PREVIEW_ORIGIN }}
+        with:
+          script: |
+            const marker = '<!-- boulder-preview-deployment -->';
+            const prNumber = Number(process.env.PR_NUMBER);
+            const previewUrl = process.env.PREVIEW_URL;
+            const body = [
+              marker,
+              '## Preview deployment',
+              '',
+              `**URL:** ${previewUrl}`,
+              '',
+              'Same-origin `/api` routing via the preview gateway. Email/password and passkeys use `PASSKEY_RP_ID=boulder.best`.',
+              '',
+              '_OAuth redirect URIs are not configured for preview hosts._',
+            ].join('\n');
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+            });
+
+            const existing = comments.find(
+              (comment) =>
+                comment.user?.type === 'Bot' &&
+                comment.body?.includes(marker),
+            );
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                body,
+              });
+            }
+
+  preview-cleanup:
+    name: Delete PR preview resources
+    if: github.event_name == 'pull_request'
+    runs-on: blacksmith-2vcpu-ubuntu-2404
+    timeout-minutes: 10
+    steps:
+      - name: Delete Neon branch
+        uses: neondatabase/delete-branch-action@v3
+        with:
+          api_key: ${{ secrets.NEON_API_KEY }}
+          project_id: ${{ vars.NEON_PROJECT_ID }}
+          branch: pr-${{ github.event.pull_request.number }}
