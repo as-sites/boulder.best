@@ -6,22 +6,14 @@ import {
 } from '../lib/timer/index.js';
 import type { ClimbFormEntry, SessionFormEntry } from '../offline/db/types.js';
 
-const pauseClimbTimers = (climb: ClimbFormEntry): ClimbFormEntry => {
-  let next = climb;
-
-  if (climb.timer.status === 'running') {
-    next = { ...next, timer: pauseTimer(climb.timer) };
-  }
-
-  return {
-    ...next,
-    climbAttempts: climb.climbAttempts.map((attempt) =>
-      attempt.timer.status === 'running'
-        ? { ...attempt, timer: pauseTimer(attempt.timer) }
-        : attempt,
-    ),
-  };
-};
+const pauseClimbTimers = (climb: ClimbFormEntry): ClimbFormEntry => ({
+  ...climb,
+  climbAttempts: climb.climbAttempts.map((attempt) =>
+    attempt.timer.status === 'running'
+      ? { ...attempt, timer: pauseTimer(attempt.timer) }
+      : attempt,
+  ),
+});
 
 export const pauseAllRunningClimbs = (
   entries: SessionFormEntry[],
@@ -77,7 +69,7 @@ export const applyBreakEnd = (
     return entries;
   }
 
-  let nextEntries = entries.map((entry, index) =>
+  const nextEntries = entries.map((entry, index) =>
     index === breakIndex
       ? { ...breakEntry, timer: stopTimer(breakEntry.timer) }
       : entry,
@@ -93,18 +85,23 @@ export const applyBreakEnd = (
 
   if (
     previousClimb?.type !== 'climb' ||
-    previousClimb.timer.status !== 'paused'
+    !previousClimb.climbAttempts.some((a) => a.timer.status === 'paused')
   ) {
     return nextEntries;
   }
 
-  nextEntries = nextEntries.map((entry, index) =>
+  return nextEntries.map((entry, index) =>
     index === previousClimbIndex
-      ? { ...previousClimb, timer: resumeTimer(previousClimb.timer) }
+      ? {
+          ...previousClimb,
+          climbAttempts: previousClimb.climbAttempts.map((attempt) =>
+            attempt.timer.status === 'paused'
+              ? { ...attempt, timer: resumeTimer(attempt.timer) }
+              : attempt,
+          ),
+        }
       : entry,
   );
-
-  return nextEntries;
 };
 
 export const applyBreakRemove = (
@@ -136,14 +133,21 @@ export const applyBreakRemove = (
 
   if (
     previousClimb?.type !== 'climb' ||
-    previousClimb.timer.status !== 'paused'
+    !previousClimb.climbAttempts.some((a) => a.timer.status === 'paused')
   ) {
     return withoutBreak;
   }
 
   return withoutBreak.map((entry, index) =>
     index === previousClimbIndex
-      ? { ...previousClimb, timer: resumeTimer(previousClimb.timer) }
+      ? {
+          ...previousClimb,
+          climbAttempts: previousClimb.climbAttempts.map((attempt) =>
+            attempt.timer.status === 'paused'
+              ? { ...attempt, timer: resumeTimer(attempt.timer) }
+              : attempt,
+          ),
+        }
       : entry,
   );
 };
@@ -160,8 +164,6 @@ export const finalizeEntryTimers = (
 
     return {
       ...entry,
-      timer:
-        entry.timer.status === 'stopped' ? entry.timer : stopTimer(entry.timer),
       climbAttempts: entry.climbAttempts.map((attempt) => ({
         ...attempt,
         timer:

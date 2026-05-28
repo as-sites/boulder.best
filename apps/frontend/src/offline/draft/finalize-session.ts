@@ -10,12 +10,13 @@ import type {
   SessionFormEntry,
   SessionFormValues,
   SyncQueueItem,
+  TimerState,
 } from '../db/types.js';
 import { draftSessionRepository } from '../repositories/draft-session-repository.js';
 import { syncQueueRepository } from '../repositories/sync-queue-repository.js';
 
 const resolveDurationMs = (
-  timer: SessionFormEntry['timer'],
+  timer: TimerState,
   storedDurationMs: number,
   now?: TimerNow,
 ): number => {

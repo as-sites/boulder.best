@@ -5,7 +5,10 @@ import {
   startTimer,
   type TimerNow,
 } from '../../src/lib/timer/index.js';
-import type { ClimbFormEntry } from '../../src/offline/db/types.js';
+import type {
+  BreakFormEntry,
+  ClimbFormEntry,
+} from '../../src/offline/db/types.js';
 import {
   createBreakEntry,
   createClimbEntry,
@@ -22,39 +25,55 @@ const fixedNow =
   () =>
     Temporal.Instant.fromEpochMilliseconds(epochMs);
 
-// const expectClimb = (entry: SessionFormEntry): ClimbFormEntry => {
-//   expect(entry.type).toBe('climb');
-//   return entry as ClimbFormEntry;
-// };
-
-const runningClimb = (): ClimbFormEntry => {
+/** A climb whose first attempt is running. */
+const climbWithRunningAttempt = (): ClimbFormEntry => {
   const climb = createClimbEntry(0, 'Climb 1');
   return {
     ...climb,
-    timer: startTimer(climb.timer, fixedNow(0)),
+    climbAttempts: [
+      {
+        ...climb.climbAttempts[0],
+        timer: startTimer(createIdleTimer(), fixedNow(0)),
+      },
+    ],
+  };
+};
+
+/** A climb whose first attempt is paused. */
+const climbWithPausedAttempt = (): ClimbFormEntry => {
+  const climb = createClimbEntry(0, 'Climb 1');
+  return {
+    ...climb,
+    climbAttempts: [
+      {
+        ...climb.climbAttempts[0],
+        timer: pauseTimer(
+          startTimer(createIdleTimer(), fixedNow(0)),
+          fixedNow(1000),
+        ),
+      },
+    ],
   };
 };
 
 describe('timer orchestration', () => {
-  it('pauses running climb timers when a break starts', () => {
-    const entries = [runningClimb(), createBreakEntry(1)];
+  it('pauses running attempt timers when a break starts', () => {
+    const entries = [climbWithRunningAttempt(), createBreakEntry(1)];
     const next = applyBreakStart(entries, 1);
 
     expect(next[0]?.type).toBe('climb');
-    expect(next[0]?.timer.status).toBe('paused');
+    const climb = next[0] as ClimbFormEntry;
+    expect(climb.climbAttempts[0]?.timer.status).toBe('paused');
 
     expect(next[1]?.type).toBe('break');
-    expect(next[1]?.timer.status).toBe('running');
+    expect((next[1] as BreakFormEntry | undefined)?.timer.status).toBe(
+      'running',
+    );
   });
 
-  it('ends a break and resumes the previous paused climb', () => {
-    const climb = runningClimb();
-    const pausedClimb = {
-      ...climb,
-      timer: pauseTimer(climb.timer, fixedNow(1000)),
-    };
+  it('ends a break and resumes paused attempt timers on the previous climb', () => {
     const entries = [
-      pausedClimb,
+      climbWithPausedAttempt(),
       {
         ...createBreakEntry(1),
         timer: startTimer(createIdleTimer(), fixedNow(1000)),
@@ -64,20 +83,18 @@ describe('timer orchestration', () => {
     const next = applyBreakEnd(entries, 1);
 
     expect(next[1]?.type).toBe('break');
-    expect(next[1]?.timer.status).toBe('stopped');
+    expect((next[1] as BreakFormEntry | undefined)?.timer.status).toBe(
+      'stopped',
+    );
 
     expect(next[0]?.type).toBe('climb');
-    expect(next[0]?.timer.status).toBe('running');
+    const climb = next[0] as ClimbFormEntry;
+    expect(climb.climbAttempts[0]?.timer.status).toBe('running');
   });
 
-  it('removes an active break and resumes the previous paused climb', () => {
-    const climb = runningClimb();
-    const pausedClimb = {
-      ...climb,
-      timer: pauseTimer(climb.timer, fixedNow(1000)),
-    };
+  it('removes an active break and resumes paused attempt timers on the previous climb', () => {
     const entries = [
-      pausedClimb,
+      climbWithPausedAttempt(),
       {
         ...createBreakEntry(1),
         timer: startTimer(createIdleTimer(), fixedNow(1000)),
@@ -88,15 +105,32 @@ describe('timer orchestration', () => {
 
     expect(next).toHaveLength(1);
     expect(next[0]?.type).toBe('climb');
-    expect(next[0]?.timer.status).toBe('running');
+    const climb = next[0] as ClimbFormEntry;
+    expect(climb.climbAttempts[0]?.timer.status).toBe('running');
   });
 
   it('pauseAllRunningClimbs leaves breaks unchanged', () => {
-    const entries = [runningClimb(), createBreakEntry(1)];
+    const entries = [climbWithRunningAttempt(), createBreakEntry(1)];
     const next = pauseAllRunningClimbs(entries);
 
     expect(next[1]).toEqual(entries[1]);
     expect(next[0]?.type).toBe('climb');
-    expect(next[0]?.timer.status).toBe('paused');
+    const climb = next[0] as ClimbFormEntry;
+    expect(climb.climbAttempts[0]?.timer.status).toBe('paused');
+  });
+
+  it('does not resume attempts on previous climb if none were paused', () => {
+    const climb = createClimbEntry(0, 'Climb 1');
+    const entries = [
+      climb,
+      {
+        ...createBreakEntry(1),
+        timer: startTimer(createIdleTimer(), fixedNow(0)),
+      },
+    ];
+
+    const next = applyBreakEnd(entries, 1);
+
+    expect(next[0]).toEqual(climb);
   });
 });

@@ -12,38 +12,35 @@ export const countClimbsInEntries = (entries: SessionFormEntry[]): number =>
 export const defaultClimbName = (climbIndex: number): string =>
   `Climb ${climbIndex + 1}`;
 
-export const createClimbAttempt = (
-  sequenceOrder: number,
-): ClimbAttemptFormEntry => ({
-  sequenceOrder,
-  durationMs: 0,
-  completed: false,
-  notes: '',
-  timer: createIdleTimer(),
-});
+export const createClimbAttempt = (sequenceOrder: number) =>
+  ({
+    sequenceOrder,
+    durationMs: 0,
+    completed: false,
+    notes: '',
+    timer: createIdleTimer(),
+  }) as const satisfies ClimbAttemptFormEntry;
 
-export const createClimbEntry = (
-  sequenceOrder: number,
-  name: string,
-): ClimbFormEntry => ({
-  id: crypto.randomUUID(),
-  sequenceOrder,
-  type: 'climb',
-  name,
-  grade: '',
-  notes: '',
-  durationMs: 0,
-  timer: createIdleTimer(),
-  climbAttempts: [createClimbAttempt(0)],
-});
+export const createClimbEntry = (sequenceOrder: number, name: string) =>
+  ({
+    id: crypto.randomUUID(),
+    sequenceOrder,
+    type: 'climb',
+    name,
+    grade: '',
+    notes: '',
+    durationMs: 0,
+    climbAttempts: [createClimbAttempt(0)],
+  }) as const satisfies ClimbFormEntry;
 
-export const createBreakEntry = (sequenceOrder: number): BreakFormEntry => ({
-  id: crypto.randomUUID(),
-  sequenceOrder,
-  type: 'break',
-  durationMs: 0,
-  timer: createIdleTimer(),
-});
+export const createBreakEntry = (sequenceOrder: number) =>
+  ({
+    id: crypto.randomUUID(),
+    sequenceOrder,
+    type: 'break',
+    durationMs: 0,
+    timer: createIdleTimer(),
+  }) as const satisfies BreakFormEntry;
 
 export const resequenceEntries = (
   entries: SessionFormEntry[],

@@ -27,11 +27,6 @@ const stoppedSessionFixture = (): SessionFormValues => ({
       grade: 'V3',
       notes: '',
       durationMs: 0,
-      timer: {
-        accumulatedDurationMs: 30_000,
-        activeStartTime: null,
-        status: 'stopped',
-      },
       climbAttempts: [
         {
           sequenceOrder: 0,
