@@ -1,21 +1,27 @@
-const PREVIEW_HOST_RE = /^(pr-\d+)\.boulder\.best$/i;
+const PREVIEW_HOST_RE = /^(\d+)-pr\.boulder\.best$/i;
 
-/** Preview custom-domain host for alias `pr-<n>` (no port). */
-export const previewHostFromAlias = (alias: string): string =>
-  `${alias}.boulder.best`;
+/**
+ * Preview custom-domain host for alias `pr-<n>` (no port). e.g.
+ * `42-pr.boulder.best`
+ */
+export const previewHostFromAlias = (alias: string): string => {
+  const n = alias.replace(/^pr-/i, '');
+  return `${n}-pr.boulder.best`;
+};
 
-/** HTTPS origin served by the gateway (`https://pr-<n>.boulder.best`). */
+/** HTTPS origin served by the gateway (`https://<n>-pr.boulder.best`). */
 export const previewOriginFromAlias = (alias: string): string =>
   `https://${previewHostFromAlias(alias)}`;
 
 /**
- * Parse `pr-<n>` from `Host` (e.g. `pr-42.preview.boulder.best`). Returns null
+ * Parse `pr-<n>` alias from `Host` (e.g. `42-pr.boulder.best`). Returns null
  * when the host is not a preview subdomain.
  */
 export const parsePreviewAliasFromHost = (host: string): string | null => {
   const hostname = host.split(':')[0]?.trim().toLowerCase() ?? '';
   const match = PREVIEW_HOST_RE.exec(hostname);
-  return match?.[1]?.toLowerCase() ?? null;
+  const n = match?.[1];
+  return typeof n === 'string' ? `pr-${n}` : null;
 };
 
 export type PreviewUpstreamTarget = 'api' | 'frontend';
