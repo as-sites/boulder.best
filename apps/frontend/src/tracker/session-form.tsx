@@ -379,7 +379,7 @@ export const SessionForm = ({ initialValues, onStopped }: SessionFormProps) => {
         <Box
           bg="var(--mantine-color-body)"
           bottom={0}
-          left="var(--app-shell-navbar-width, 0px)"
+          left={0}
           pos="fixed"
           pt="xs"
           pb="calc(var(--mantine-spacing-md) + env(safe-area-inset-bottom, 0px))"
