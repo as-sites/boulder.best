@@ -1,33 +1,10 @@
-amends "package://github.com/jdx/hk/releases/download/v1.45.0/hk@1.45.0#/Config.pkl"
-import "package://github.com/jdx/hk/releases/download/v1.45.0/hk@1.45.0#/Builtins.pkl"
+amends "package://github.com/jdx/hk/releases/download/v1.46.0/hk@1.46.0#/Config.pkl"
+import "package://github.com/jdx/hk/releases/download/v1.46.0/hk@1.46.0#/Builtins.pkl"
 
 local linters = new Mapping<String, Step> {
     ["check-merge-conflict"] = Builtins.check_merge_conflict
     ["ox-lint"] = Builtins.ox_lint
-// ["oxfmt"] = Builtins.oxfmt
-    ["oxfmt"] {
-        glob = List(
-            "**/*.js",
-            "**/*.jsx",
-            "**/*.mjs",
-            "**/*.cjs",
-            "**/*.ts",
-            "**/*.tsx",
-            "**/*.mts",
-            "**/*.cts",
-            "**/*.json",
-            "**/*.jsonc",
-            "**/*.json5",
-            "**/*.yaml",
-            "**/*.yml",
-            "**/*.md",
-            "**/*.css",
-            "**/*.toml"
-        )
-        check = "oxfmt --no-error-on-unmatched-pattern --check {{files}}"
-        check_list_files = "oxfmt --no-error-on-unmatched-pattern --list-different {{files}}"
-        fix = "oxfmt --no-error-on-unmatched-pattern --write {{files}}"
-    }
+    ["oxfmt"] = Builtins.oxfmt
 }
 
 hooks {

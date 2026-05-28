@@ -8,7 +8,7 @@
       "name": "boulder-preview-gateway",
       "routes": [
         {
-          "pattern": "*.preview.boulder.best/*",
+          "pattern": "*-pr.boulder.best/*",
           "zone_name": "boulder.best"
         }
       ],
