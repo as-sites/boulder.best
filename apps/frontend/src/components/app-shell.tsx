@@ -15,6 +15,7 @@ import { AppShellMainNavLinks } from './app-shell-nav.js';
 import { AppShellSessionTimer } from './app-shell-session-timer.js';
 import { AppUserMenu } from './app-user-menu.js';
 import { BrowserSupportBanner } from './browser-support-banner.js';
+import { ServiceWorkerUpdateBanner } from './service-worker-update-banner.js';
 
 const HEADER_HEIGHT = 56;
 const NAVBAR_WIDTH = 280;
@@ -49,6 +50,7 @@ export const AppShell = () => {
   return (
     <>
       <SyncQueueCoordinator />
+      <ServiceWorkerUpdateBanner />
       <MantineAppShell
         header={{ height: `calc(${HEADER_HEIGHT}px + ${safeAreaTop})` }}
         navbar={{
