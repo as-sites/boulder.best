@@ -8,6 +8,10 @@ import {
   Title,
 } from '@mantine/core';
 import { Link } from '@tanstack/react-router';
+import {
+  CHROME_DOWNLOAD_URL,
+  MIN_CHROME_VERSION,
+} from '../lib/browser-support.js';
 
 interface FaqItem {
   question: string;
@@ -82,6 +86,25 @@ const faqItems: FaqItem[] = [
         Photos you attach during a session are saved locally first. When a
         session syncs successfully, images are uploaded to secure cloud storage
         and linked to that session on the server.
+      </Text>
+    ),
+  },
+  {
+    question: 'What browsers are supported?',
+    answer: (
+      <Text size="sm">
+        Boulder Best is officially supported on Google Chrome version{' '}
+        {MIN_CHROME_VERSION} and newer for desktop and Android. Safari is not
+        supported. iOS is not supported—we do not support iPhone or iPad as a
+        platform (including Add to Home Screen from Safari or other in-app
+        browsers). Firefox may work but is not supported. Chrome on iOS may work
+        but is not supported. Samsung Internet, Microsoft Edge, and other
+        browsers are not supported. Progressive web app install is only
+        available in supported Chrome on desktop and Android. Download Chrome at{' '}
+        <Anchor href={CHROME_DOWNLOAD_URL} rel="noopener noreferrer" size="sm">
+          google.com/chrome
+        </Anchor>
+        .
       </Text>
     ),
   },
