@@ -17,6 +17,8 @@
     "@tanstack/react-router": "1.170.8",
     "@trendcapital/react-hook-form-mantine": "4.1.16",
     "better-auth": "1.6.11",
+    "browser-dtector": "4.1.1",
+    "clsx": "catalog:",
     "dexie": "4.4.2",
     "dexie-react-hooks": "4.4.0",
     "hono": "catalog:",
@@ -25,8 +27,7 @@
     "react-dom": "catalog:",
     "react-hook-form": "7.76.1",
     "workbox-window": "7.4.1",
-    "zod": "catalog:",
-    "clsx": "catalog:"
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@better-auth/core": "catalog:better-auth",

@@ -1,12 +1,11 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { MantineProvider } from '@mantine/core';
 import { fireEvent, render, screen, within } from '@testing-library/react';
-import {
-  BrowserSupportBanner,
-  browserSupportBannerMessage,
-} from '../../src/components/browser-support-banner.js';
+import { BrowserSupportBanner } from '../../src/components/browser-support-banner.js';
 import {
   BROWSER_SUPPORT_BANNER_DISMISSED_KEY,
+  browserSupportBannerDetails,
+  browserSupportBannerSummary,
   CHROME_DOWNLOAD_URL,
 } from '../../src/lib/browser-support.js';
 
@@ -31,7 +30,8 @@ describe('browser support banner', () => {
   it('shows the Chrome-only message on unsupported browsers', () => {
     renderBanner();
 
-    expect(screen.getByText(browserSupportBannerMessage)).toBeInTheDocument();
+    expect(screen.getByText(browserSupportBannerSummary)).toBeInTheDocument();
+    expect(screen.getByText(browserSupportBannerDetails)).toBeInTheDocument();
     expect(screen.getByText(/You are using Safari/)).toBeInTheDocument();
     expect(
       screen.getByRole('link', { name: 'google.com/chrome' }),
@@ -45,7 +45,7 @@ describe('browser support banner', () => {
     fireEvent.click(within(alert).getByRole('button'));
 
     expect(
-      screen.queryByText(browserSupportBannerMessage),
+      screen.queryByText(browserSupportBannerSummary),
     ).not.toBeInTheDocument();
     expect(
       window.localStorage.getItem(BROWSER_SUPPORT_BANNER_DISMISSED_KEY),
@@ -53,7 +53,7 @@ describe('browser support banner', () => {
 
     renderBanner();
     expect(
-      screen.queryByText(browserSupportBannerMessage),
+      screen.queryByText(browserSupportBannerSummary),
     ).not.toBeInTheDocument();
   });
 });

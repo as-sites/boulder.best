@@ -93,11 +93,14 @@ const faqItems: FaqItem[] = [
     question: 'What browsers are supported?',
     answer: (
       <Text size="sm">
-        Boulder Best is supported on Google Chrome version {MIN_CHROME_VERSION}{' '}
-        and newer. Safari is not supported. Firefox and iOS may work but are not
-        supported. Samsung Internet, Microsoft Edge, and other browsers are not
-        supported. Progressive web app install is only available in supported
-        Chrome versions. Download Chrome at{' '}
+        Boulder Best is officially supported on Google Chrome version{' '}
+        {MIN_CHROME_VERSION} and newer for desktop and Android. Safari is not
+        supported. iOS is not supported—we do not support iPhone or iPad as a
+        platform (including Add to Home Screen from Safari or other in-app
+        browsers). Firefox may work but is not supported. Chrome on iOS may work
+        but is not supported. Samsung Internet, Microsoft Edge, and other
+        browsers are not supported. Progressive web app install is only
+        available in supported Chrome on desktop and Android. Download Chrome at{' '}
         <Anchor href={CHROME_DOWNLOAD_URL} rel="noopener noreferrer" size="sm">
           google.com/chrome
         </Anchor>

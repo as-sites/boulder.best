@@ -1,15 +1,14 @@
-import { Alert, Anchor, Text } from '@mantine/core';
+import { Alert, Anchor, Stack, Text } from '@mantine/core';
 import { useLocalStorage } from '@mantine/hooks';
 import {
   BROWSER_SUPPORT_BANNER_DISMISSED_KEY,
+  browserSupportBannerDetails,
+  browserSupportBannerSummary,
   CHROME_DOWNLOAD_URL,
   getBrowserSupportStatus,
-  MIN_CHROME_VERSION,
 } from '../lib/browser-support.js';
 
 export const browserSupportBannerTitle = 'Unsupported browser';
-
-export const browserSupportBannerMessage = `Boulder Best is only supported on Google Chrome ${MIN_CHROME_VERSION} and up. Safari is not supported. Firefox and iOS may work but are not supported.`;
 
 export const BrowserSupportBanner = () => {
   const [dismissed, setDismissed] = useLocalStorage({
@@ -34,16 +33,23 @@ export const BrowserSupportBanner = () => {
       variant="light"
       withCloseButton
     >
-      <Text fw={600} size="md">
-        {browserSupportBannerMessage}
-      </Text>
-      <Text mt="xs" size="sm">
-        You are using {support.browserName}. Get Google Chrome at{' '}
-        <Anchor href={CHROME_DOWNLOAD_URL} rel="noopener noreferrer" size="sm">
-          google.com/chrome
-        </Anchor>
-        .
-      </Text>
+      <Stack gap="xs">
+        <Text fw={600} size="md">
+          {browserSupportBannerSummary}
+        </Text>
+        <Text size="sm">{browserSupportBannerDetails}</Text>
+        <Text size="sm">
+          You are using {support.browserName}. Get Google Chrome at{' '}
+          <Anchor
+            href={CHROME_DOWNLOAD_URL}
+            rel="noopener noreferrer"
+            size="sm"
+          >
+            google.com/chrome
+          </Anchor>
+          .
+        </Text>
+      </Stack>
     </Alert>
   );
 };

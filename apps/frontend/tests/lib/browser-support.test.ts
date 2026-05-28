@@ -1,8 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  getBrowserDisplayName,
   getBrowserSupportStatus,
-  isGoogleChromeUserAgent,
   MIN_CHROME_VERSION,
 } from '../../src/lib/browser-support.js';
 
@@ -12,40 +10,12 @@ const samsungUa =
 const chromeUa = (version: number) =>
   `Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 Chrome/${version}.0.0.0 Mobile Safari/537.36`;
 
-describe('browser display name', () => {
-  it('labels Samsung Internet from the user agent', () => {
-    expect(getBrowserDisplayName(samsungUa)).toBe('Samsung Internet');
-  });
-});
-
-describe('Google Chrome user agent detection', () => {
-  it('accepts Chrome user agents', () => {
-    expect(isGoogleChromeUserAgent(chromeUa(MIN_CHROME_VERSION))).toBe(true);
-  });
-
-  it('rejects Firefox', () => {
-    expect(
-      isGoogleChromeUserAgent(
-        'Mozilla/5.0 (Windows NT 10.0; rv:150.0) Gecko/20100101 Firefox/150.0',
-      ),
-    ).toBe(false);
-  });
-
-  it('rejects Safari', () => {
-    expect(
-      isGoogleChromeUserAgent(
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15',
-      ),
-    ).toBe(false);
-  });
-});
-
 describe('browser support status', () => {
-  it('rejects Samsung Internet', () => {
+  it('rejects Samsung Browser', () => {
     expect(getBrowserSupportStatus(samsungUa, true)).toEqual({
       supported: false,
       reason: 'not-chrome',
-      browserName: 'Samsung Internet',
+      browserName: 'Samsung Browser',
     });
   });
 
@@ -58,7 +28,7 @@ describe('browser support status', () => {
     ).toEqual({
       supported: false,
       reason: 'not-chrome',
-      browserName: 'Firefox',
+      browserName: 'Mozilla Firefox',
     });
   });
 
@@ -87,7 +57,7 @@ describe('browser support status', () => {
     expect(getBrowserSupportStatus(chromeUa(120), true)).toEqual({
       supported: false,
       reason: 'outdated-chrome',
-      browserName: 'Chrome',
+      browserName: 'Google Chrome',
     });
   });
 
@@ -97,7 +67,7 @@ describe('browser support status', () => {
     ).toEqual({
       supported: false,
       reason: 'missing-temporal',
-      browserName: 'Chrome',
+      browserName: 'Google Chrome',
     });
   });
 });
