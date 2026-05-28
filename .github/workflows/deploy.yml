@@ -242,7 +242,7 @@ jobs:
         run: mise run //apps/frontend:preview:upload
 
       - name: Comment preview URL on pull request
-        uses: actions/github-script@ed597411d8f324910dbc2ad2aeeb9e1348ebb560 # v8
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
         env:
           PREVIEW_URL: ${{ env.PREVIEW_ORIGIN }}
         with:
