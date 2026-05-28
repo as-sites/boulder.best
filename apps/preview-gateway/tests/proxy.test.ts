@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   buildPreviewUpstreamUrl,
   parsePreviewAliasFromHost,
+  previewHostFromAlias,
   previewOriginFromAlias,
   previewWorkersDevHost,
   resolvePreviewUpstreamTarget,
@@ -14,14 +15,14 @@ const ALIAS = 'pr-42';
 
 describe('preview host parsing', () => {
   it('parses pr-<n> from the preview host', () => {
-    expect(parsePreviewAliasFromHost('pr-42.boulder.best')).toBe('pr-42');
-    expect(parsePreviewAliasFromHost('PR-7.boulder.best:443')).toBe('pr-7');
+    expect(parsePreviewAliasFromHost('42-pr.boulder.best')).toBe('pr-42');
+    expect(parsePreviewAliasFromHost('7-PR.boulder.best:443')).toBe('pr-7');
   });
 
   it('rejects non-preview hosts', () => {
     expect(parsePreviewAliasFromHost('boulder.best')).toBeNull();
     expect(parsePreviewAliasFromHost('staging.boulder.best')).toBeNull();
-    expect(parsePreviewAliasFromHost('pr-abc.boulder.best')).toBeNull();
+    expect(parsePreviewAliasFromHost('abc-pr.boulder.best')).toBeNull();
   });
 });
 
@@ -42,7 +43,7 @@ describe('upstream URL construction', () => {
   it('builds API upstream URLs for /api/*', () => {
     const url = buildPreviewUpstreamUrl(
       ALIAS,
-      new URL('https://pr-42.boulder.best/api/health?x=1'),
+      new URL(`https://${previewHostFromAlias(ALIAS)}/api/health?x=1`),
       SUBDOMAIN,
     );
     expect(url.hostname).toBe(previewWorkersDevHost(ALIAS, 'api', SUBDOMAIN));
@@ -53,7 +54,7 @@ describe('upstream URL construction', () => {
   it('builds frontend upstream URLs for non-API paths', () => {
     const url = buildPreviewUpstreamUrl(
       ALIAS,
-      new URL('https://pr-42.boulder.best/sessions'),
+      new URL(`https://${previewHostFromAlias(ALIAS)}/sessions`),
       SUBDOMAIN,
     );
     expect(url.hostname).toBe(
@@ -83,7 +84,7 @@ describe('workers.dev header rewriting', () => {
         alias: ALIAS,
         workersSubdomain: SUBDOMAIN,
       }),
-    ).toContain(`Domain=${ALIAS}.boulder.best`);
+    ).toContain(`Domain=${previewHostFromAlias(ALIAS)}`);
     expect(
       rewriteWorkersDevInHeaderValue(cookie, {
         alias: ALIAS,
@@ -112,7 +113,7 @@ describe('preview response headers', () => {
       `${previewOriginFromAlias(ALIAS)}/api/auth/sign-in`,
     );
     const cookies = rewritten.getSetCookie();
-    expect(cookies[0]).toContain(`${ALIAS}.boulder.best`);
+    expect(cookies[0]).toContain(previewHostFromAlias(ALIAS));
     expect(cookies[0]).not.toContain('workers.dev');
   });
 });
