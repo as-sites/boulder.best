@@ -24,7 +24,7 @@ export const ServiceWorkerUpdateProvider = ({
   const {
     needRefresh: [needRefresh, setNeedRefresh],
     updateServiceWorker,
-  } = useRegisterSW();
+  } = useRegisterSW({ immediate: true });
 
   const update = useCallback(() => {
     void updateServiceWorker(true);

@@ -2,7 +2,6 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import {
   ACTIVE_DRAFT_SESSION_ID,
   autosaveActiveDraft,
-  createIdleTimer,
   resetOfflineDatabase,
   restoreActiveDraft,
   type SessionFormValues,
@@ -26,7 +25,6 @@ const sessionFormFixture = (): SessionFormValues => ({
       grade: 'V3',
       notes: '',
       durationMs: 0,
-      timer: createIdleTimer(),
       climbAttempts: [
         {
           sequenceOrder: 0,

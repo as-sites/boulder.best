@@ -29,7 +29,6 @@ export const climbFormEntrySchema = z.object({
   grade: z.string().max(50),
   notes: z.string(),
   durationMs: z.number().int().nonnegative(),
-  timer: timerStateSchema,
   climbAttempts: z.array(climbAttemptFormEntrySchema),
 });
 

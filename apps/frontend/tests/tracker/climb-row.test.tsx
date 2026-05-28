@@ -2,7 +2,10 @@ import { describe, expect, it, vi } from 'vitest';
 import { MantineProvider } from '@mantine/core';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { FormProvider, useForm } from 'react-hook-form';
-import type { SessionFormValues } from '../../src/offline/db/types.js';
+import type {
+  ClimbFormEntry,
+  SessionFormValues,
+} from '../../src/offline/db/types.js';
 import { ClimbRow } from '../../src/tracker/climb-row.js';
 import {
   createClimbAttempt,
@@ -15,7 +18,7 @@ const ClimbRowWrapper = ({
   climbEntry = createClimbEntry(0, 'Test Climb'),
 }: {
   isFinalized?: boolean;
-  climbEntry?: ReturnType<typeof createClimbEntry>;
+  climbEntry?: ClimbFormEntry;
 }) => {
   const form = useForm<SessionFormValues>({
     defaultValues: {
@@ -55,7 +58,7 @@ describe(ClimbRow, () => {
   });
 
   it('starts collapsed in finalized sessions with a summary line', () => {
-    const climbEntry = {
+    const climbEntry: ClimbFormEntry = {
       ...createClimbEntry(0, 'Test Climb'),
       grade: 'V4',
       climbAttempts: [

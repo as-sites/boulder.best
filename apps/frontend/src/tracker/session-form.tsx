@@ -215,9 +215,9 @@ export const SessionForm = ({ initialValues, onStopped }: SessionFormProps) => {
 
     const needsConfirm =
       entry.type === 'climb'
-        ? entry.timer.status === 'running' ||
-          entry.timer.status === 'paused' ||
-          Boolean(entry.notes.trim())
+        ? entry.climbAttempts.some(
+            (a) => a.timer.status === 'running' || a.timer.status === 'paused',
+          ) || Boolean(entry.notes.trim())
         : entry.timer.status === 'running' || entry.timer.status === 'paused';
 
     const removeEntry = () => {

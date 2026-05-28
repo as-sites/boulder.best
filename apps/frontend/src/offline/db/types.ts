@@ -40,7 +40,6 @@ export interface ClimbFormEntry extends Omit<
   SyncClimbEntry,
   'images' | 'climbAttempts'
 > {
-  timer: TimerState;
   climbAttempts: ClimbAttemptFormEntry[];
 }
 
