@@ -18,6 +18,7 @@ import {
   useForm,
   useWatch,
 } from 'react-hook-form';
+import { useAutoRestTiming } from '../lib/settings/index.js';
 import type { SessionFormValues } from '../offline/db/types.js';
 import { autosaveActiveDraft } from '../offline/draft/draft-autosave.js';
 import { BreakRow } from './break-row.js';
@@ -50,6 +51,7 @@ export const SessionForm = ({ initialValues, onStopped }: SessionFormProps) => {
     resolver: zodResolver(sessionFormSchema),
     defaultValues: initialValues,
   });
+  const { enabled: autoRestEnabled } = useAutoRestTiming();
 
   const sessionId = useWatch({ control: form.control, name: 'id' });
   const status = useWatch({ control: form.control, name: 'status' });
@@ -199,6 +201,31 @@ export const SessionForm = ({ initialValues, onStopped }: SessionFormProps) => {
     });
   };
 
+  const handleAttemptStop = () => {
+    if (!autoRestEnabled) {
+      return;
+    }
+    const currentEntries = form.getValues('entries');
+    const hasRunningBreak = currentEntries.some(
+      (entry) =>
+        entry.type === 'break' &&
+        (entry.timer.status === 'running' || entry.timer.status === 'paused'),
+    );
+    if (hasRunningBreak) {
+      return;
+    }
+    const breakIndex = currentEntries.length;
+    const breakEntry = createBreakEntry(breakIndex);
+    const withBreak = [
+      ...currentEntries,
+      breakEntry,
+    ] as SessionFormValues['entries'];
+    pendingScrollEntryIdRef.current = breakEntry.id;
+    form.setValue('entries', applyBreakStart(withBreak, breakIndex), {
+      shouldDirty: true,
+    });
+  };
+
   const handleEndBreak = (breakIndex: number) => {
     const currentEntries = form.getValues('entries');
     form.setValue('entries', applyBreakEnd(currentEntries, breakIndex), {
@@ -326,6 +353,7 @@ export const SessionForm = ({ initialValues, onStopped }: SessionFormProps) => {
                 onRemove={() => {
                   handleRemoveEntry(index);
                 }}
+                onAttemptStop={handleAttemptStop}
               />
             </Box>
           );

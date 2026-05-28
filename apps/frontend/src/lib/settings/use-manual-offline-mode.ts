@@ -8,6 +8,13 @@ import {
 
 const MANUAL_OFFLINE_STORAGE_KEY = 'boulder.manualOfflineMode';
 const TIMER_MILLISECONDS_STORAGE_KEY = 'boulder.timerDisplayMilliseconds';
+const AUTO_REST_ENABLED_STORAGE_KEY = 'boulder.autoRestEnabled';
+const AUTO_REST_DURATION_MINUTES_STORAGE_KEY =
+  'boulder.autoRestDurationMinutes';
+
+export const AUTO_REST_DURATION_MIN_MINUTES = 1;
+export const AUTO_REST_DURATION_MAX_MINUTES = 60;
+export const AUTO_REST_DURATION_DEFAULT_MINUTES = 5;
 
 const subscribeToOnlineStatus = (onStoreChange: () => void): (() => void) => {
   window.addEventListener('online', onStoreChange);
@@ -50,6 +57,24 @@ export const useTimerDisplayMilliseconds = () => {
     toggle: () => {
       setEnabled((current) => !current);
     },
+  };
+};
+
+export const useAutoRestTiming = () => {
+  const [enabled, setEnabled] = useLocalStorage<boolean>({
+    key: AUTO_REST_ENABLED_STORAGE_KEY,
+    defaultValue: false,
+  });
+  const [durationMinutes, setDurationMinutes] = useLocalStorage<number>({
+    key: AUTO_REST_DURATION_MINUTES_STORAGE_KEY,
+    defaultValue: AUTO_REST_DURATION_DEFAULT_MINUTES,
+  });
+
+  return {
+    enabled,
+    setEnabled,
+    durationMinutes,
+    setDurationMinutes,
   };
 };
 
