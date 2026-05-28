@@ -45,6 +45,7 @@ export default defineConfig(() => {
       colorSchemeBootstrapPlugin(),
       react(),
       VitePWA({
+        injectRegister: false,
         registerType: 'prompt',
         manifest: false,
         includeAssets: [

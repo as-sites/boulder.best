@@ -1,18 +1,24 @@
 import '@mantine/core/styles.css';
-import '@mantine/notifications/styles.css';
 import { createRoot } from 'react-dom/client';
-import { App } from './app.js';
-import { wrapAppRoot } from './bootstrap-root.js';
-import { initSentry } from './lib/sentry.js';
-import { requestPersistentStorage } from './offline/index.js';
-
-initSentry();
-void requestPersistentStorage();
+import { bootApp } from './boot-app.js';
+import { UnsupportedBrowser } from './components/unsupported-browser.js';
+import { getBrowserSupportStatus } from './lib/browser-support.js';
 
 const rootElement = document.querySelector('#root');
 
-if (!rootElement) {
+if (!(rootElement instanceof HTMLElement)) {
   throw new Error('Unable to find the root element.');
 }
 
-createRoot(rootElement).render(wrapAppRoot(<App />));
+const browserSupport = getBrowserSupportStatus();
+
+if (!browserSupport.supported) {
+  createRoot(rootElement).render(
+    <UnsupportedBrowser
+      browserName={browserSupport.browserName}
+      reason={browserSupport.reason}
+    />,
+  );
+} else {
+  void bootApp(rootElement);
+}
