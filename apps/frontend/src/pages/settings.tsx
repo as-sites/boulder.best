@@ -1,5 +1,6 @@
 import {
   Badge,
+  Button,
   Container,
   Group,
   Stack,
@@ -7,8 +8,10 @@ import {
   Text,
   Title,
 } from '@mantine/core';
+import { ArrowsClockwiseIcon } from '@phosphor-icons/react';
 import { SyncQueuePanel } from '../components/sync-queue-panel.js';
 import { ThemeSwitcher } from '../components/theme-switcher.js';
+import { useServiceWorkerUpdate } from '../lib/service-worker/index.js';
 import {
   useBrowserOnline,
   useManualOfflineMode,
@@ -24,6 +27,7 @@ export const SettingsPage = () => {
   } = useTimerDisplayMilliseconds();
   const isOnline = useBrowserOnline();
   const autoSyncBlocked = manualOfflineMode || !isOnline;
+  const { needRefresh, update } = useServiceWorkerUpdate();
 
   return (
     <Container size="sm">
@@ -45,6 +49,25 @@ export const SettingsPage = () => {
             </Text>
             <ThemeSwitcher />
           </Stack>
+
+          <Group justify="space-between">
+            <div>
+              <Text fw={600}>App update</Text>
+              <Text c="dimmed" size="sm">
+                {needRefresh
+                  ? 'A new version is available. Update to apply it now.'
+                  : 'Force the app to reload with the latest cached version.'}
+              </Text>
+            </div>
+            <Button
+              leftSection={<ArrowsClockwiseIcon aria-hidden size={16} />}
+              onClick={update}
+              size="xs"
+              variant={needRefresh ? 'filled' : 'default'}
+            >
+              {needRefresh ? 'Update now' : 'Force update'}
+            </Button>
+          </Group>
 
           <Group justify="space-between">
             <div>

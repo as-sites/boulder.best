@@ -7,6 +7,7 @@ import {
   type QueryClient as QueryClientType,
 } from '@tanstack/react-query';
 import { RouterProvider } from '@tanstack/react-router';
+import { ServiceWorkerUpdateProvider } from './lib/service-worker/index.js';
 import { appMantineProviderProps } from './lib/theme/index.js';
 import { createAppRouter, type AppRouter } from './router.js';
 
@@ -23,9 +24,11 @@ export const AppProviders = ({
   <MantineProvider {...appMantineProviderProps}>
     <ModalsProvider>
       <Notifications />
-      <QueryClientProvider client={providerQueryClient}>
-        <RouterProvider router={providerRouter} />
-      </QueryClientProvider>
+      <ServiceWorkerUpdateProvider>
+        <QueryClientProvider client={providerQueryClient}>
+          <RouterProvider router={providerRouter} />
+        </QueryClientProvider>
+      </ServiceWorkerUpdateProvider>
     </ModalsProvider>
   </MantineProvider>
 );
