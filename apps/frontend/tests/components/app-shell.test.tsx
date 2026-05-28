@@ -29,6 +29,7 @@ const syncQueueMocks = vi.hoisted(() => ({
   useSyncQueueList: vi.fn(),
   useSyncQueuePendingCount: vi.fn(),
   useSyncQueueErrorCount: vi.fn(),
+  useSyncQueueStats: vi.fn(),
   useSyncNow: vi.fn(),
 }));
 
@@ -66,6 +67,7 @@ vi.mock(import('../../src/offline/index.js'), async (importOriginal) => ({
   useSyncQueueList: syncQueueMocks.useSyncQueueList,
   useSyncQueuePendingCount: syncQueueMocks.useSyncQueuePendingCount,
   useSyncQueueErrorCount: syncQueueMocks.useSyncQueueErrorCount,
+  useSyncQueueStats: syncQueueMocks.useSyncQueueStats,
   useSyncNow: syncQueueMocks.useSyncNow,
 }));
 
@@ -180,6 +182,11 @@ describe('AppShell active session timer', () => {
     syncQueueMocks.useSyncQueueList.mockReturnValue([]);
     syncQueueMocks.useSyncQueuePendingCount.mockReturnValue(2);
     syncQueueMocks.useSyncQueueErrorCount.mockReturnValue(1);
+    syncQueueMocks.useSyncQueueStats.mockReturnValue({
+      pending: 2,
+      error: 1,
+      syncing: 0,
+    });
     syncQueueMocks.useSyncNow.mockReturnValue({
       canSyncNow: true,
       disabledReason: undefined,
@@ -313,6 +320,11 @@ describe('AppShell navigation', () => {
     syncQueueMocks.useSyncQueueList.mockReturnValue([]);
     syncQueueMocks.useSyncQueuePendingCount.mockReturnValue(0);
     syncQueueMocks.useSyncQueueErrorCount.mockReturnValue(0);
+    syncQueueMocks.useSyncQueueStats.mockReturnValue({
+      pending: 0,
+      error: 0,
+      syncing: 0,
+    });
     syncQueueMocks.useSyncNow.mockReturnValue({
       canSyncNow: true,
       disabledReason: undefined,
@@ -394,6 +406,11 @@ describe('AppShell navigation', () => {
     it('shows sync status on the avatar without header sync controls', async () => {
       syncQueueMocks.useSyncQueuePendingCount.mockReturnValue(1);
       syncQueueMocks.useSyncQueueErrorCount.mockReturnValue(0);
+      syncQueueMocks.useSyncQueueStats.mockReturnValue({
+        pending: 1,
+        error: 0,
+        syncing: 0,
+      });
       await renderShellAt('/tracker', false);
 
       expect(screen.queryByTestId('app-shell-sync-controls')).toBeNull();
@@ -470,6 +487,11 @@ describe('AppShell navigation', () => {
     it('shows sync status on the avatar and keeps sync controls in the account menu', async () => {
       syncQueueMocks.useSyncQueuePendingCount.mockReturnValue(2);
       syncQueueMocks.useSyncQueueErrorCount.mockReturnValue(1);
+      syncQueueMocks.useSyncQueueStats.mockReturnValue({
+        pending: 2,
+        error: 1,
+        syncing: 0,
+      });
       await renderShellAt('/tracker', true);
 
       expect(screen.queryByTestId('app-shell-sync-controls')).toBeNull();

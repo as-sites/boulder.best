@@ -3,14 +3,22 @@ import { resolveAppSyncStatus } from '../../src/components/app-sync-status-indic
 
 describe(resolveAppSyncStatus, () => {
   it('returns synced when the queue is empty', () => {
-    expect(resolveAppSyncStatus(0, 0)).toBe('synced');
+    expect(resolveAppSyncStatus(0, 0, 0)).toBe('synced');
   });
 
   it('returns pending when items are waiting to sync', () => {
-    expect(resolveAppSyncStatus(2, 0)).toBe('pending');
+    expect(resolveAppSyncStatus(2, 0, 0)).toBe('pending');
   });
 
-  it('returns error when failed items exist', () => {
-    expect(resolveAppSyncStatus(2, 1)).toBe('error');
+  it('returns syncing when a drain is in progress', () => {
+    expect(resolveAppSyncStatus(1, 0, 1)).toBe('syncing');
+  });
+
+  it('returns error when failed items exist, even during a sync', () => {
+    expect(resolveAppSyncStatus(2, 1, 1)).toBe('error');
+  });
+
+  it('returns error when failed items exist and nothing is syncing', () => {
+    expect(resolveAppSyncStatus(2, 1, 0)).toBe('error');
   });
 });

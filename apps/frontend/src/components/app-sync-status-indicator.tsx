@@ -1,23 +1,26 @@
 import { Box, ThemeIcon } from '@mantine/core';
 import {
+  ArrowsClockwiseIcon,
   CheckCircleIcon,
   CloudArrowUpIcon,
   WarningCircleIcon,
 } from '@phosphor-icons/react';
-import {
-  useSyncNow,
-  useSyncQueueErrorCount,
-  useSyncQueuePendingCount,
-} from '../offline/index.js';
+import { useIsMutating } from '@tanstack/react-query';
+import { useSyncQueueStats } from '../offline/index.js';
+import { syncQueueMutationKey } from '../offline/sync/sync-queue-mutation.js';
 
-export type AppSyncStatus = 'synced' | 'pending' | 'error';
+export type AppSyncStatus = 'synced' | 'syncing' | 'pending' | 'error';
 
 export const resolveAppSyncStatus = (
   pendingCount: number,
   errorCount: number,
+  syncingCount: number,
 ): AppSyncStatus => {
   if (errorCount > 0) {
     return 'error';
+  }
+  if (syncingCount > 0) {
+    return 'syncing';
   }
   if (pendingCount > 0) {
     return 'pending';
@@ -33,6 +36,16 @@ const statusConfig = {
     avatarStyle: {
       backgroundColor:
         'light-dark(var(--mantine-color-green-filled), var(--mantine-color-green-5))',
+      color: 'var(--mantine-color-white)',
+    },
+  },
+  syncing: {
+    color: 'blue',
+    icon: ArrowsClockwiseIcon,
+    label: 'Syncing sessions',
+    avatarStyle: {
+      backgroundColor:
+        'light-dark(var(--mantine-color-blue-filled), var(--mantine-color-blue-5))',
       color: 'var(--mantine-color-white)',
     },
   },
@@ -62,9 +75,9 @@ const AVATAR_BADGE_SIZE = 22;
 const AVATAR_BADGE_ICON_SIZE = 13;
 
 export const useAppSyncStatus = (): AppSyncStatus => {
-  const pendingCount = useSyncQueuePendingCount();
-  const errorCount = useSyncQueueErrorCount();
-  return resolveAppSyncStatus(pendingCount, errorCount);
+  const { pending, error, syncing } = useSyncQueueStats();
+  const isMutating = useIsMutating({ mutationKey: syncQueueMutationKey });
+  return resolveAppSyncStatus(pending, error, syncing + isMutating);
 };
 
 export interface AppSyncStatusIndicatorProps {
@@ -75,18 +88,16 @@ export interface AppSyncStatusIndicatorProps {
 export const AppSyncStatusIndicator = ({
   onAvatar = false,
 }: AppSyncStatusIndicatorProps) => {
-  const pendingCount = useSyncQueuePendingCount();
-  const errorCount = useSyncQueueErrorCount();
-  const { isSyncing } = useSyncNow();
-  const status = resolveAppSyncStatus(pendingCount, errorCount);
+  const { pending, error, syncing } = useSyncQueueStats();
+  const isMutating = useIsMutating({ mutationKey: syncQueueMutationKey });
+  const status = resolveAppSyncStatus(pending, error, syncing + isMutating);
   const { color, icon: Icon, label, avatarStyle } = statusConfig[status];
 
-  const statusLabel = isSyncing
-    ? 'Syncing sessions'
-    : status === 'pending'
-      ? `${pendingCount} session${pendingCount === 1 ? '' : 's'} waiting to sync`
+  const statusLabel =
+    status === 'pending'
+      ? `${pending} session${pending === 1 ? '' : 's'} waiting to sync`
       : status === 'error'
-        ? `${errorCount} sync error${errorCount === 1 ? '' : 's'}`
+        ? `${error} sync error${error === 1 ? '' : 's'}`
         : label;
 
   if (onAvatar) {
