@@ -94,7 +94,7 @@ const faqItems: FaqItem[] = [
     answer: (
       <Text size="sm">
         Boulder Best is supported on Google Chrome version {MIN_CHROME_VERSION}{' '}
-        and newer. Safari is not supported. Firefox may work but is not
+        and newer. Safari is not supported. Firefox and iOS may work but are not
         supported. Samsung Internet, Microsoft Edge, and other browsers are not
         supported. Progressive web app install is only available in supported
         Chrome versions. Download Chrome at{' '}

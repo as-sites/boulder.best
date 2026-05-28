@@ -9,7 +9,7 @@ import {
 
 export const browserSupportBannerTitle = 'Unsupported browser';
 
-export const browserSupportBannerMessage = `Boulder Best is only supported on Google Chrome ${MIN_CHROME_VERSION} and up. Safari is not supported. Firefox may work but is not supported.`;
+export const browserSupportBannerMessage = `Boulder Best is only supported on Google Chrome ${MIN_CHROME_VERSION} and up. Safari is not supported. Firefox and iOS may work but are not supported.`;
 
 export const BrowserSupportBanner = () => {
   const [dismissed, setDismissed] = useLocalStorage({
