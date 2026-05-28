@@ -1,6 +1,8 @@
 /** Minimum Google Chrome major version (desktop and Android). */
 export const MIN_CHROME_VERSION = 144;
 
+export const CHROME_DOWNLOAD_URL = 'https://google.com/chrome';
+
 export const BROWSER_SUPPORT_BANNER_DISMISSED_KEY =
   'boulder.browserSupportBanner.dismissed';
 

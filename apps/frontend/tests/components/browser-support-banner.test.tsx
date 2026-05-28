@@ -5,7 +5,10 @@ import {
   BrowserSupportBanner,
   browserSupportBannerMessage,
 } from '../../src/components/browser-support-banner.js';
-import { BROWSER_SUPPORT_BANNER_DISMISSED_KEY } from '../../src/lib/browser-support.js';
+import {
+  BROWSER_SUPPORT_BANNER_DISMISSED_KEY,
+  CHROME_DOWNLOAD_URL,
+} from '../../src/lib/browser-support.js';
 
 const renderBanner = () =>
   render(
@@ -30,6 +33,9 @@ describe('browser support banner', () => {
 
     expect(screen.getByText(browserSupportBannerMessage)).toBeInTheDocument();
     expect(screen.getByText(/You are using Safari/)).toBeInTheDocument();
+    expect(
+      screen.getByRole('link', { name: 'google.com/chrome' }),
+    ).toHaveAttribute('href', CHROME_DOWNLOAD_URL);
   });
 
   it('can be dismissed and stays hidden', () => {

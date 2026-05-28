@@ -8,7 +8,10 @@ import {
   Title,
 } from '@mantine/core';
 import { Link } from '@tanstack/react-router';
-import { MIN_CHROME_VERSION } from '../lib/browser-support.js';
+import {
+  CHROME_DOWNLOAD_URL,
+  MIN_CHROME_VERSION,
+} from '../lib/browser-support.js';
 
 interface FaqItem {
   question: string;
@@ -91,11 +94,14 @@ const faqItems: FaqItem[] = [
     answer: (
       <Text size="sm">
         Boulder Best is supported on Google Chrome version {MIN_CHROME_VERSION}{' '}
-        and newer (desktop and Android). Safari, Firefox, Samsung Internet,
-        Microsoft Edge, and other browsers are not supported. Progressive web
-        app install is only available in supported Chrome versions. On Android,
-        use Chrome from the Play Store instead of your device&apos;s default
-        browser.
+        and newer. Safari is not supported. Firefox may work but is not
+        supported. Samsung Internet, Microsoft Edge, and other browsers are not
+        supported. Progressive web app install is only available in supported
+        Chrome versions. Download Chrome at{' '}
+        <Anchor href={CHROME_DOWNLOAD_URL} rel="noopener noreferrer" size="sm">
+          google.com/chrome
+        </Anchor>
+        .
       </Text>
     ),
   },
