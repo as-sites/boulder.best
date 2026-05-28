@@ -89,6 +89,9 @@ jobs:
       - name: Upload API source maps to Sentry
         run: mise run api:sentry:sourcemaps
 
+      - name: Deploy preview gateway Worker
+        run: mise run preview-gateway:deploy
+
       - name: Notify Discord on deploy failure
         if: failure()
         continue-on-error: true
