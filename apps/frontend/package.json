@@ -24,6 +24,7 @@
     "react": "catalog:",
     "react-dom": "catalog:",
     "react-hook-form": "7.76.1",
+    "workbox-window": "7.4.1",
     "zod": "catalog:",
     "clsx": "catalog:"
   },
