@@ -8,6 +8,7 @@ import {
   Title,
 } from '@mantine/core';
 import { Link } from '@tanstack/react-router';
+import { MIN_CHROME_VERSION } from '../lib/browser-support.js';
 
 interface FaqItem {
   question: string;
@@ -82,6 +83,19 @@ const faqItems: FaqItem[] = [
         Photos you attach during a session are saved locally first. When a
         session syncs successfully, images are uploaded to secure cloud storage
         and linked to that session on the server.
+      </Text>
+    ),
+  },
+  {
+    question: 'What browsers are supported?',
+    answer: (
+      <Text size="sm">
+        Boulder Best is supported on Google Chrome version {MIN_CHROME_VERSION}{' '}
+        and newer (desktop and Android). Safari, Firefox, Samsung Internet,
+        Microsoft Edge, and other browsers are not supported. Progressive web
+        app install is only available in supported Chrome versions. On Android,
+        use Chrome from the Play Store instead of your device&apos;s default
+        browser.
       </Text>
     ),
   },

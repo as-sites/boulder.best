@@ -1,16 +1,13 @@
-/**
- * Minimum Chromium major version with native Temporal (Chrome / Edge /
- * Samsung).
- */
-export const MIN_CHROMIUM_VERSION = 148;
+/** Minimum Google Chrome major version (desktop and Android). */
+export const MIN_CHROME_VERSION = 144;
 
-/** Minimum Firefox major version with native Temporal. */
-export const MIN_FIREFOX_VERSION = 139;
+export const BROWSER_SUPPORT_BANNER_DISMISSED_KEY =
+  'boulder.browserSupportBanner.dismissed';
 
-/** Minimum Edge major version with native Temporal (`Edg/` token). */
-export const MIN_EDGE_VERSION = 144;
-
-export type UnsupportedBrowserReason = 'missing-temporal' | 'outdated-browser';
+export type UnsupportedBrowserReason =
+  | 'not-chrome'
+  | 'outdated-chrome'
+  | 'missing-temporal';
 
 export type BrowserSupportStatus =
   | { supported: true }
@@ -44,6 +41,9 @@ export const getBrowserDisplayName = (userAgent: string): string => {
   if (userAgent.includes('Firefox/')) {
     return 'Firefox';
   }
+  if (userAgent.includes('CriOS/')) {
+    return 'Chrome';
+  }
   if (userAgent.includes('Chrome/')) {
     return 'Chrome';
   }
@@ -53,29 +53,38 @@ export const getBrowserDisplayName = (userAgent: string): string => {
   return 'This browser';
 };
 
-const meetsMinimumBrowserVersions = (userAgent: string): boolean => {
-  const firefoxVersion = parseMajorVersion(userAgent, /Firefox\/(\d+)/);
-  if (firefoxVersion !== null) {
-    return firefoxVersion >= MIN_FIREFOX_VERSION;
+const getChromeMajorVersion = (userAgent: string): number | null =>
+  parseMajorVersion(userAgent, /CriOS\/(\d+)/) ??
+  parseMajorVersion(userAgent, /Chrome\/(\d+)/);
+
+/** True when the user agent is Google Chrome (not Edge, Opera, Samsung, etc.). */
+export const isGoogleChromeUserAgent = (userAgent: string): boolean => {
+  if (userAgent.includes('Firefox/')) {
+    return false;
+  }
+  if (userAgent.includes('SamsungBrowser')) {
+    return false;
+  }
+  if (userAgent.includes('Edg/')) {
+    return false;
+  }
+  if (userAgent.includes('OPR/')) {
+    return false;
+  }
+  if (
+    userAgent.includes('Safari/') &&
+    !userAgent.includes('Chrome/') &&
+    !userAgent.includes('CriOS/')
+  ) {
+    return false;
   }
 
-  const edgeVersion = parseMajorVersion(userAgent, /Edg\/(\d+)/);
-  if (edgeVersion !== null) {
-    return edgeVersion >= MIN_EDGE_VERSION;
-  }
-
-  const chromeVersion = parseMajorVersion(userAgent, /Chrome\/(\d+)/);
-  if (chromeVersion !== null) {
-    return chromeVersion >= MIN_CHROMIUM_VERSION;
-  }
-
-  // Unknown UA: Temporal presence is the only signal we have.
-  return true;
+  return getChromeMajorVersion(userAgent) !== null;
 };
 
 /**
  * Returns whether this browser can run Boulder Best. Must stay free of Temporal
- * imports — called before the app bundle loads.
+ * imports — safe to call before the app bundle loads.
  */
 export const getBrowserSupportStatus = (
   userAgent: string = navigator.userAgent,
@@ -83,18 +92,27 @@ export const getBrowserSupportStatus = (
 ): BrowserSupportStatus => {
   const browserName = getBrowserDisplayName(userAgent);
 
-  if (!hasTemporal) {
+  if (!isGoogleChromeUserAgent(userAgent)) {
     return {
       supported: false,
-      reason: 'missing-temporal',
+      reason: 'not-chrome',
       browserName,
     };
   }
 
-  if (!meetsMinimumBrowserVersions(userAgent)) {
+  const chromeVersion = getChromeMajorVersion(userAgent);
+  if (chromeVersion === null || chromeVersion < MIN_CHROME_VERSION) {
     return {
       supported: false,
-      reason: 'outdated-browser',
+      reason: 'outdated-chrome',
+      browserName,
+    };
+  }
+
+  if (!hasTemporal) {
+    return {
+      supported: false,
+      reason: 'missing-temporal',
       browserName,
     };
   }

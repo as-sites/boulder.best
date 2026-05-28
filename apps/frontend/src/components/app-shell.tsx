@@ -14,6 +14,7 @@ import { APP_SHELL_DESKTOP_NAV_QUERY } from './app-nav-items.js';
 import { AppShellMainNavLinks } from './app-shell-nav.js';
 import { AppShellSessionTimer } from './app-shell-session-timer.js';
 import { AppUserMenu } from './app-user-menu.js';
+import { BrowserSupportBanner } from './browser-support-banner.js';
 
 const HEADER_HEIGHT = 56;
 const NAVBAR_WIDTH = 280;
@@ -115,6 +116,7 @@ export const AppShell = () => {
         </MantineAppShell.Navbar>
 
         <MantineAppShell.Main>
+          <BrowserSupportBanner />
           <Outlet />
         </MantineAppShell.Main>
       </MantineAppShell>
