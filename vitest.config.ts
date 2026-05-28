@@ -1,3 +1,4 @@
+import { resolve } from 'node:path';
 import { defineConfig } from 'vitest/config';
 
 const { GITHUB_WORKSPACE: githubWorkspace, GITHUB_ACTIONS: isGithubActions } =
@@ -36,6 +37,13 @@ export default defineConfig({
     // Define test projects
     projects: [
       {
+        resolve: {
+          alias: {
+            'virtual:pwa-register/react': resolve(
+              'apps/frontend/src/__mocks__/virtual-pwa-register-react.ts',
+            ),
+          },
+        },
         test: {
           name: 'apps/frontend',
           include: ['apps/frontend/tests/**/*.test.{ts,tsx}'],

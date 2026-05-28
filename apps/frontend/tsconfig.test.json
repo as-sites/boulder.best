@@ -3,7 +3,12 @@
   "compilerOptions": {
     "composite": true,
     "rootDir": ".",
-    "types": ["vite/client", "vitest/globals", "@testing-library/jest-dom"]
+    "types": [
+      "vite/client",
+      "vite-plugin-pwa/client",
+      "vitest/globals",
+      "@testing-library/jest-dom"
+    ]
   },
   "include": ["src", "tests", "vite", "vite.config.ts"],
   "references": [{ "path": "../../packages/api-contract" }]
