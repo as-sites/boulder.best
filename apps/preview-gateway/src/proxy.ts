@@ -1,10 +1,10 @@
-const PREVIEW_HOST_RE = /^(pr-\d+)\.preview\.boulder\.best$/i;
+const PREVIEW_HOST_RE = /^(pr-\d+)\.boulder\.best$/i;
 
 /** Preview custom-domain host for alias `pr-<n>` (no port). */
 export const previewHostFromAlias = (alias: string): string =>
-  `${alias}.preview.boulder.best`;
+  `${alias}.boulder.best`;
 
-/** HTTPS origin served by the gateway (`https://pr-<n>.preview.boulder.best`). */
+/** HTTPS origin served by the gateway (`https://pr-<n>.boulder.best`). */
 export const previewOriginFromAlias = (alias: string): string =>
   `https://${previewHostFromAlias(alias)}`;
 

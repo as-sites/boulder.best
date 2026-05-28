@@ -28,6 +28,10 @@ catalogs:
     '@mantine/hooks': *mantine_version
     '@mantine/modals': *mantine_version
     '@mantine/notifications': *mantine_version
+  sentry:
+    '@sentry/react': &sentry_version 10.54.0
+    '@sentry/hono': *sentry_version
+    '@sentry/cloudflare': *sentry_version
 
 autoInstallPeers: false
 peerDependencyRules:
