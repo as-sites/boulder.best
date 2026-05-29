@@ -8,8 +8,8 @@ import {
   type MergedHistoryItem,
 } from '../../src/history/merge-session-history.js';
 import { sessionHistoryQueryKey } from '../../src/history/use-session-history-query.js';
-import type { SyncQueueItem } from '../../src/offline/db/types.js';
 import { useSyncNow } from '../../src/offline/hooks/use-sync-now.js';
+import type { SyncQueueSummary } from '../../src/offline/hooks/use-sync-queue.js';
 
 const drainMocks = vi.hoisted(() => ({
   drainSyncQueue: vi.fn(),
@@ -168,22 +168,18 @@ describe('manual sync hook', () => {
 
 describe('post-sync merged history', () => {
   it('shows server rows only after queue items sync and server list refreshes', () => {
-    const pendingQueueItem: SyncQueueItem = {
+    const pendingQueueItem: SyncQueueSummary = {
       id: 'queue-1',
       sessionId: 'session-1',
+      status: 'pending',
       payload: {
         id: 'session-1',
         gymId: 'gym-1',
         startTime: '2026-05-22T10:00:00.000Z',
         endTime: '2026-05-22T11:00:00.000Z',
         totalDurationMs: 3_600_000,
-        notes: '',
-        entries: [],
+        entryCount: 0,
       },
-      status: 'pending',
-      retryCount: 0,
-      createdAt: 1_700_000_000_000,
-      updatedAt: 1_700_000_000_000,
     };
 
     const beforeSync = mergeSessionHistory([], [pendingQueueItem], {
@@ -192,7 +188,7 @@ describe('post-sync merged history', () => {
     expect(beforeSync).toHaveLength(1);
     expect(beforeSync[0]?.isLocalOnly).toBe(true);
 
-    const syncedQueueItem: SyncQueueItem = {
+    const syncedQueueItem: SyncQueueSummary = {
       ...pendingQueueItem,
       status: 'synced',
     };

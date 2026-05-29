@@ -11,6 +11,10 @@ export const syncQueueRepository = {
     return await table.where('status').equals(status).sortBy('createdAt');
   },
 
+  async listByStatuses(statuses: SyncQueueStatus[]): Promise<SyncQueueItem[]> {
+    return await table.where('status').anyOf(statuses).sortBy('createdAt');
+  },
+
   async listAll(): Promise<SyncQueueItem[]> {
     return await table.orderBy('createdAt').toArray();
   },

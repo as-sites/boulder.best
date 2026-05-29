@@ -7,6 +7,7 @@ import {
   finalizeStoppedSession,
   restoreActiveDraft,
 } from '../offline/index.js';
+import { TRACKER_PAGE_PB } from '../tracker/layout-constants.js';
 import {
   createEmptySessionForm,
   hydrateSessionForm,
@@ -62,18 +63,14 @@ export const TrackerPage = () => {
     return (
       <PageLoading
         message="Loading session..."
-        pb="calc(var(--mantine-spacing-xl) + env(safe-area-inset-bottom))"
+        pb={TRACKER_PAGE_PB}
         spinner={false}
       />
     );
   }
 
   return (
-    <Container
-      px={0}
-      pb="calc(var(--mantine-spacing-xl) + env(safe-area-inset-bottom))"
-      size="sm"
-    >
+    <Container px={0} pb={TRACKER_PAGE_PB} size="sm">
       <Stack gap="md">
         <Stack gap={4}>
           <Title order={1}>Tracker</Title>

@@ -55,6 +55,7 @@ export {
   useSyncQueuePendingCount,
   useSyncQueueStats,
   type SyncQueueStats,
+  type SyncQueueSummary,
 } from './hooks/index.js';
 export { createIdleTimer } from '../lib/timer/index.js';
 export { requestPersistentStorage } from './storage.js';

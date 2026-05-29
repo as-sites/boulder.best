@@ -31,6 +31,7 @@ import {
   defaultClimbName,
   resequenceEntries,
 } from './entry-factory.js';
+import { TRACKER_FOOTER_PB } from './layout-constants.js';
 import { sessionFormSchema } from './session-form-schema.js';
 import { startSession, stopSession } from './session-form-state.js';
 import {
@@ -267,8 +268,7 @@ export const SessionForm = ({ initialValues, onStopped }: SessionFormProps) => {
   };
 
   const isActive = status === 'active';
-  const stopFooterPadding =
-    'calc(3.5rem + var(--mantine-spacing-md) + env(safe-area-inset-bottom, 0px))';
+  const stopFooterPadding = TRACKER_FOOTER_PB;
   const entryScrollMarginBottom = isActive ? stopFooterPadding : undefined;
 
   let climbOrdinal = 0;

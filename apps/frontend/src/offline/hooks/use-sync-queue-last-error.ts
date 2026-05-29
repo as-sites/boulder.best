@@ -1,15 +1,18 @@
+import Dexie from 'dexie';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/database.js';
 
 export const useSyncQueueLastError = (): string | undefined =>
   useLiveQuery(
     async () => {
-      const errored = await db.syncQueue
-        .where('status')
-        .equals('error')
-        .sortBy('updatedAt');
+      // Use the [status+updatedAt] compound index to directly retrieve the
+      // most-recently-updated error row without loading the full error set.
+      const last = await db.syncQueue
+        .where('[status+updatedAt]')
+        .between(['error', Dexie.minKey], ['error', Dexie.maxKey])
+        .last();
 
-      return errored.at(-1)?.lastError;
+      return last?.lastError;
     },
     [],
     undefined,

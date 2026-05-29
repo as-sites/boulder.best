@@ -1,4 +1,4 @@
-import { Container, Stack, Text, Title } from '@mantine/core';
+import { StatusPanel } from './status-panel.js';
 
 export interface PageErrorProps {
   message: string;
@@ -12,12 +12,10 @@ export interface PageErrorProps {
 }
 
 export const PageError = ({ message, title, pb }: PageErrorProps) => (
-  <Container {...(pb !== undefined ? { pb } : {})} size="sm">
-    <Stack gap="sm">
-      {title ? <Title order={1}>{title}</Title> : null}
-      <Text c="red" size="sm">
-        {message}
-      </Text>
-    </Stack>
-  </Container>
+  <StatusPanel
+    variant="error"
+    message={message}
+    {...(title !== undefined ? { title } : {})}
+    {...(pb !== undefined ? { pb } : {})}
+  />
 );

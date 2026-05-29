@@ -1,13 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import type {
-  SessionHistoryListItem,
-  SyncSessionPayload,
-} from '@boulder/api-contract';
+import type { SessionHistoryListItem } from '@boulder/api-contract';
 import {
   mergeSessionHistory,
   shouldShowLocalPendingSeparator,
 } from '../../src/history/merge-session-history.js';
-import type { SyncQueueItem } from '../../src/offline/db/types.js';
+import type { SyncQueueSummary } from '../../src/offline/hooks/use-sync-queue.js';
 
 const serverItem = (
   overrides: Partial<SessionHistoryListItem> = {},
@@ -23,32 +20,21 @@ const serverItem = (
   ...overrides,
 });
 
-const payloadFixture = (
-  overrides: Partial<SyncSessionPayload> = {},
-): SyncSessionPayload => ({
-  id: 'local-1',
-  gymId: 'gym-2',
-  location: 'Annex',
-  startTime: '2026-05-21T10:00:00.000Z',
-  endTime: '2026-05-21T11:00:00.000Z',
-  totalDurationMs: 3_600_000,
-  notes: '',
-  entries: [
-    { id: 'entry-1', sequenceOrder: 0, type: 'break', durationMs: 1000 },
-  ],
-  ...overrides,
-});
-
 const queueItemFixture = (
-  overrides: Partial<SyncQueueItem> = {},
-): SyncQueueItem => ({
+  overrides: Partial<SyncQueueSummary> = {},
+): SyncQueueSummary => ({
   id: 'queue-1',
   sessionId: 'local-1',
-  payload: payloadFixture(),
   status: 'pending',
-  retryCount: 0,
-  createdAt: 1_700_000_000_000,
-  updatedAt: 1_700_000_000_000,
+  payload: {
+    id: 'local-1',
+    gymId: 'gym-2',
+    location: 'Annex',
+    startTime: '2026-05-21T10:00:00.000Z',
+    endTime: '2026-05-21T11:00:00.000Z',
+    totalDurationMs: 3_600_000,
+    entryCount: 1,
+  },
   ...overrides,
 });
 
@@ -62,11 +48,15 @@ describe('session history merge', () => {
           id: 'queue-2',
           sessionId: 'local-2',
           status: 'error',
-          payload: payloadFixture({
+          payload: {
             id: 'local-2',
+            gymId: 'gym-2',
+            location: 'Annex',
             startTime: '2026-05-19T08:00:00.000Z',
             endTime: '2026-05-19T09:00:00.000Z',
-          }),
+            totalDurationMs: 3_600_000,
+            entryCount: 1,
+          },
         }),
       ],
       { 'gym-2': 'Annex' },
@@ -94,13 +84,29 @@ describe('session history merge', () => {
         queueItemFixture({
           sessionId: 'session-dup',
           status: 'pending',
-          payload: payloadFixture({ id: 'session-dup' }),
+          payload: {
+            id: 'session-dup',
+            gymId: 'gym-2',
+            location: 'Annex',
+            startTime: '2026-05-21T10:00:00.000Z',
+            endTime: '2026-05-21T11:00:00.000Z',
+            totalDurationMs: 3_600_000,
+            entryCount: 1,
+          },
         }),
         queueItemFixture({
           id: 'queue-synced',
           sessionId: 'synced-only',
           status: 'synced',
-          payload: payloadFixture({ id: 'synced-only' }),
+          payload: {
+            id: 'synced-only',
+            gymId: 'gym-2',
+            location: 'Annex',
+            startTime: '2026-05-21T10:00:00.000Z',
+            endTime: '2026-05-21T11:00:00.000Z',
+            totalDurationMs: 3_600_000,
+            entryCount: 1,
+          },
         }),
       ],
     );
@@ -122,10 +128,15 @@ describe('local pending separator', () => {
       ],
       [
         queueItemFixture({
-          payload: payloadFixture({
+          payload: {
+            id: 'local-1',
+            gymId: 'gym-2',
+            location: 'Annex',
             startTime: '2026-05-20T10:00:00.000Z',
             endTime: '2026-05-20T11:00:00.000Z',
-          }),
+            totalDurationMs: 3_600_000,
+            entryCount: 1,
+          },
         }),
       ],
       { 'gym-2': 'Annex' },

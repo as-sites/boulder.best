@@ -1,11 +1,32 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/database.js';
-import type { SyncQueueItem } from '../db/types.js';
+import type { SyncQueueStatus } from '../db/types.js';
 
 export interface SyncQueueStats {
   pending: number;
   error: number;
   syncing: number;
+}
+
+/**
+ * Slim projection of a SyncQueueItem for use in the history list. Avoids
+ * loading full session payloads (which include all climb/break entries) into
+ * the React component tree.
+ */
+export interface SyncQueueSummary {
+  id: string;
+  sessionId: string;
+  status: SyncQueueStatus;
+  payload: {
+    id: string;
+    gymId: string;
+    location?: string | null | undefined;
+    startTime: string;
+    endTime: string;
+    totalDurationMs: number;
+    /** Pre-computed from payload.entries.length. */
+    entryCount: number;
+  };
 }
 
 const STATS_DEFAULT: SyncQueueStats = { pending: 0, error: 0, syncing: 0 };
@@ -43,9 +64,29 @@ export const useSyncQueueErrorCount = (): number =>
     0,
   );
 
-export const useSyncQueueList = (): SyncQueueItem[] =>
+/**
+ * Returns a slim summary of each queue item, avoiding the expense of loading
+ * full session payloads into the render cycle.
+ */
+export const useSyncQueueList = (): SyncQueueSummary[] =>
   useLiveQuery(
-    async () => await db.syncQueue.orderBy('createdAt').toArray(),
+    async () => {
+      const all = await db.syncQueue.orderBy('createdAt').toArray();
+      return all.map(({ id, sessionId, status, payload }) => ({
+        id,
+        sessionId,
+        status,
+        payload: {
+          id: payload.id,
+          gymId: payload.gymId,
+          location: payload.location,
+          startTime: payload.startTime,
+          endTime: payload.endTime,
+          totalDurationMs: payload.totalDurationMs,
+          entryCount: payload.entries.length,
+        },
+      }));
+    },
     [],
     [],
   );

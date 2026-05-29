@@ -1,5 +1,6 @@
 import type { SessionHistoryListItem } from '@boulder/api-contract';
-import type { SyncQueueItem, SyncQueueStatus } from '../offline/db/types.js';
+import type { SyncQueueStatus } from '../offline/db/types.js';
+import type { SyncQueueSummary } from '../offline/index.js';
 
 export type MergedHistorySource = 'server' | 'local';
 
@@ -20,7 +21,7 @@ export interface MergedHistoryItem {
 const LOCAL_QUEUE_STATUSES = new Set<SyncQueueStatus>(['pending', 'error']);
 
 const toLocalHistoryItem = (
-  item: SyncQueueItem,
+  item: SyncQueueSummary,
   gymNamesById: Readonly<Record<string, string>>,
 ): MergedHistoryItem => {
   const { payload } = item;
@@ -33,7 +34,7 @@ const toLocalHistoryItem = (
     startTime: payload.startTime,
     endTime: payload.endTime,
     totalDurationMs: payload.totalDurationMs,
-    entryCount: payload.entries.length,
+    entryCount: payload.entryCount,
     source: 'local',
     isLocalOnly: true,
     syncStatus: item.status === 'error' ? 'error' : 'pending',
@@ -46,7 +47,7 @@ const toLocalHistoryItem = (
  */
 export const mergeSessionHistory = (
   serverItems: SessionHistoryListItem[],
-  queueItems: SyncQueueItem[],
+  queueItems: SyncQueueSummary[],
   gymNamesById: Readonly<Record<string, string>> = {},
 ): MergedHistoryItem[] => {
   const serverIds = new Set(serverItems.map((item) => item.id));
