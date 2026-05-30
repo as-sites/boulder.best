@@ -30,6 +30,15 @@ const authResult = (
   return { message: fallback, isError: false };
 };
 
+const socialSignInRedirectSchema = z.object({
+  url: z.url(),
+});
+
+const readSocialAuthorizationUrl = (data: unknown): string | null => {
+  const parsed = socialSignInRedirectSchema.safeParse(data);
+  return parsed.success ? parsed.data.url : null;
+};
+
 const signInSchema = z.object({
   email: z.email('Enter a valid email'),
   password: z.string().min(1, 'Password is required'),
@@ -197,11 +206,24 @@ export const AuthActions = () => {
 
   const signInWithProvider = async (provider: OAuthProvider) => {
     await runAction(async () => {
+      const callbackURL = `${window.location.pathname}${window.location.search}`;
       const result = await authClient.signIn.social({
         provider,
-        callbackURL: window.location.href,
+        callbackURL,
+        disableRedirect: true,
       });
-      return authResult(result, `Started ${provider} sign-in.`);
+      if (result.error) {
+        return authResult(result, `Could not start ${provider} sign-in.`);
+      }
+      const authorizationUrl = readSocialAuthorizationUrl(result.data);
+      if (!authorizationUrl) {
+        return {
+          message: `Could not start ${provider} sign-in. No authorization URL was returned.`,
+          isError: true,
+        };
+      }
+      window.location.assign(authorizationUrl);
+      return { message: `Redirecting to ${provider}…`, isError: false };
     });
   };
 
