@@ -30,12 +30,13 @@ const authResult = (
   return { message: fallback, isError: false };
 };
 
+const socialSignInRedirectSchema = z.object({
+  url: z.url(),
+});
+
 const readSocialAuthorizationUrl = (data: unknown): string | null => {
-  if (typeof data !== 'object' || data === null || !('url' in data)) {
-    return null;
-  }
-  const { url } = data as { url: unknown };
-  return typeof url === 'string' && url.length > 0 ? url : null;
+  const parsed = socialSignInRedirectSchema.safeParse(data);
+  return parsed.success ? parsed.data.url : null;
 };
 
 const signInSchema = z.object({
