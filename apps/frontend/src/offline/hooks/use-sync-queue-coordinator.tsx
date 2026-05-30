@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { authClient } from '../../lib/auth-client.js';
 import {
   useBrowserOnline,
@@ -6,7 +6,7 @@ import {
   useSyncEligibility,
 } from '../../lib/settings/index.js';
 import { useSyncQueueMutation } from './use-sync-queue-mutation.js';
-import { useSyncQueueHasWork } from './use-sync-queue.js';
+import { useSyncQueueStats } from './use-sync-queue.js';
 
 const AUTO_SYNC_INTERVAL_MS = 15_000;
 
@@ -40,61 +40,37 @@ export const SyncQueueCoordinator = () => {
   const { enabled: manualOfflineMode } = useManualOfflineMode();
   const isOnline = useBrowserOnline();
   const eligibility = useSyncEligibility(isAuthenticated);
-  const hasQueueWork = useSyncQueueHasWork();
+  const { pending, error } = useSyncQueueStats();
+  // Eligible count excludes 'syncing' rows — those are already in flight.
+  const eligibleCount = pending + error;
   const isAppForeground = useAppForeground();
-  const lastAutoSyncAtRef = useRef(0);
 
   const { mutate, isPending } = useSyncQueueMutation();
 
   useEffect(() => {
-    if (isPending || session.isPending) {
+    if (
+      isPending ||
+      session.isPending ||
+      !eligibility.canAutoSync ||
+      !isAppForeground ||
+      eligibleCount === 0
+    ) {
       return;
     }
 
-    if (!eligibility.canAutoSync || !hasQueueWork || !isAppForeground) {
-      return;
-    }
-
-    mutate({
+    const syncArgs = {
       manualOfflineMode,
       isOnline,
       isAuthenticated,
       isAppForeground: true,
-    });
-  }, [
-    eligibility.canAutoSync,
-    hasQueueWork,
-    isAppForeground,
-    isAuthenticated,
-    isOnline,
-    isPending,
-    manualOfflineMode,
-    mutate,
-    session.isPending,
-  ]);
+    };
 
-  useEffect(() => {
-    if (!eligibility.canAutoSync || !hasQueueWork || !isAppForeground) {
-      return;
-    }
+    // Trigger immediately when new eligible work appears.
+    mutate(syncArgs);
 
+    // Periodic retries pick up error items once their back-off window expires.
     const intervalId = window.setInterval(() => {
-      if (isPending || session.isPending) {
-        return;
-      }
-
-      const now = Date.now();
-      if (now - lastAutoSyncAtRef.current < AUTO_SYNC_INTERVAL_MS) {
-        return;
-      }
-
-      lastAutoSyncAtRef.current = now;
-      mutate({
-        manualOfflineMode,
-        isOnline,
-        isAuthenticated,
-        isAppForeground: true,
-      });
+      mutate(syncArgs);
     }, AUTO_SYNC_INTERVAL_MS);
 
     return () => {
@@ -102,7 +78,7 @@ export const SyncQueueCoordinator = () => {
     };
   }, [
     eligibility.canAutoSync,
-    hasQueueWork,
+    eligibleCount,
     isAppForeground,
     isAuthenticated,
     isOnline,

@@ -297,9 +297,7 @@ export const ClimbRow = ({
                   variant="light"
                   size="lg"
                   aria-label="Remove climb"
-                  onClick={() => {
-                    confirmRemoval('Remove this climb?', onRemove);
-                  }}
+                  onClick={onRemove}
                 >
                   <TrashIcon aria-hidden size={20} />
                 </ActionIcon>

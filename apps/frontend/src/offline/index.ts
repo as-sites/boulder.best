@@ -53,6 +53,8 @@ export {
   useSyncQueueLastError,
   useSyncQueueList,
   useSyncQueuePendingCount,
+  useSyncQueueStats,
+  type SyncQueueStats,
 } from './hooks/index.js';
 export { createIdleTimer } from '../lib/timer/index.js';
 export { requestPersistentStorage } from './storage.js';

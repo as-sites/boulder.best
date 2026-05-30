@@ -4,6 +4,8 @@ export {
   useSyncQueueHasWork,
   useSyncQueueList,
   useSyncQueuePendingCount,
+  useSyncQueueStats,
+  type SyncQueueStats,
 } from './use-sync-queue.js';
 export { useSyncQueueLastError } from './use-sync-queue-last-error.js';
 export { useSyncNow } from './use-sync-now.js';
