@@ -27,7 +27,9 @@ export const ServiceWorkerUpdateProvider = ({
   } = useRegisterSW({ immediate: true });
 
   const update = useCallback(() => {
-    void updateServiceWorker(true);
+    // Force reload to apply new service worker.
+    void updateServiceWorker(false);
+    window.location.reload();
   }, [updateServiceWorker]);
 
   const dismiss = useCallback(() => {

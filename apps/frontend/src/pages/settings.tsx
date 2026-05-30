@@ -11,6 +11,11 @@ import {
 import { ArrowsClockwiseIcon } from '@phosphor-icons/react';
 import { SyncQueuePanel } from '../components/sync-queue-panel.js';
 import { ThemeSwitcher } from '../components/theme-switcher.js';
+import {
+  formatVersion,
+  LOADED_VERSION,
+  useLatestVersion,
+} from '../lib/app-version.js';
 import { useServiceWorkerUpdate } from '../lib/service-worker/index.js';
 import {
   useBrowserOnline,
@@ -28,6 +33,9 @@ export const SettingsPage = () => {
   const isOnline = useBrowserOnline();
   const autoSyncBlocked = manualOfflineMode || !isOnline;
   const { needRefresh, update } = useServiceWorkerUpdate();
+  const latestVersion = useLatestVersion();
+  const loadedShort = formatVersion(LOADED_VERSION);
+  const latestShort = latestVersion ? formatVersion(latestVersion) : null;
 
   return (
     <Container size="sm">
@@ -50,22 +58,29 @@ export const SettingsPage = () => {
             <ThemeSwitcher />
           </Stack>
 
-          <Group justify="space-between">
-            <div>
-              <Text fw={600}>App update</Text>
+          <Group justify="space-between" wrap="nowrap" align="flex-start">
+            <Stack gap={4}>
+              <Text fw={600}>App version</Text>
               <Text c="dimmed" size="sm">
                 {needRefresh
-                  ? 'A new version is available. Update to apply it now.'
-                  : 'Force the app to reload with the latest cached version.'}
+                  ? 'A new version has been downloaded. Reload to apply it.'
+                  : 'Reload the app if something seems out of date.'}
               </Text>
-            </div>
+              <Text c="dimmed" ff="monospace" size="xs">
+                Version:{' '}
+                {needRefresh && latestShort
+                  ? `${loadedShort} → ${latestShort}`
+                  : loadedShort}
+              </Text>
+            </Stack>
             <Button
               leftSection={<ArrowsClockwiseIcon aria-hidden size={16} />}
               onClick={update}
               size="xs"
+              style={{ flexShrink: 0 }}
               variant={needRefresh ? 'filled' : 'default'}
             >
-              {needRefresh ? 'Update now' : 'Force update'}
+              {needRefresh ? 'Reload now' : 'Reload'}
             </Button>
           </Group>
 
