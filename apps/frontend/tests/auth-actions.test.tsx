@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { MantineProvider } from '@mantine/core';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { AuthActions } from '../src/components/auth-actions.js';
@@ -13,11 +13,6 @@ const authMocks = vi.hoisted(() => ({
   socialSignIn: vi.fn(),
   useSession: vi.fn(),
 }));
-
-const locationAssign = vi.hoisted(() => vi.fn());
-
-const oauthCallbackURL = (): string =>
-  `${window.location.pathname}${window.location.search}`;
 
 vi.mock(import('../src/lib/auth-client.js'), () => ({
   authClient: {
@@ -47,30 +42,16 @@ const renderAuthActions = () =>
 
 describe(AuthActions, () => {
   beforeEach(() => {
-    locationAssign.mockReset();
-    vi.spyOn(window.location, 'assign').mockImplementation(locationAssign);
-    window.history.pushState({}, '', '/auth/account');
-
     authMocks.emailSignIn.mockResolvedValue({ data: {}, error: null });
     authMocks.emailSignUp.mockResolvedValue({ data: {}, error: null });
     authMocks.signOut.mockResolvedValue({ data: {}, error: null });
-    authMocks.socialSignIn.mockResolvedValue({
-      data: {
-        url: 'https://oauth.example/authorize',
-        redirect: false,
-      },
-      error: null,
-    });
+    authMocks.socialSignIn.mockResolvedValue({ data: {}, error: null });
     authMocks.passkeySignIn.mockResolvedValue({ data: {}, error: null });
     authMocks.addPasskey.mockResolvedValue({ data: {}, error: null });
     authMocks.useSession.mockReturnValue({
       data: null,
       isPending: false,
     } as ReturnType<typeof authClient.useSession>);
-  });
-
-  afterEach(() => {
-    vi.restoreAllMocks();
   });
 
   it('shows session restoration while account state is pending', () => {
@@ -190,12 +171,8 @@ describe(AuthActions, () => {
     );
     expect(authMocks.socialSignIn).toHaveBeenCalledWith({
       provider: 'google',
-      callbackURL: oauthCallbackURL(),
-      disableRedirect: true,
+      callbackURL: window.location.href,
     });
-    expect(locationAssign).toHaveBeenCalledWith(
-      'https://oauth.example/authorize',
-    );
   });
 
   it('starts Discord sign-in', async () => {
@@ -208,28 +185,8 @@ describe(AuthActions, () => {
     );
     expect(authMocks.socialSignIn).toHaveBeenCalledWith({
       provider: 'discord',
-      callbackURL: oauthCallbackURL(),
-      disableRedirect: true,
+      callbackURL: window.location.href,
     });
-    expect(locationAssign).toHaveBeenCalledWith(
-      'https://oauth.example/authorize',
-    );
-  });
-
-  it('shows an error when social sign-in returns no authorization URL', async () => {
-    authMocks.socialSignIn.mockResolvedValue({ data: {}, error: null });
-    renderAuthActions();
-
-    fireEvent.click(screen.getByTestId('auth-google'));
-
-    await waitFor(() =>
-      expect(
-        screen.getByText(
-          /could not start google sign-in\. no authorization url was returned/i,
-        ),
-      ).toBeInTheDocument(),
-    );
-    expect(locationAssign).not.toHaveBeenCalled();
   });
 
   it('starts explicit passkey sign-in without conditional UI', async () => {
