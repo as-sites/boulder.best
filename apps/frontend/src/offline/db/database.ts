@@ -24,6 +24,12 @@ export class BoulderingTrackerDB extends Dexie {
       syncQueue: 'id, sessionId, status, createdAt, updatedAt, nextRetryAt',
       offlineImages: 'id, sessionId, entryId, [sessionId+entryId]',
     });
+
+    // v2: adds [status+updatedAt] compound index for efficient last-error lookups.
+    this.version(2).stores({
+      syncQueue:
+        'id, sessionId, status, createdAt, updatedAt, nextRetryAt, [status+updatedAt]',
+    });
   }
 }
 

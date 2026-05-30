@@ -30,32 +30,38 @@ export const drainSyncQueue = async (
     return;
   }
 
-  const allItems = await syncQueueRepository.listAll();
+  // Single DB read: only fetch statuses that are actionable.
+  const allItems = await syncQueueRepository.listByStatuses([
+    'pending',
+    'error',
+    'syncing',
+  ]);
 
   // Reset only stale `syncing` items (e.g. tab crash after lock release). Recent
   // `syncing` rows may still be uploading in another context without locks.
+  // Track updated versions in-memory to avoid a second DB read.
   const now = Date.now();
+  const updatedItems: SyncQueueItem[] = [];
+
   for (const item of allItems) {
-    if (item.status !== 'syncing') {
-      continue;
+    if (item.status === 'syncing') {
+      const syncingSince = item.syncingStartedAt ?? item.updatedAt;
+      if (now - syncingSince > SYNCING_STALE_MS) {
+        const { syncingStartedAt: _syncingStartedAt, ...rest } = item;
+        const recovered: SyncQueueItem = {
+          ...rest,
+          status: 'pending',
+          updatedAt: now,
+        };
+        await syncQueueRepository.put(recovered);
+        updatedItems.push(recovered);
+        continue;
+      }
     }
-
-    const syncingSince = item.syncingStartedAt ?? item.updatedAt;
-    if (now - syncingSince <= SYNCING_STALE_MS) {
-      continue;
-    }
-
-    const { syncingStartedAt: _syncingStartedAt, ...rest } = item;
-    const recovered: SyncQueueItem = {
-      ...rest,
-      status: 'pending',
-      updatedAt: now,
-    };
-    await syncQueueRepository.put(recovered);
+    updatedItems.push(item);
   }
 
-  const items = await syncQueueRepository.listAll();
-  const eligible = listEligibleQueueItems(items, runtimeContext, {
+  const eligible = listEligibleQueueItems(updatedItems, runtimeContext, {
     forceRetry,
   });
 

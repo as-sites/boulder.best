@@ -4,7 +4,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { AppProviders } from '../src/app.js';
 import type * as apiClientType from '../src/lib/api-client.js';
 import type { authClient } from '../src/lib/auth-client.js';
-import type { SyncQueueItem } from '../src/offline/db/types.js';
+import type { SyncQueueSummary } from '../src/offline/hooks/use-sync-queue.js';
 import { createAppRouter } from '../src/router.js';
 
 const authMocks = vi.hoisted(() => ({
@@ -36,24 +36,18 @@ const sessionsGet = vi.hoisted(() =>
 );
 
 const localQueueItem = vi.hoisted(
-  (): SyncQueueItem => ({
+  (): SyncQueueSummary => ({
     id: 'local-session-1',
     sessionId: 'local-session-1',
+    status: 'pending',
     payload: {
       id: 'local-session-1',
       gymId: 'gym-local',
       startTime: '2026-05-21T10:00:00.000Z',
       endTime: '2026-05-21T11:00:00.000Z',
       totalDurationMs: 3_600_000,
-      notes: '',
-      entries: [
-        { id: 'entry-1', sequenceOrder: 0, type: 'break', durationMs: 1000 },
-      ],
+      entryCount: 1,
     },
-    status: 'pending',
-    retryCount: 0,
-    createdAt: 1_700_000_000_000,
-    updatedAt: 1_700_000_000_000,
   }),
 );
 

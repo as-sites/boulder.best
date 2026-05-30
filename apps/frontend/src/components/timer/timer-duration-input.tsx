@@ -1,7 +1,7 @@
-import { useEffect, useEffectEvent, useState } from 'react';
-import { elapsedDurationMs, formatDurationMs } from '../../lib/timer/index.js';
+import { formatDurationMs } from '../../lib/timer/index.js';
 import type { TimerState } from '../../lib/timer/types.js';
 import { DurationInput, type DurationInputProps } from '../duration-input.js';
+import { useTimerDisplayMs } from './use-timer-display-ms.js';
 
 export interface TimerDurationInputProps extends Omit<
   DurationInputProps,
@@ -26,37 +26,7 @@ export const TimerDurationInput = ({
   value,
   ...rest
 }: TimerDurationInputProps) => {
-  const [displayMs, setDisplayMs] = useState(() => elapsedDurationMs(timer));
-  const readElapsedMs = useEffectEvent(() => elapsedDurationMs(timer));
-
-  useEffect(() => {
-    if (timer.status !== 'running') {
-      setDisplayMs(readElapsedMs());
-      return;
-    }
-    let frameId = 0;
-    const tick = () => {
-      const newMs = readElapsedMs();
-      setDisplayMs((prev) => {
-        if (showMilliseconds) {
-          return newMs !== prev ? newMs : prev;
-        }
-        return Math.floor(newMs / 1000) !== Math.floor(prev / 1000)
-          ? newMs
-          : prev;
-      });
-      frameId = requestAnimationFrame(tick);
-    };
-    frameId = requestAnimationFrame(tick);
-    return () => {
-      cancelAnimationFrame(frameId);
-    };
-  }, [
-    timer.status,
-    timer.accumulatedDurationMs,
-    timer.activeStartTime,
-    showMilliseconds,
-  ]);
+  const displayMs = useTimerDisplayMs(timer, showMilliseconds);
 
   return (
     <DurationInput

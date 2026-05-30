@@ -1,4 +1,4 @@
-import { Container, Loader, Stack, Text } from '@mantine/core';
+import { StatusPanel } from './status-panel.js';
 
 export interface PageLoadingProps {
   message: string;
@@ -16,12 +16,10 @@ export const PageLoading = ({
   pb,
   spinner = true,
 }: PageLoadingProps) => (
-  <Container {...(pb !== undefined ? { pb } : {})} size="sm">
-    <Stack align="center" gap="sm">
-      {spinner ? <Loader size="sm" /> : null}
-      <Text c="dimmed" size="sm">
-        {message}
-      </Text>
-    </Stack>
-  </Container>
+  <StatusPanel
+    variant="loading"
+    message={message}
+    {...(pb !== undefined ? { pb } : {})}
+    spinner={spinner}
+  />
 );
