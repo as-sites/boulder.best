@@ -6,6 +6,7 @@
   "dependencies": {
     "@better-auth/passkey": "catalog:better-auth",
     "@boulder/api-contract": "workspace:*",
+    "@garmin/fitsdk": "21.205.0",
     "@hookform/resolvers": "5.4.0",
     "@mantine/core": "catalog:mantine",
     "@mantine/hooks": "catalog:mantine",

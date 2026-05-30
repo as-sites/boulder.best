@@ -188,6 +188,9 @@ importers:
       '@boulder/api-contract':
         specifier: workspace:*
         version: link:../../packages/api-contract
+      '@garmin/fitsdk':
+        specifier: 21.205.0
+        version: 21.205.0
       '@hookform/resolvers':
         specifier: 5.4.0
         version: 5.4.0(react-hook-form@7.76.1(react@19.2.6))
@@ -1464,6 +1467,9 @@ packages:
 
   '@floating-ui/utils@0.2.11':
     resolution: {integrity: sha512-RiB/yIh78pcIxl6lLMG0CgBXAZ2Y0eVHqMPYugu+9U0AeT6YBeiJpf7lbdJNIugFP5SIjwNRgo4DhR1Qxi26Gg==}
+
+  '@garmin/fitsdk@21.205.0':
+    resolution: {integrity: sha512-oSfiJVQ3BQlNxfc1f7XUBDn8yuHOdiP5jW21p6zjuBq0KPQfXWe6SU66yZdCNYliyBmKcfC3Gjd9osiKfR52Dg==}
 
   '@hexagon/base64@1.1.28':
     resolution: {integrity: sha512-lhqDEAvWixy3bZ+UOYbPwUbBkwBq5C1LAJ/xPC8Oi+lL54oyakv/npbA0aU2hgCsx/1NUd4IBvV03+aUBWxerw==}
@@ -6028,6 +6034,8 @@ snapshots:
       tabbable: 6.4.0
 
   '@floating-ui/utils@0.2.11': {}
+
+  '@garmin/fitsdk@21.205.0': {}
 
   '@hexagon/base64@1.1.28': {}
 
