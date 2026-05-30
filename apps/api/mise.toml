@@ -141,6 +141,7 @@ run = '''
 wrangler versions upload --env production --outdir dist \
   --preview-alias "$PREVIEW_ALIAS" \
   --secrets-file "$PREVIEW_SECRETS_FILE" \
+  --keep-vars \
   --var "BETTER_AUTH_URL:$PREVIEW_ORIGIN" \
   --var "FRONTEND_URL:$PREVIEW_ORIGIN" \
   --var "PASSKEY_ORIGIN:$PREVIEW_ORIGIN" \
