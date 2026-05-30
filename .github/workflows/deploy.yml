@@ -1,4 +1,4 @@
-# Deploy to production on push to main (after CI passes).
+# Deploy to production on push to main.
 #
 # Required repository secrets (Settings → Secrets and variables → Actions):
 #   CLOUDFLARE_API_TOKEN  — API token with Workers Scripts + Workers Routes + R2 (zone boulder.best)
@@ -19,13 +19,12 @@
 name: Deploy
 
 on:
-  workflow_run:
-    workflows: [CI]
-    types: [completed]
+  push:
+    branches: [main]
   workflow_dispatch:
 
 concurrency:
-  group: deploy-${{ github.event.workflow_run.head_branch || github.ref_name }}
+  group: deploy-${{ github.ref_name }}
   cancel-in-progress: true
 
 permissions:
@@ -36,14 +35,7 @@ permissions:
 jobs:
   deploy:
     name: Deploy to Cloudflare
-    if: >-
-      github.event_name == 'workflow_dispatch' ||
-      (
-        github.event_name == 'workflow_run' &&
-        github.event.workflow_run.conclusion == 'success' &&
-        github.event.workflow_run.event == 'push' &&
-        github.event.workflow_run.head_branch == 'main'
-      )
+
     runs-on: blacksmith-2vcpu-ubuntu-2404
     timeout-minutes: 30
     environment:
@@ -54,19 +46,19 @@ jobs:
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
-      GITHUB_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
-      VITE_SENTRY_RELEASE_FRONTEND: ${{ github.event.workflow_run.head_sha || github.sha }}
+      GITHUB_SHA: ${{ github.sha }}
+      VITE_SENTRY_RELEASE_FRONTEND: ${{ github.sha }}
       VITE_SENTRY_DSN_FRONTEND: ${{ secrets.VITE_SENTRY_DSN_FRONTEND }}
       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
       SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
       SENTRY_PROJECT_FRONTEND: ${{ secrets.SENTRY_PROJECT_FRONTEND }}
       SENTRY_PROJECT_API: ${{ secrets.SENTRY_PROJECT_API }}
-      SENTRY_RELEASE_API: ${{ github.event.workflow_run.head_sha || github.sha }}
+      SENTRY_RELEASE_API: ${{ github.sha }}
     steps:
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
-          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          ref: ${{ github.sha }}
 
       - name: Setup CI
         uses: ./.github/actions/setup-ci
@@ -98,8 +90,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
           DISCORD_DEPLOY_WEBHOOK_URL: ${{ secrets.DISCORD_DEPLOY_WEBHOOK_URL }}
-          DEPLOY_BRANCH: ${{ github.event.workflow_run.head_branch || github.ref_name }}
-          DEPLOY_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+          DEPLOY_BRANCH: ${{ github.ref_name }}
+          DEPLOY_SHA: ${{ github.sha }}
         run: |
           if [ -z "$DISCORD_DEPLOY_WEBHOOK_URL" ]; then
             echo "DISCORD_DEPLOY_WEBHOOK_URL not set; skipping notification."
