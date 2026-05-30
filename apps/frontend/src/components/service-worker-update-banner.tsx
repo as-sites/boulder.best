@@ -1,9 +1,17 @@
-import { ActionIcon, Button, Group, Paper, Text } from '@mantine/core';
+import { ActionIcon, Button, Group, Paper, Stack, Text } from '@mantine/core';
 import { ArrowsClockwiseIcon, XIcon } from '@phosphor-icons/react';
+import {
+  formatVersion,
+  LOADED_VERSION,
+  useLatestVersion,
+} from '../lib/app-version.js';
 import { useServiceWorkerUpdate } from '../lib/service-worker/index.js';
 
 export const ServiceWorkerUpdateBanner = () => {
   const { needRefresh, update, dismiss } = useServiceWorkerUpdate();
+  const latestVersion = useLatestVersion();
+  const loadedShort = formatVersion(LOADED_VERSION);
+  const latestShort = latestVersion ? formatVersion(latestVersion) : null;
 
   if (!needRefresh) {
     return null;
@@ -32,9 +40,16 @@ export const ServiceWorkerUpdateBanner = () => {
             size={18}
             style={{ flexShrink: 0 }}
           />
-          <Text size="sm" style={{ flexShrink: 1 }}>
-            A new version of the app is available.
-          </Text>
+          <Stack gap={2} style={{ flexShrink: 1, minWidth: 0 }}>
+            <Text size="sm">
+              A new version has been downloaded. Reload to apply it.
+            </Text>
+            {latestShort && (
+              <Text c="dimmed" ff="monospace" size="xs">
+                Version: {loadedShort} → {latestShort}
+              </Text>
+            )}
+          </Stack>
         </Group>
         <Group gap="xs" wrap="nowrap" style={{ flexShrink: 0 }}>
           <Button
@@ -42,7 +57,7 @@ export const ServiceWorkerUpdateBanner = () => {
             onClick={update}
             size="xs"
           >
-            Update
+            Reload
           </Button>
           <ActionIcon
             aria-label="Dismiss update notification"

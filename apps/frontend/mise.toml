@@ -7,20 +7,22 @@ run = "node scripts/generate-icons.ts"
 alias = ["frontend:dev"]
 description = "Start the frontend Vite dev server"
 run = "vite"
+env.VITE_APP_VERSION = "local"
 
 [tasks."dev:tunnel"]
 alias = ["frontend:dev:tunnel"]
 description = "Start Vite for cloudflared dev (allows TUNNEL_HOSTNAME)"
 run = "vite --host"
 env.TUNNEL_HOSTNAME = "{{ env.TUNNEL_HOSTNAME | default(value='local.boulder.best') }}"
+env.VITE_APP_VERSION = "local"
 
 [tasks.build]
 alias = ["frontend:build"]
 description = "Build the frontend Worker static assets app"
 run = "vite build"
 env.CLOUDFLARE_ENV = "production"
-# Matches the git SHA used as Sentry release in CI (deploy workflow sets GITHUB_SHA).
 env.VITE_SENTRY_RELEASE_FRONTEND = "{{ env.GITHUB_SHA | default(value='') }}"
+env.VITE_APP_VERSION = "{{ env.GITHUB_SHA | default(value='') }}"
 # Source maps are not uploaded during build unless SENTRY_UPLOAD_SOURCEMAPS=1
 # (@sentry/vite-plugin). CI uses frontend:sentry:sourcemaps (sentry-cli) instead.
 

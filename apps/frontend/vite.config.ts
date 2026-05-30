@@ -1,3 +1,4 @@
+import { writeFile } from 'node:fs/promises';
 import { cloudflare } from '@cloudflare/vite-plugin';
 import { sentryVitePlugin } from '@sentry/vite-plugin';
 import react from '@vitejs/plugin-react';
@@ -11,8 +12,13 @@ const {
   VITE_SENTRY_RELEASE_FRONTEND: sentryRelease,
   SENTRY_ORG: sentryOrg,
   SENTRY_PROJECT_FRONTEND: sentryProjectFrontend,
+  VITE_APP_VERSION: appVersionEnv,
   // oxlint-disable-next-line node/no-process-env
 } = process.env;
+
+// Set by mise for dev/build tasks; falls back to 'dev' only if vite is invoked
+// outside of mise (which this project does not support).
+const appVersion = appVersionEnv || 'dev';
 
 const sentrySourceMapUploadConfig =
   sentryUploadSourcemaps === '1' &&
@@ -32,6 +38,24 @@ const colorSchemeBootstrapPlugin = (): Plugin => ({
     html.replace('</head>', `\n ${renderColorSchemeScriptMarkup()} \n </head>`),
 });
 
+// Writes dist/version.json (not in the Workbox precache glob, so always
+// fetched from the network) and serves it during dev via middleware.
+const versionFilePlugin = (): Plugin => ({
+  name: 'version-file',
+  configureServer(server) {
+    server.middlewares.use('/version.json', (_req, res) => {
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify({ version: appVersion }));
+    });
+  },
+  async closeBundle() {
+    await writeFile(
+      'dist/version.json',
+      JSON.stringify({ version: appVersion }),
+    );
+  },
+});
+
 export default defineConfig(() => {
   // Read at config load time — top-level destructuring can be inlined when Vite bundles this file.
   // oxlint-disable-next-line node/no-process-env
@@ -41,8 +65,12 @@ export default defineConfig(() => {
     build: {
       sourcemap: true,
     },
+    define: {
+      __APP_VERSION__: JSON.stringify(appVersion),
+    },
     plugins: [
       colorSchemeBootstrapPlugin(),
+      versionFilePlugin(),
       react(),
       VitePWA({
         injectRegister: false,
