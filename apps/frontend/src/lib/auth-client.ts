@@ -18,7 +18,6 @@ export interface AuthClient {
     social(options: {
       provider: OAuthProvider;
       callbackURL?: string;
-      disableRedirect?: boolean;
     }): AuthActionResult;
   };
   signUp: ReturnType<typeof createAuthClient>['signUp'] & {
