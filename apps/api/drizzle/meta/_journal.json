@@ -64,6 +64,13 @@
       "when": 1779720225188,
       "tag": "0008_woozy_ultimo",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1779800000000,
+      "tag": "0009_ensure_verification_table",
+      "breakpoints": true
     }
   ]
 }

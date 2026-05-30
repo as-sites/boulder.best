@@ -230,7 +230,16 @@ export const AuthActions = () => {
   const signInWithPasskey = async () => {
     await runAction(async () => {
       const result = await authClient.signIn.passkey({ autoFill: false });
-      return authResult(result, 'Signed in with passkey.');
+      if (result.error) {
+        return authResult(result, 'Could not sign in with passkey.');
+      }
+      const passkeySession = await authClient.getSession({
+        query: { disableCookieCache: true },
+      });
+      if (passkeySession.error || !passkeySession.data?.user) {
+        return { message: 'Could not sign in with passkey.', isError: true };
+      }
+      return { message: 'Signed in with passkey.', isError: false };
     });
   };
 

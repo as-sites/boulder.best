@@ -220,6 +220,9 @@ const buildAuth = (env: AuthEnvBindings): AuthServer => {
       accountLinking: {
         enabled: true,
       },
+      // OAuth PKCE state in signed cookies — avoids verification-table writes that
+      // fail when the table is missing or mis-migrated on production Neon.
+      storeStateStrategy: 'cookie',
     },
     session: {
       cookieCache: {

@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MantineProvider } from '@mantine/core';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { AuthActions } from '../src/components/auth-actions.js';
-import type { authClient } from '../src/lib/auth-client.js';
+import { authClient } from '../src/lib/auth-client.js';
 
 const authMocks = vi.hoisted(() => ({
   addPasskey: vi.fn(),
@@ -63,6 +63,10 @@ describe(AuthActions, () => {
     });
     authMocks.passkeySignIn.mockResolvedValue({ data: {}, error: null });
     authMocks.addPasskey.mockResolvedValue({ data: {}, error: null });
+    vi.mocked(authClient.getSession).mockResolvedValue({
+      data: { user: { id: 'user-1', email: 'ally@example.com' } },
+      error: null,
+    } as Awaited<ReturnType<typeof authClient.getSession>>);
     authMocks.useSession.mockReturnValue({
       data: null,
       isPending: false,
@@ -243,6 +247,28 @@ describe(AuthActions, () => {
     expect(authMocks.passkeySignIn).toHaveBeenCalledWith({
       autoFill: false,
     });
+    expect(authClient.getSession).toHaveBeenCalledWith({
+      query: { disableCookieCache: true },
+    });
+  });
+
+  it('shows an error when passkey sign-in does not establish a session', async () => {
+    vi.mocked(authClient.getSession).mockResolvedValue({
+      data: null,
+      error: null,
+    } as Awaited<ReturnType<typeof authClient.getSession>>);
+    renderAuthActions();
+
+    fireEvent.click(screen.getByTestId('auth-passkey'));
+
+    await waitFor(() =>
+      expect(
+        screen.getByText(/could not sign in with passkey/i),
+      ).toBeInTheDocument(),
+    );
+    expect(
+      screen.getByText(/could not sign in with passkey/i),
+    ).toBeInTheDocument();
   });
 
   it('only registers passkeys for authenticated users', async () => {
