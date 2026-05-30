@@ -145,6 +145,7 @@ export interface ClimbRowProps {
   isFinalized: boolean;
   defaultName: string;
   onRemove: () => void;
+  onAttemptStop?: () => void;
 }
 
 const formatClimbSummary = (grade: string, attemptCount: number): string => {
@@ -172,6 +173,7 @@ export const ClimbRow = ({
   isFinalized,
   defaultName,
   onRemove,
+  onAttemptStop,
 }: ClimbRowProps) => {
   const [isExpanded, setIsExpanded] = useState(!isFinalized);
   const { setValue, getValues, formState } =
@@ -193,9 +195,18 @@ export const ClimbRow = ({
     attemptIndex: number,
     timer: (typeof climb.climbAttempts)[number]['timer'],
   ) => {
+    const oldTimer = climb.climbAttempts[attemptIndex]?.timer;
+    const wasActive =
+      oldTimer?.status === 'running' || oldTimer?.status === 'paused';
+    const isStopped = timer.status === 'stopped';
+
     setValue(`${entryPath}.climbAttempts.${attemptIndex}.timer`, timer, {
       shouldDirty: true,
     });
+
+    if (wasActive && isStopped) {
+      onAttemptStop?.();
+    }
   };
 
   const handleRemoveAttempt = (attemptIndex: number) => {

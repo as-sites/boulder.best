@@ -21,17 +21,20 @@ const gymFixture = [
 ] as const satisfies Gym[];
 
 const gymMocks = vi.hoisted(() => ({
-  // oxlint-disable-next-line typescript/require-await
+  // oxlint-disable-next-line typescript/require-await, vitest/require-mock-type-parameters
   loadCachedGyms: vi.fn(async () => gymFixture),
 }));
 
 vi.mock(import('../../src/offline/gyms/gym-cache.js'), () => ({
   loadCachedGyms: gymMocks.loadCachedGyms,
+  // oxlint-disable-next-line vitest/require-mock-type-parameters
   refreshCachedGymsFromApi: vi.fn(),
+  // oxlint-disable-next-line vitest/require-mock-type-parameters
   fetchGymsFromApi: vi.fn(),
 }));
 
 const autosaveMocks = vi.hoisted(() => ({
+  // oxlint-disable-next-line vitest/require-mock-type-parameters
   autosaveActiveDraft: vi.fn(),
 }));
 
@@ -320,6 +323,101 @@ describe(SessionForm, () => {
         }),
       );
     });
+
+    vi.useRealTimers();
+    expect(vi.isFakeTimers()).toBe(false);
+  });
+
+  it('automatically starts a break when an attempt timer is stopped and auto rest is enabled', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    localStorage.setItem('boulder.autoRestEnabled', 'true');
+
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MantineProvider>
+          <SessionForm
+            initialValues={{
+              ...createEmptySessionForm(),
+              gymId: gymFixture[0].id,
+              location: 'Main Wall',
+              status: 'active',
+              startTime: Temporal.Now.instant().toString(),
+              entries: [createClimbEntry(0, 'Climb 1')],
+            }}
+          />
+        </MantineProvider>
+      </QueryClientProvider>,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Start' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Stop' }));
+
+    await vi.advanceTimersByTimeAsync(300);
+
+    await waitFor(() => {
+      expect(autosaveMocks.autosaveActiveDraft).toHaveBeenCalledWith(
+        expect.objectContaining({
+          entries: expect.arrayContaining([
+            expect.objectContaining({ type: 'climb' }),
+            expect.objectContaining({
+              type: 'break',
+              timer: expect.objectContaining({ status: 'running' }),
+            }),
+          ]),
+        }),
+      );
+    });
+
+    localStorage.removeItem('boulder.autoRestEnabled');
+    vi.useRealTimers();
+    expect(vi.isFakeTimers()).toBe(false);
+  });
+
+  it('does not start a break when an attempt timer is stopped and auto rest is disabled', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+
+    autosaveMocks.autosaveActiveDraft.mockClear();
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MantineProvider>
+          <SessionForm
+            initialValues={{
+              ...createEmptySessionForm(),
+              gymId: gymFixture[0].id,
+              location: 'Main Wall',
+              status: 'active',
+              startTime: Temporal.Now.instant().toString(),
+              entries: [createClimbEntry(0, 'Climb 1')],
+            }}
+          />
+        </MantineProvider>
+      </QueryClientProvider>,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Start' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Stop' }));
+
+    await vi.advanceTimersByTimeAsync(300);
+
+    await waitFor(() => {
+      expect(autosaveMocks.autosaveActiveDraft).toHaveBeenCalled();
+    });
+
+    const lastCall = autosaveMocks.autosaveActiveDraft.mock.lastCall?.[0];
+    expect(
+      lastCall?.entries.every(
+        (entry: { type: string }) => entry.type !== 'break',
+      ),
+    ).toBe(true);
 
     vi.useRealTimers();
     expect(vi.isFakeTimers()).toBe(false);

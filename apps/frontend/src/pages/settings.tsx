@@ -3,6 +3,7 @@ import {
   Button,
   Container,
   Group,
+  NumberInput,
   Stack,
   Switch,
   Text,
@@ -18,6 +19,9 @@ import {
 } from '../lib/app-version.js';
 import { useServiceWorkerUpdate } from '../lib/service-worker/index.js';
 import {
+  AUTO_REST_DURATION_MAX_MINUTES,
+  AUTO_REST_DURATION_MIN_MINUTES,
+  useAutoRestTiming,
   useBrowserOnline,
   useManualOfflineMode,
   useTimerDisplayMilliseconds,
@@ -30,6 +34,12 @@ export const SettingsPage = () => {
     enabled: showTimerMilliseconds,
     setEnabled: setShowTimerMilliseconds,
   } = useTimerDisplayMilliseconds();
+  const {
+    enabled: autoRestEnabled,
+    setEnabled: setAutoRestEnabled,
+    durationMinutes: autoRestDurationMinutes,
+    setDurationMinutes: setAutoRestDurationMinutes,
+  } = useAutoRestTiming();
   const isOnline = useBrowserOnline();
   const autoSyncBlocked = manualOfflineMode || !isOnline;
   const { needRefresh, update } = useServiceWorkerUpdate();
@@ -116,6 +126,40 @@ export const SettingsPage = () => {
               aria-label="Show milliseconds on timers"
             />
           </Group>
+
+          <Stack gap="xs">
+            <Group justify="space-between">
+              <div>
+                <Text fw={600}>Auto rest timer</Text>
+                <Text c="dimmed" size="sm">
+                  Automatically starts a break when an attempt timer is stopped.
+                </Text>
+              </div>
+              <Switch
+                checked={autoRestEnabled}
+                onChange={(event) => {
+                  setAutoRestEnabled(event.currentTarget.checked);
+                }}
+                aria-label="Auto rest timer"
+              />
+            </Group>
+            {autoRestEnabled ? (
+              <NumberInput
+                label="Rest duration (minutes)"
+                value={autoRestDurationMinutes}
+                onChange={(value) => {
+                  if (typeof value === 'number') {
+                    setAutoRestDurationMinutes(value);
+                  }
+                }}
+                min={AUTO_REST_DURATION_MIN_MINUTES}
+                max={AUTO_REST_DURATION_MAX_MINUTES}
+                step={1}
+                allowDecimal={false}
+                aria-label="Rest duration in minutes"
+              />
+            ) : null}
+          </Stack>
 
           <Group gap="xs">
             <Badge color={isOnline ? 'green' : 'gray'} variant="light">
