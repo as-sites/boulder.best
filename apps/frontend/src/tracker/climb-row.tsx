@@ -24,6 +24,7 @@ import {
   useWatch,
   type Control,
 } from 'react-hook-form';
+import { formatClimbSummary } from '../history/format-climb-summary.js';
 import { useTimerDisplayMilliseconds } from '../lib/settings/index.js';
 import type { SessionFormValues } from '../offline/db/types.js';
 import { ClimbAttemptRow } from './climb-attempt-row.js';
@@ -147,13 +148,6 @@ export interface ClimbRowProps {
   onRemove: () => void;
   onAttemptStop?: () => void;
 }
-
-const formatClimbSummary = (grade: string, attemptCount: number): string => {
-  const attemptsLabel =
-    attemptCount === 1 ? '1 attempt' : `${attemptCount} attempts`;
-  const trimmedGrade = grade.trim();
-  return trimmedGrade ? `${trimmedGrade} · ${attemptsLabel}` : attemptsLabel;
-};
 
 const hasDirtyField = (dirty: unknown): boolean => {
   if (dirty === true) {

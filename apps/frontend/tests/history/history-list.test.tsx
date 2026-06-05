@@ -69,7 +69,7 @@ const renderWithRouter = async (ui: ReactNode) => {
   });
   const sessionDetailRoute = createRoute({
     getParentRoute: () => rootRoute,
-    path: '/sessions/$sessionId',
+    path: '/history/$sessionId',
     component: () => null,
   });
   const router = createRouter({
@@ -118,7 +118,7 @@ describe('history list item', () => {
 
     expect(screen.getByRole('link')).toHaveAttribute(
       'href',
-      '/sessions/local-1',
+      '/history/local-1',
     );
   });
 });

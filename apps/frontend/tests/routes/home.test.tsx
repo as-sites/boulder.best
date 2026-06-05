@@ -153,7 +153,7 @@ describe('home route', () => {
     );
     expect(within(main).getByRole('link', { name: 'History' })).toHaveAttribute(
       'href',
-      '/sessions',
+      '/history',
     );
     expect(
       within(main).getByRole('link', { name: 'Settings' }),

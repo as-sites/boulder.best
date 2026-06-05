@@ -147,4 +147,31 @@ describe('local pending separator', () => {
     expect(shouldShowLocalPendingSeparator(merged, 1)).toBe(true);
     expect(shouldShowLocalPendingSeparator(merged, 0)).toBe(false);
   });
+
+  it('shows a separator for the first local-only row in each render group', () => {
+    const localToday = {
+      id: 'local-today',
+      gymId: 'gym-2',
+      gymName: 'Annex',
+      startTime: '2026-05-22T10:00:00.000Z',
+      endTime: '2026-05-22T11:00:00.000Z',
+      totalDurationMs: 3_600_000,
+      entryCount: 1,
+      source: 'local' as const,
+      isLocalOnly: true,
+      syncStatus: 'pending' as const,
+    };
+    const localYesterday = {
+      ...localToday,
+      id: 'local-yesterday',
+      startTime: '2026-05-21T10:00:00.000Z',
+      endTime: '2026-05-21T11:00:00.000Z',
+    };
+
+    const todayGroup = [localToday];
+    const yesterdayGroup = [localYesterday];
+
+    expect(shouldShowLocalPendingSeparator(todayGroup, 0)).toBe(true);
+    expect(shouldShowLocalPendingSeparator(yesterdayGroup, 0)).toBe(true);
+  });
 });

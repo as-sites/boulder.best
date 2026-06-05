@@ -34,7 +34,7 @@ describe('upstream target routing', () => {
 
   it('routes other paths to the frontend Worker', () => {
     expect(resolvePreviewUpstreamTarget('/')).toBe('frontend');
-    expect(resolvePreviewUpstreamTarget('/sessions')).toBe('frontend');
+    expect(resolvePreviewUpstreamTarget('/history')).toBe('frontend');
     expect(resolvePreviewUpstreamTarget('/not-api')).toBe('frontend');
   });
 });
@@ -54,13 +54,13 @@ describe('upstream URL construction', () => {
   it('builds frontend upstream URLs for non-API paths', () => {
     const url = buildPreviewUpstreamUrl(
       ALIAS,
-      new URL(`https://${previewHostFromAlias(ALIAS)}/sessions`),
+      new URL(`https://${previewHostFromAlias(ALIAS)}/history`),
       SUBDOMAIN,
     );
     expect(url.hostname).toBe(
       previewWorkersDevHost(ALIAS, 'frontend', SUBDOMAIN),
     );
-    expect(url.pathname).toBe('/sessions');
+    expect(url.pathname).toBe('/history');
   });
 });
 

@@ -12,7 +12,7 @@ import { SessionDetailView } from '../history/session-detail-view.js';
 import { useCachedGymsQuery } from '../tracker/use-cached-gyms-query.js';
 
 export const SessionDetailPage = () => {
-  const { sessionId } = useParams({ from: '/sessions/$sessionId' });
+  const { sessionId } = useParams({ from: '/history/$sessionId' });
   const gymsQuery = useCachedGymsQuery();
   const gymNamesById = useMemo(
     () =>

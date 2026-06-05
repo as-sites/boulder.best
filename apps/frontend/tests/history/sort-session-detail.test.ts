@@ -20,7 +20,14 @@ describe('session detail ordering', () => {
         type: 'climb',
         name: 'Warm up',
         grade: 'V1',
-        attempts: 1,
+        climbAttempts: [
+          {
+            sequenceOrder: 0,
+            durationMs: 2000,
+            completed: true,
+            notes: '',
+          },
+        ],
         notes: '',
         images: [],
       },

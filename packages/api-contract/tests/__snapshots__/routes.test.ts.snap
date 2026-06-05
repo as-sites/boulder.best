@@ -178,11 +178,12 @@ exports[`OpenAPI document > serves OpenAPI JSON at /openapi.json > openapi-docum
       "SessionDetailClimbEntry": {
         "additionalProperties": false,
         "properties": {
-          "attempts": {
-            "exclusiveMinimum": true,
-            "minimum": 0,
-            "nullable": true,
-            "type": "integer",
+          "climbAttempts": {
+            "description": "Per-attempt timings and completion for this climb, sorted by sequenceOrder",
+            "items": {
+              "$ref": "#/components/schemas/SyncClimbAttempt",
+            },
+            "type": "array",
           },
           "durationMs": {
             "description": "Total time spent on this block in milliseconds",
@@ -233,8 +234,8 @@ exports[`OpenAPI document > serves OpenAPI JSON at /openapi.json > openapi-docum
           "type",
           "name",
           "grade",
-          "attempts",
           "notes",
+          "climbAttempts",
           "images",
         ],
         "type": "object",

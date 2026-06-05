@@ -202,7 +202,7 @@ describe('AppShell active session timer', () => {
   });
 
   it('hides the session timer when there is no active draft', async () => {
-    await renderShellAt('/sessions', false);
+    await renderShellAt('/history', false);
 
     expect(screen.queryByTestId('app-shell-session-timer')).toBeNull();
   });
@@ -212,7 +212,7 @@ describe('AppShell active session timer', () => {
       activeDraftFixture('not_started'),
     );
 
-    await renderShellAt('/sessions', false);
+    await renderShellAt('/history', false);
 
     expect(screen.queryByTestId('app-shell-session-timer')).toBeNull();
   });
@@ -227,7 +227,7 @@ describe('AppShell active session timer', () => {
       },
     });
 
-    await renderShellAt('/sessions', false);
+    await renderShellAt('/history', false);
 
     await waitFor(() => {
       expect(sessionTimer()).toBeVisible();
@@ -239,7 +239,7 @@ describe('AppShell active session timer', () => {
       activeDraftFixture(),
     );
 
-    await renderShellAt('/sessions', true);
+    await renderShellAt('/history', true);
 
     await waitFor(() => {
       expect(sessionTimer()).toBeVisible();
@@ -253,7 +253,7 @@ describe('AppShell active session timer', () => {
       activeDraftFixture(),
     );
 
-    await renderShellAt('/sessions', true);
+    await renderShellAt('/history', true);
 
     await waitFor(() => {
       expect(sessionTimer()).toBeVisible();
@@ -270,7 +270,7 @@ describe('AppShell active session timer', () => {
       activeDraftFixture(),
     );
 
-    await renderShellAt('/sessions', false);
+    await renderShellAt('/history', false);
 
     await waitFor(() => {
       expect(sessionTimer()).toBeVisible();
@@ -284,7 +284,7 @@ describe('AppShell active session timer', () => {
       activeDraftFixture(),
     );
 
-    await renderShellAt('/sessions', false);
+    await renderShellAt('/history', false);
 
     await waitFor(() => {
       expect(sessionTimer()).toBeVisible();
@@ -303,7 +303,7 @@ describe('AppShell active session timer', () => {
       activeDraftFixture(),
     );
 
-    await renderShellAt('/sessions', false);
+    await renderShellAt('/history', false);
 
     await waitFor(() => {
       expect(sessionTimer()).toBeVisible();
@@ -554,7 +554,7 @@ describe('AppShell navigation', () => {
 
     it('marks History active on session detail routes', async () => {
       await renderShellAt(
-        '/sessions/00000000-0000-4000-8000-000000000001',
+        '/history/00000000-0000-4000-8000-000000000001',
         true,
       );
 

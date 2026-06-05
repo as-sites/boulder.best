@@ -257,8 +257,11 @@ export const sessionDetailClimbEntrySchema = syncBaseEntrySchema
     type: z.literal('climb'),
     name: z.string().max(255),
     grade: z.string().max(50),
-    attempts: z.number().int().positive().nullable(),
     notes: z.string(),
+    climbAttempts: z.array(syncClimbAttemptSchema).openapi({
+      description:
+        'Per-attempt timings and completion for this climb, sorted by sequenceOrder',
+    }),
     images: z.array(syncedImageSchema),
   })
   .strict()
