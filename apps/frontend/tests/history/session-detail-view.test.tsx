@@ -98,10 +98,45 @@ describe('session detail view', () => {
       </MantineProvider>,
     );
 
+    expect(screen.getByText('V3 · 2 attempts · 1 completed')).toBeDefined();
     expect(screen.getByText('1 send')).toBeDefined();
     expect(screen.getByText('Sent')).toBeDefined();
     expect(screen.getByText('Slipped on crux')).toBeDefined();
     expect(screen.getByText('Attempt 2')).toBeDefined();
+  });
+
+  it('shows zero completed attempts in climb summaries', () => {
+    render(
+      <MantineProvider>
+        <SessionDetailView
+          session={{
+            ...sessionFixture,
+            entries: [
+              {
+                ...climbEntry,
+                climbAttempts: [
+                  {
+                    sequenceOrder: 0,
+                    durationMs: 20_000,
+                    completed: false,
+                    notes: '',
+                  },
+                  {
+                    sequenceOrder: 1,
+                    durationMs: 25_000,
+                    completed: false,
+                    notes: '',
+                  },
+                ],
+              },
+            ],
+          }}
+          source="server"
+        />
+      </MantineProvider>,
+    );
+
+    expect(screen.getByText('V3 · 2 attempts · 0 completed')).toBeDefined();
   });
 
   it('counts one send per climb even when multiple attempts are completed', () => {
