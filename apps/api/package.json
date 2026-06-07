@@ -16,7 +16,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@sentry/cli": "3.4.3",
+    "@sentry/cli": "3.5.0",
     "drizzle-kit": "0.31.10"
   }
 }
