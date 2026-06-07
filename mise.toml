@@ -27,11 +27,11 @@ task_output = "quiet"
 
 [tools]
 node = "24.16.0"
-pnpm = "11.4.0"
+pnpm = "11.5.2"
 # Graphite stacked PRs (`gt` via mise tool alias)
 gt = "1.8.6"
 # this is needed for tab completions of mise tasks and some other binaries
-usage = "3.3.0"
+usage = "3.4.0"
 hk = "1.46.0"
 pkl = "0.31.1"
 
