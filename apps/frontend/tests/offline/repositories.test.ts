@@ -248,5 +248,22 @@ describe('offline repositories', () => {
         offlineImagesRepository.get(image.id),
       ).resolves.toBeUndefined();
     });
+
+    it('deletes all images for a session', async () => {
+      const first = imageFixture();
+      const second: OfflineImage = {
+        ...imageFixture(),
+        id: 'image-2',
+        entryId: 'entry-2',
+      };
+
+      await offlineImagesRepository.put(first);
+      await offlineImagesRepository.put(second);
+      await offlineImagesRepository.deleteBySessionId(first.sessionId);
+
+      await expect(
+        offlineImagesRepository.listBySession(first.sessionId),
+      ).resolves.toEqual([]);
+    });
   });
 });

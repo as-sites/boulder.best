@@ -20,4 +20,8 @@ export const offlineImagesRepository = {
   async listBySession(sessionId: string): Promise<OfflineImage[]> {
     return await table.where('sessionId').equals(sessionId).sortBy('index');
   },
+
+  async deleteBySessionId(sessionId: string): Promise<void> {
+    await table.where('sessionId').equals(sessionId).delete();
+  },
 };
