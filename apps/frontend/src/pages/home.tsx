@@ -33,7 +33,7 @@ export const HomePage = () => {
             Tracker
           </Button>
           <Group gap="sm">
-            <Button component={Link} to="/sessions" variant="light">
+            <Button component={Link} to="/history" variant="light">
               History
             </Button>
             <Button component={Link} to="/settings" variant="light">

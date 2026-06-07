@@ -77,7 +77,13 @@ const createDetailDb = (options: {
   session?: Record<string, unknown> | null;
   entries?: Array<Record<string, unknown>>;
   images?: Array<Record<string, unknown>>;
-  attemptCounts?: Array<{ entryId: string; attempts: number }>;
+  climbAttempts?: Array<{
+    entryId: string;
+    sequenceOrder: number;
+    durationMs: number;
+    completed: boolean | null;
+    notes: string;
+  }>;
 }) => {
   let selectCall = 0;
 
@@ -127,12 +133,7 @@ const createDetailDb = (options: {
           innerJoin: vi.fn(() => ({
             where: vi.fn(() => ({
               // oxlint-disable-next-line typescript/require-await
-              groupBy: vi.fn(async () =>
-                (options.attemptCounts ?? []).map((row) => ({
-                  entryId: row.entryId,
-                  attempts: row.attempts,
-                })),
-              ),
+              orderBy: vi.fn(async () => options.climbAttempts ?? []),
             })),
           })),
         })),
@@ -247,7 +248,7 @@ describe('session detail persistence', () => {
     historyMocks.getSessionDetail.mockClear();
   });
 
-  it('returns ordered entries, images, and attempt counts for the user session', async () => {
+  it('returns ordered entries, images, and climb attempts for the user session', async () => {
     const mock = createDetailDb({
       session: {
         id: sessionId,
@@ -299,7 +300,22 @@ describe('session detail persistence', () => {
           contentLength: 512_000,
         },
       ],
-      attemptCounts: [{ entryId: climbEntryId, attempts: 2 }],
+      climbAttempts: [
+        {
+          entryId: climbEntryId,
+          sequenceOrder: 0,
+          durationMs: 20_000,
+          completed: false,
+          notes: 'Slipped on crux',
+        },
+        {
+          entryId: climbEntryId,
+          sequenceOrder: 1,
+          durationMs: 25_000,
+          completed: true,
+          notes: '',
+        },
+      ],
     });
 
     const response = await historyMocks.getSessionDetail(
@@ -326,7 +342,20 @@ describe('session detail persistence', () => {
           name: 'Pink corner route',
           grade: 'V3',
           notes: '',
-          attempts: 2,
+          climbAttempts: [
+            {
+              sequenceOrder: 0,
+              durationMs: 20_000,
+              completed: false,
+              notes: 'Slipped on crux',
+            },
+            {
+              sequenceOrder: 1,
+              durationMs: 25_000,
+              completed: true,
+              notes: '',
+            },
+          ],
           images: [
             {
               id: '223e4567-e89b-12d3-a456-426614174001',

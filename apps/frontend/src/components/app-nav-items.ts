@@ -8,13 +8,13 @@ import {
 
 export interface AppNavItem {
   label: string;
-  to: '/tracker' | '/sessions' | '/settings' | '/about';
+  to: '/tracker' | '/history' | '/settings' | '/about';
   Icon: ComponentType<{ size: number }>;
 }
 
 export const appNavMainItems: AppNavItem[] = [
   { label: 'Tracker', to: '/tracker', Icon: TimerIcon },
-  { label: 'History', to: '/sessions', Icon: ClockCounterClockwiseIcon },
+  { label: 'History', to: '/history', Icon: ClockCounterClockwiseIcon },
   { label: 'Settings', to: '/settings', Icon: GearSixIcon },
   { label: 'About', to: '/about', Icon: InfoIcon },
 ];
