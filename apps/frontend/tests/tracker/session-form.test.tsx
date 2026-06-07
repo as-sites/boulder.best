@@ -377,6 +377,76 @@ describe(SessionForm, () => {
     expect(vi.isFakeTimers()).toBe(false);
   });
 
+  it('allows editing a stopped break duration', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MantineProvider>
+          <SessionForm
+            initialValues={{
+              ...createEmptySessionForm(),
+              gymId: gymFixture[0].id,
+              location: 'Main Wall',
+              status: 'active',
+              startTime: Temporal.Now.instant().toString(),
+              entries: [
+                {
+                  ...createBreakEntry(0),
+                  durationMs: 30_000,
+                  timer: {
+                    status: 'stopped',
+                    accumulatedDurationMs: 30_000,
+                    activeStartTime: null,
+                  },
+                },
+              ],
+            }}
+          />
+        </MantineProvider>
+      </QueryClientProvider>,
+    );
+
+    autosaveMocks.autosaveActiveDraft.mockClear();
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Edit break duration' }),
+    );
+    const input = screen.getByRole('textbox', { name: /break duration/i });
+    fireEvent.change(input, { target: { value: '1:30' } });
+    fireEvent.blur(input);
+
+    await vi.advanceTimersByTimeAsync(300);
+
+    await waitFor(() => {
+      expect(autosaveMocks.autosaveActiveDraft).toHaveBeenCalledWith(
+        expect.objectContaining({
+          entries: expect.arrayContaining([
+            expect.objectContaining({
+              type: 'break',
+              durationMs: 90_000,
+              timer: expect.objectContaining({
+                status: 'stopped',
+                accumulatedDurationMs: 90_000,
+              }),
+            }),
+          ]),
+        }),
+      );
+    });
+
+    expect(
+      screen.getByRole('textbox', { name: /break duration/i }),
+    ).toHaveAttribute('readonly');
+
+    vi.useRealTimers();
+    expect(vi.isFakeTimers()).toBe(false);
+  });
+
   it('does not start a break when an attempt timer is stopped and auto rest is disabled', async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
 
