@@ -90,13 +90,15 @@ export const SessionDetailClimbEntryCard = ({
   source,
 }: SessionDetailClimbEntryCardProps) => {
   const displayName = entry.name.trim() || 'Climb';
+  const completedAttemptCount = entry.climbAttempts.filter(
+    (attempt) => attempt.completed === true,
+  ).length;
   const climbSummary = formatClimbSummary(
     entry.grade,
     entry.climbAttempts.length,
+    completedAttemptCount,
   );
-  const isSent = entry.climbAttempts.some(
-    (attempt) => attempt.completed === true,
-  );
+  const isSent = completedAttemptCount > 0;
   const climbNotes = entry.notes.trim();
 
   const sortedAttempts = useMemo(
