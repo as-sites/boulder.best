@@ -6,6 +6,9 @@
     "vitest.explorer",
     "redhat.vscode-yaml",
     "tamasfe.even-better-toml",
-    "oxc.oxc-vscode"
+    "oxc.oxc-vscode",
+    "eamodio.gitlens",
+    "graphite.gti-vscode",
+    "databricks.neon-local-connect"
   ]
 }
