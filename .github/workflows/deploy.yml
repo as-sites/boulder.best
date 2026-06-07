@@ -4,7 +4,7 @@
 #   CLOUDFLARE_API_TOKEN  — API token with Workers Scripts + Workers Routes + R2 (zone boulder.best)
 #   CLOUDFLARE_ACCOUNT_ID — Cloudflare account ID (wrangler whoami)
 #   CLOUDFLARE_ZONE_ID    — Zone ID for boulder.best (R2 custom domain / wrangler tasks)
-#   DATABASE_URL          — Neon connection string for production migrations (api:db:migrate)
+#   DATABASE_URL          — Neon production connection string (migrations + pins Worker secret on api:deploy)
 #   VITE_SENTRY_DSN_FRONTEND     — Sentry DSN baked into the production frontend bundle
 #   SENTRY_AUTH_TOKEN            — Sentry auth token with release + org:read + project:releases
 #   SENTRY_ORG                   — Sentry organization slug
@@ -13,8 +13,9 @@
 #   SENTRY_DSN_API               — API Worker Sentry DSN (wrangler secret; not used in this workflow)
 #   DISCORD_DEPLOY_WEBHOOK_URL   — Discord webhook URL for deploy failure alerts
 #
-# API Worker runtime secrets (DATABASE_URL, BETTER_AUTH_SECRET, OAuth keys, etc.) are set on
-# the Worker in Cloudflare, not from this workflow. Sync once locally: mise run secrets:sync:cloudflare
+# api:deploy pins DATABASE_URL from this secret so production deploys do not inherit a PR preview
+# branch URL left on the Worker version chain by preview uploads. Other Worker secrets
+# (BETTER_AUTH_SECRET, OAuth keys, etc.) are set in Cloudflare — sync locally: mise run secrets:sync:cloudflare
 
 name: Deploy
 
