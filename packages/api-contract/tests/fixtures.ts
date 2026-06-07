@@ -120,7 +120,7 @@ export const sessionDetailResponseFixture = {
       type: 'climb' as const,
       name: syncSessionPayloadFixture.entries[0].name,
       grade: syncSessionPayloadFixture.entries[0].grade,
-      attempts: syncSessionPayloadFixture.entries[0].climbAttempts.length,
+      climbAttempts: syncSessionPayloadFixture.entries[0].climbAttempts,
       notes: syncSessionPayloadFixture.entries[0].notes,
       images: syncSessionPayloadFixture.entries[0].images,
     },

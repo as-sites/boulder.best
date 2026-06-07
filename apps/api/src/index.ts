@@ -13,6 +13,7 @@ import { createApiSentryOptions } from './lib/sentry.js';
 import {
   getSessionDetail as loadSessionDetail,
   listSessions as loadSessionHistory,
+  deleteSession as removeSession,
 } from './sessions/session-history.js';
 import {
   SyncSessionConflictError,
@@ -213,6 +214,11 @@ export const createApiApp = (options: CreateApiAppOptions = {}) => {
         const db = getDb(c.env.DATABASE_URL);
         const userId = c.get('userId');
         return await loadSessionDetail(db, userId, params.id);
+      },
+      deleteSession: async (c, params) => {
+        const db = getDb(c.env.DATABASE_URL);
+        const userId = c.get('userId');
+        return await removeSession(db, userId, params.id);
       },
     }),
   );

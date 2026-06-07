@@ -3,6 +3,7 @@ import type { Env } from 'hono';
 import { hc } from 'hono/client';
 import {
   createPresignedUploadRoute,
+  deleteSessionRoute,
   getGymsRoute,
   getSessionDetailRoute,
   listSessionsRoute,
@@ -66,12 +67,27 @@ export const createApiContract = <E extends Env = Env>(
     return c.json(detail);
   };
 
+  const deleteSessionHandler: RouteHandler<
+    typeof deleteSessionRoute,
+    E
+  > = async (c) => {
+    const params = c.req.valid('param');
+    const deleted = await handlers.deleteSession(c, params);
+
+    if (!deleted) {
+      return c.body(null, 404);
+    }
+
+    return c.body(null, 204);
+  };
+
   return app
     .openapi(getGymsRoute, getGymsHandler)
     .openapi(createPresignedUploadRoute, createPresignedUploadHandler)
     .openapi(syncSessionRoute, syncSessionHandler)
     .openapi(listSessionsRoute, listSessionsHandler)
     .openapi(getSessionDetailRoute, getSessionDetailHandler)
+    .openapi(deleteSessionRoute, deleteSessionHandler)
     .doc(openApiJsonPath, openApiDocumentConfig);
 };
 

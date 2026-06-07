@@ -3,33 +3,33 @@ packages:
   - 'packages/*'
 
 catalog:
-  react: 19.2.6
-  react-dom: 19.2.6
-  '@types/react': 19.2.15
+  react: 19.2.7
+  react-dom: 19.2.7
+  '@types/react': 19.2.17
   '@types/react-dom': 19.2.3
-  '@types/node': 24.12.4
+  '@types/node': 24.13.1
   zod: 4.4.3
   hono: 4.12.23
-  wrangler: 4.95.0
+  wrangler: 4.98.0
   clsx: 2.1.1
 
 catalogs:
   vitest:
-    vitest: &vitest_version 4.1.7
+    vitest: &vitest_version 4.1.8
     '@vitest/ui': *vitest_version
     '@vitest/coverage-v8': *vitest_version
   better-auth:
-    better-auth: &better_auth_version 1.6.11
+    better-auth: &better_auth_version 1.6.14
     '@better-auth/passkey': *better_auth_version
     '@better-auth/core': *better_auth_version
   mantine:
-    '@mantine/core': &mantine_version 9.2.1
+    '@mantine/core': &mantine_version 9.3.0
     '@mantine/dates': *mantine_version
     '@mantine/hooks': *mantine_version
     '@mantine/modals': *mantine_version
     '@mantine/notifications': *mantine_version
   sentry:
-    '@sentry/react': &sentry_version 10.54.0
+    '@sentry/react': &sentry_version 10.56.0
     '@sentry/hono': *sentry_version
     '@sentry/cloudflare': *sentry_version
 
@@ -58,4 +58,4 @@ overrides:
 
 minimumReleaseAgeExclude:
   - miniflare@4.20260526.0
-  - wrangler@4.95.0
+  - wrangler@4.98.0

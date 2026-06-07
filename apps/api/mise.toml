@@ -17,8 +17,17 @@ run = "wrangler deploy --env production --dry-run --outdir dist"
 
 [tasks.deploy]
 alias = ["api:deploy"]
-description = "Deploy the API Worker"
-run = 'wrangler deploy --env production --outdir dist --var "SENTRY_RELEASE_API:{{ env.SENTRY_RELEASE_API | default(value=env.GITHUB_SHA | default(value="")) }}"'
+description = "Deploy the API Worker (DATABASE_URL must be the production Neon URL — preview uploads inherit into the version chain)"
+run = '''
+: "${DATABASE_URL:?DATABASE_URL is required — production deploy must pin the Neon connection string}"
+secrets_file="$(mktemp)"
+cleanup() { rm -f "$secrets_file"; }
+trap cleanup EXIT
+printf 'DATABASE_URL=%s\n' "$DATABASE_URL" > "$secrets_file"
+wrangler deploy --env production --outdir dist \
+  --secrets-file "$secrets_file" \
+  --var "SENTRY_RELEASE_API:${SENTRY_RELEASE_API:-${GITHUB_SHA:-}}"
+'''
 
 [tasks."sentry:sourcemaps"]
 alias = ["api:sentry:sourcemaps"]
@@ -141,6 +150,7 @@ run = '''
 wrangler versions upload --env production --outdir dist \
   --preview-alias "$PREVIEW_ALIAS" \
   --secrets-file "$PREVIEW_SECRETS_FILE" \
+  --keep-vars \
   --var "BETTER_AUTH_URL:$PREVIEW_ORIGIN" \
   --var "FRONTEND_URL:$PREVIEW_ORIGIN" \
   --var "PASSKEY_ORIGIN:$PREVIEW_ORIGIN" \

@@ -108,6 +108,29 @@ describe(ClimbRow, () => {
     ).toHaveAttribute('aria-expanded', 'true');
   });
 
+  it('highlights climb border when any attempt is completed', () => {
+    const climbEntry: ClimbFormEntry = {
+      ...createClimbEntry(0, 'Test Climb'),
+      climbAttempts: [
+        createClimbAttempt(0),
+        { ...createClimbAttempt(1), completed: true },
+      ],
+    };
+
+    render(
+      <MantineProvider>
+        <ClimbRowWrapper climbEntry={climbEntry} />
+      </MantineProvider>,
+    );
+
+    expect(
+      screen.getByLabelText('Climb name').closest('[data-with-border]'),
+    ).toHaveAttribute(
+      'style',
+      expect.stringContaining('border-color: var(--mantine-color-green-6);'),
+    );
+  });
+
   it('shows timer + edit controls when timer is idle', () => {
     render(
       <MantineProvider>

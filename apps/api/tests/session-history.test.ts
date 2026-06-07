@@ -7,6 +7,7 @@ import type * as SessionHistoryModule from '../src/sessions/session-history.js';
 const historyMocks = vi.hoisted(() => ({
   listSessions: vi.fn(),
   getSessionDetail: vi.fn(),
+  deleteSession: vi.fn(),
   restoreImplementations: (() => {
     /* empty */
   }) as () => void,
@@ -21,12 +22,14 @@ vi.mock(
     const restore = () => {
       historyMocks.listSessions.mockImplementation(actual.listSessions);
       historyMocks.getSessionDetail.mockImplementation(actual.getSessionDetail);
+      historyMocks.deleteSession.mockImplementation(actual.deleteSession);
     };
     historyMocks.restoreImplementations = restore;
     restore();
     return {
       listSessions: historyMocks.listSessions,
       getSessionDetail: historyMocks.getSessionDetail,
+      deleteSession: historyMocks.deleteSession,
     };
   },
 );
@@ -77,7 +80,13 @@ const createDetailDb = (options: {
   session?: Record<string, unknown> | null;
   entries?: Array<Record<string, unknown>>;
   images?: Array<Record<string, unknown>>;
-  attemptCounts?: Array<{ entryId: string; attempts: number }>;
+  climbAttempts?: Array<{
+    entryId: string;
+    sequenceOrder: number;
+    durationMs: number;
+    completed: boolean | null;
+    notes: string;
+  }>;
 }) => {
   let selectCall = 0;
 
@@ -127,12 +136,7 @@ const createDetailDb = (options: {
           innerJoin: vi.fn(() => ({
             where: vi.fn(() => ({
               // oxlint-disable-next-line typescript/require-await
-              groupBy: vi.fn(async () =>
-                (options.attemptCounts ?? []).map((row) => ({
-                  entryId: row.entryId,
-                  attempts: row.attempts,
-                })),
-              ),
+              orderBy: vi.fn(async () => options.climbAttempts ?? []),
             })),
           })),
         })),
@@ -247,7 +251,7 @@ describe('session detail persistence', () => {
     historyMocks.getSessionDetail.mockClear();
   });
 
-  it('returns ordered entries, images, and attempt counts for the user session', async () => {
+  it('returns ordered entries, images, and climb attempts for the user session', async () => {
     const mock = createDetailDb({
       session: {
         id: sessionId,
@@ -299,7 +303,22 @@ describe('session detail persistence', () => {
           contentLength: 512_000,
         },
       ],
-      attemptCounts: [{ entryId: climbEntryId, attempts: 2 }],
+      climbAttempts: [
+        {
+          entryId: climbEntryId,
+          sequenceOrder: 0,
+          durationMs: 20_000,
+          completed: false,
+          notes: 'Slipped on crux',
+        },
+        {
+          entryId: climbEntryId,
+          sequenceOrder: 1,
+          durationMs: 25_000,
+          completed: true,
+          notes: '',
+        },
+      ],
     });
 
     const response = await historyMocks.getSessionDetail(
@@ -326,7 +345,20 @@ describe('session detail persistence', () => {
           name: 'Pink corner route',
           grade: 'V3',
           notes: '',
-          attempts: 2,
+          climbAttempts: [
+            {
+              sequenceOrder: 0,
+              durationMs: 20_000,
+              completed: false,
+              notes: 'Slipped on crux',
+            },
+            {
+              sequenceOrder: 1,
+              durationMs: 25_000,
+              completed: true,
+              notes: '',
+            },
+          ],
           images: [
             {
               id: '223e4567-e89b-12d3-a456-426614174001',
@@ -468,6 +500,108 @@ describe('session history routes', () => {
     expect(historyMocks.getSessionDetail).toHaveBeenCalledWith(
       expect.anything(),
       otherUserId,
+      sessionId,
+    );
+  });
+});
+
+describe('delete session persistence', () => {
+  beforeEach(() => {
+    historyMocks.restoreImplementations();
+    historyMocks.deleteSession.mockClear();
+  });
+
+  it('returns true when the session belongs to the user and is deleted', async () => {
+    const db = {
+      delete: vi.fn(() => ({
+        where: vi.fn(() => ({
+          returning: vi.fn().mockResolvedValue([{ id: sessionId }]),
+        })),
+      })),
+    };
+
+    const result = await historyMocks.deleteSession(
+      db as never,
+      userId,
+      sessionId,
+    );
+
+    expect(result).toBe(true);
+  });
+
+  it('returns false when no matching session is found', async () => {
+    const db = {
+      delete: vi.fn(() => ({
+        where: vi.fn(() => ({
+          returning: vi.fn().mockResolvedValue([]),
+        })),
+      })),
+    };
+
+    const result = await historyMocks.deleteSession(
+      db as never,
+      userId,
+      sessionId,
+    );
+
+    expect(result).toBe(false);
+  });
+});
+
+describe('delete session route', () => {
+  beforeEach(() => {
+    historyMocks.deleteSession.mockClear();
+    mockCreateDb.mockClear();
+    historyMocks.restoreImplementations();
+  });
+
+  afterEach(() => {
+    historyMocks.restoreImplementations();
+  });
+
+  it('returns 401 without an authenticated session', async () => {
+    const app = createAuthedApp(null);
+
+    const response = await app.request(`/api/sessions/${sessionId}`, {
+      method: 'DELETE',
+    });
+
+    expect(response.status).toBe(401);
+    expect(historyMocks.deleteSession).not.toHaveBeenCalled();
+  });
+
+  it('returns 204 when the session is successfully deleted', async () => {
+    historyMocks.deleteSession.mockResolvedValue(true);
+
+    const app = createAuthedApp(userId);
+    const response = await app.request(
+      `/api/sessions/${sessionId}`,
+      { method: 'DELETE' },
+      env,
+    );
+
+    expect(response.status).toBe(204);
+    expect(historyMocks.deleteSession).toHaveBeenCalledWith(
+      expect.anything(),
+      userId,
+      sessionId,
+    );
+  });
+
+  it('returns 404 when the session does not belong to the user', async () => {
+    historyMocks.deleteSession.mockResolvedValue(false);
+
+    const app = createAuthedApp(userId);
+    const response = await app.request(
+      `/api/sessions/${sessionId}`,
+      { method: 'DELETE' },
+      env,
+    );
+
+    expect(response.status).toBe(404);
+    expect(historyMocks.deleteSession).toHaveBeenCalledWith(
+      expect.anything(),
+      userId,
       sessionId,
     );
   });

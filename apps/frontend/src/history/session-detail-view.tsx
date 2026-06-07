@@ -3,89 +3,52 @@ import type {
   SessionDetailClimbEntry,
   SessionDetailResponse,
 } from '@boulder/api-contract';
-import { Image, Paper, SimpleGrid, Stack, Text, Title } from '@mantine/core';
+import { Badge, Button, Group, Paper, Stack, Text, Title } from '@mantine/core';
+import { modals } from '@mantine/modals';
+import {
+  ClockIcon,
+  MountainsIcon,
+  TimerIcon,
+  TrashIcon,
+} from '@phosphor-icons/react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { useBlobObjectUrl } from '../hooks/use-blob-object-url.js';
 import { formatDurationMs } from '../lib/timer/index.js';
 import type { OfflineImage } from '../offline/db/types.js';
 import { offlineImagesRepository } from '../offline/repositories/offline-images-repository.js';
 import { formatSessionDate } from './format-session-date.js';
 import type { SessionDetailSource } from './load-session-detail.js';
-import {
-  sortSessionDetailEntries,
-  sortSyncedImages,
-} from './sort-session-detail.js';
-
-const ClimbImagePreview = ({ src, alt }: { src: string; alt: string }) => (
-  <Image src={src} alt={alt} radius="sm" h={96} w={96} fit="cover" />
-);
-
-const PendingImagePreview = ({ image }: { image: OfflineImage }) => {
-  const src = useBlobObjectUrl(image.blob);
-
-  if (!src) {
-    return null;
-  }
-
-  return (
-    <ClimbImagePreview
-      src={src}
-      alt={`Pending climb photo ${image.index + 1}`}
-    />
-  );
-};
-
-const ClimbEntryImages = ({
-  entry,
-  source,
-  pendingImages,
-}: {
-  entry: SessionDetailClimbEntry;
-  source: SessionDetailSource;
-  pendingImages: OfflineImage[];
-}) => {
-  if (source === 'server') {
-    const images = sortSyncedImages(entry.images);
-    if (images.length === 0) {
-      return null;
-    }
-
-    return (
-      <SimpleGrid cols={{ base: 3, xs: 4 }} spacing="xs">
-        {images.map((image) => (
-          <ClimbImagePreview
-            key={image.id}
-            src={image.photoUrl}
-            alt={`Climb photo ${image.index + 1}`}
-          />
-        ))}
-      </SimpleGrid>
-    );
-  }
-
-  if (pendingImages.length === 0) {
-    return null;
-  }
-
-  return (
-    <SimpleGrid cols={{ base: 3, xs: 4 }} spacing="xs">
-      {pendingImages.map((image) => (
-        <PendingImagePreview key={image.id} image={image} />
-      ))}
-    </SimpleGrid>
-  );
-};
+import { SessionDetailBreakEntryCard } from './session-detail-break-entry.js';
+import { SessionDetailClimbEntryCard } from './session-detail-climb-entry.js';
+import { sortSessionDetailEntries } from './sort-session-detail.js';
 
 export interface SessionDetailViewProps {
   session: SessionDetailResponse;
   source: SessionDetailSource;
+  onDelete?: () => void;
 }
 
 export const SessionDetailView = ({
   session,
   source,
+  onDelete,
 }: SessionDetailViewProps) => {
-  const entries = sortSessionDetailEntries(session.entries);
+  const { entries, climbCount, breakCount, sendCount } = useMemo(() => {
+    const sorted = sortSessionDetailEntries(session.entries);
+    const byType = Object.groupBy(sorted, (entry) => entry.type);
+    const climbs = (byType.climb ?? []).filter(
+      (entry): entry is SessionDetailClimbEntry => entry.type === 'climb',
+    );
+
+    return {
+      entries: sorted,
+      climbCount: climbs.length,
+      breakCount: byType.break?.length ?? 0,
+      sendCount: climbs.filter((climb) =>
+        climb.climbAttempts.some((attempt) => attempt.completed === true),
+      ).length,
+    };
+  }, [session.entries]);
+  const sessionNotes = session.notes.trim();
 
   const allPendingImages = useLiveQuery(
     async () => {
@@ -101,62 +64,114 @@ export const SessionDetailView = ({
 
   const pendingImagesByEntryId = useMemo(() => {
     const map = new Map<string, OfflineImage[]>();
-    for (const img of allPendingImages) {
-      const bucket = map.get(img.entryId);
+    for (const image of allPendingImages) {
+      const bucket = map.get(image.entryId);
       if (bucket) {
-        bucket.push(img);
+        bucket.push(image);
       } else {
-        map.set(img.entryId, [img]);
+        map.set(image.entryId, [image]);
       }
     }
     return map;
   }, [allPendingImages]);
 
+  const handleDelete = onDelete
+    ? () => {
+        modals.openConfirmModal({
+          title: 'Delete session?',
+          children:
+            'This will permanently delete this session and all its entries. This cannot be undone.',
+          labels: { confirm: 'Delete session', cancel: 'Cancel' },
+          confirmProps: { color: 'red' },
+          onConfirm: onDelete,
+        });
+      }
+    : undefined;
+
   return (
-    <Stack gap="md">
-      <Stack gap={4}>
-        <Title order={2}>{session.gymName}</Title>
-        {session.location ? (
-          <Text c="dimmed" size="sm">
-            {session.location}
-          </Text>
+    <Stack gap="lg">
+      <Stack gap="sm">
+        <Stack gap={4}>
+          <Title order={1}>{session.gymName}</Title>
+          {session.location ? (
+            <Text c="dimmed" size="sm">
+              {session.location}
+            </Text>
+          ) : null}
+        </Stack>
+
+        <Group gap="xs">
+          <Badge
+            leftSection={<ClockIcon aria-hidden size={12} />}
+            variant="light"
+          >
+            {formatSessionDate(session.startTime)} –{' '}
+            {formatSessionDate(session.endTime)}
+          </Badge>
+          <Badge
+            leftSection={<TimerIcon aria-hidden size={12} />}
+            variant="light"
+          >
+            {formatDurationMs(session.totalDurationMs)}
+          </Badge>
+        </Group>
+
+        <Group gap="xs">
+          <Badge
+            leftSection={<MountainsIcon aria-hidden size={12} />}
+            variant="outline"
+          >
+            {climbCount} {climbCount === 1 ? 'climb' : 'climbs'}
+          </Badge>
+          {sendCount > 0 ? (
+            <Badge color="green" variant="light">
+              {sendCount} {sendCount === 1 ? 'send' : 'sends'}
+            </Badge>
+          ) : null}
+          {breakCount > 0 ? (
+            <Badge variant="outline">
+              {breakCount} {breakCount === 1 ? 'break' : 'breaks'}
+            </Badge>
+          ) : null}
+        </Group>
+
+        {sessionNotes ? (
+          <Paper p="md" withBorder>
+            <Text size="sm" style={{ overflowWrap: 'anywhere' }}>
+              {sessionNotes}
+            </Text>
+          </Paper>
         ) : null}
-        <Text c="dimmed" size="sm">
-          {formatSessionDate(session.startTime)} –{' '}
-          {formatSessionDate(session.endTime)}
-        </Text>
-        <Text size="sm">Total {formatDurationMs(session.totalDurationMs)}</Text>
-        {session.notes ? <Text size="sm">{session.notes}</Text> : null}
       </Stack>
 
       <Stack gap="sm">
-        {entries.map((entry) => (
-          <Paper key={entry.id} p="md" withBorder>
-            <Stack gap="xs">
-              <Text fw={600}>
-                {entry.type === 'climb' ? entry.name || 'Climb' : 'Break'}
-              </Text>
-              <Text size="sm">{formatDurationMs(entry.durationMs)}</Text>
-              {entry.type === 'climb' ? (
-                <>
-                  {entry.grade ? (
-                    <Text size="sm">Grade {entry.grade}</Text>
-                  ) : null}
-                  {entry.attempts ? (
-                    <Text size="sm">{entry.attempts} attempts</Text>
-                  ) : null}
-                  {entry.notes ? <Text size="sm">{entry.notes}</Text> : null}
-                  <ClimbEntryImages
-                    entry={entry}
-                    source={source}
-                    pendingImages={pendingImagesByEntryId.get(entry.id) ?? []}
-                  />
-                </>
-              ) : null}
-            </Stack>
-          </Paper>
-        ))}
+        <Text fw={600} size="sm">
+          Timeline
+        </Text>
+        {entries.map((entry) =>
+          entry.type === 'climb' ? (
+            <SessionDetailClimbEntryCard
+              key={entry.id}
+              entry={entry}
+              pendingImages={pendingImagesByEntryId.get(entry.id) ?? []}
+              source={source}
+            />
+          ) : (
+            <SessionDetailBreakEntryCard key={entry.id} entry={entry} />
+          ),
+        )}
       </Stack>
+
+      {handleDelete ? (
+        <Button
+          color="red"
+          leftSection={<TrashIcon aria-hidden size={16} />}
+          onClick={handleDelete}
+          variant="subtle"
+        >
+          Delete session
+        </Button>
+      ) : null}
     </Stack>
   );
 };

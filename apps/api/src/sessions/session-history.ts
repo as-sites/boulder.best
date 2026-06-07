@@ -152,15 +152,18 @@ export const getSessionDetail = async (
       asc(sessionEntryImages.imageIndex),
     );
 
-  const attemptCounts = await db
+  const climbAttemptRows = await db
     .select({
       entryId: climbAttempts.entryId,
-      attempts: count(),
+      sequenceOrder: climbAttempts.sequenceOrder,
+      durationMs: climbAttempts.durationMs,
+      completed: climbAttempts.completed,
+      notes: climbAttempts.notes,
     })
     .from(climbAttempts)
     .innerJoin(sessionEntries, eq(climbAttempts.entryId, sessionEntries.id))
     .where(eq(sessionEntries.sessionId, sessionId))
-    .groupBy(climbAttempts.entryId);
+    .orderBy(asc(climbAttempts.entryId), asc(climbAttempts.sequenceOrder));
 
   const imagesByEntryId = new Map<string, typeof images>();
   for (const image of images) {
@@ -169,9 +172,25 @@ export const getSessionDetail = async (
     imagesByEntryId.set(image.entryId, entryImages);
   }
 
-  const attemptsByEntryId = new Map(
-    attemptCounts.map((row) => [row.entryId, row.attempts]),
-  );
+  const climbAttemptsByEntryId = new Map<
+    string,
+    Array<{
+      sequenceOrder: number;
+      durationMs: number;
+      completed: boolean | null;
+      notes: string;
+    }>
+  >();
+  for (const attempt of climbAttemptRows) {
+    const entryAttempts = climbAttemptsByEntryId.get(attempt.entryId) ?? [];
+    entryAttempts.push({
+      sequenceOrder: attempt.sequenceOrder,
+      durationMs: attempt.durationMs,
+      completed: attempt.completed,
+      notes: attempt.notes,
+    });
+    climbAttemptsByEntryId.set(attempt.entryId, entryAttempts);
+  }
 
   return {
     id: session.id,
@@ -192,8 +211,6 @@ export const getSessionDetail = async (
         };
       }
 
-      const attemptCount = attemptsByEntryId.get(entry.id) ?? 0;
-
       return {
         id: entry.id,
         sequenceOrder: entry.sequenceOrder,
@@ -201,8 +218,8 @@ export const getSessionDetail = async (
         type: 'climb' as const,
         name: entry.name ?? '',
         grade: entry.grade ?? '',
-        attempts: attemptCount > 0 ? attemptCount : null,
         notes: entry.notes,
+        climbAttempts: climbAttemptsByEntryId.get(entry.id) ?? [],
         images: (imagesByEntryId.get(entry.id) ?? []).map((image) => ({
           id: image.id,
           index: image.index,
@@ -214,4 +231,17 @@ export const getSessionDetail = async (
       };
     }),
   };
+};
+
+export const deleteSession = async (
+  db: AppDb,
+  userId: string,
+  sessionId: string,
+): Promise<boolean> => {
+  const [deleted] = await db
+    .delete(sessions)
+    .where(and(eq(sessions.id, sessionId), eq(sessions.userId, userId)))
+    .returning({ id: sessions.id });
+
+  return deleted !== undefined;
 };

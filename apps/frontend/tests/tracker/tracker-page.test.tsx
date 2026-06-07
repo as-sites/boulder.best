@@ -128,7 +128,7 @@ describe('tracker page finalization flow', () => {
 
     await waitFor(() => {
       expect(trackerMocks.navigate).toHaveBeenCalledWith({
-        to: '/sessions/$sessionId',
+        to: '/history/$sessionId',
         params: { sessionId: sessionIdBeforeFinalize },
       });
     });

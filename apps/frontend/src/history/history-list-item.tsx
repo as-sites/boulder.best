@@ -1,4 +1,19 @@
-import { Badge, Divider, Group, Paper, Stack, Text } from '@mantine/core';
+import {
+  Badge,
+  Divider,
+  Group,
+  Paper,
+  Stack,
+  Text,
+  ThemeIcon,
+} from '@mantine/core';
+import {
+  CaretRightIcon,
+  ClockIcon,
+  ListBulletsIcon,
+  MapPinIcon,
+  TimerIcon,
+} from '@phosphor-icons/react';
 import { Link } from '@tanstack/react-router';
 import { formatDurationMs } from '../lib/timer/index.js';
 import { formatSessionDate } from './format-session-date.js';
@@ -22,42 +37,90 @@ export const HistoryListItem = ({
       component={Link}
       p="md"
       radius="md"
-      to={`/sessions/${item.id}`}
+      to={`/history/${item.id}`}
       withBorder
+      styles={{
+        root: {
+          display: 'block',
+          textDecoration: 'none',
+          color: 'inherit',
+          transition: 'border-color 120ms ease, box-shadow 120ms ease',
+          '&:hover': {
+            borderColor: 'var(--mantine-color-default-border)',
+            boxShadow: 'var(--mantine-shadow-xs)',
+          },
+        },
+      }}
     >
-      <Stack gap="xs">
-        <Group justify="space-between">
-          <Stack gap={0}>
-            <Text fw={600}>{item.gymName}</Text>
-            {item.location ? (
-              <Text c="dimmed" size="sm">
-                {item.location}
+      <Group align="flex-start" justify="space-between" wrap="nowrap">
+        <Stack gap="xs" style={{ flex: 1, minWidth: 0 }}>
+          <Group align="flex-start" justify="space-between" wrap="nowrap">
+            <Stack gap={2} style={{ flex: 1, minWidth: 0 }}>
+              <Text fw={600} lineClamp={1}>
+                {item.gymName}
               </Text>
-            ) : null}
-          </Stack>
-          {item.syncStatus === 'pending' ? (
-            <Badge color="yellow" variant="light">
-              Pending sync
-            </Badge>
-          ) : null}
-          {item.syncStatus === 'error' ? (
-            <Badge color="red" variant="light">
-              Sync failed
-            </Badge>
-          ) : null}
-        </Group>
+              {item.location ? (
+                <Group gap={4} wrap="nowrap">
+                  <MapPinIcon aria-hidden size={14} />
+                  <Text c="dimmed" lineClamp={1} size="sm">
+                    {item.location}
+                  </Text>
+                </Group>
+              ) : null}
+            </Stack>
+            <Group gap={6} wrap="nowrap">
+              {item.syncStatus === 'pending' ? (
+                <Badge color="yellow" variant="light">
+                  Pending sync
+                </Badge>
+              ) : null}
+              {item.syncStatus === 'error' ? (
+                <Badge color="red" variant="light">
+                  Sync failed
+                </Badge>
+              ) : null}
+            </Group>
+          </Group>
 
-        <Text c="dimmed" size="sm">
-          {formatSessionDate(item.startTime)}
-        </Text>
+          <Group gap="md" wrap="wrap">
+            <Group gap={6} wrap="nowrap">
+              <ThemeIcon color="gray" radius="xl" size="sm" variant="light">
+                <ClockIcon aria-hidden size={14} />
+              </ThemeIcon>
+              <Text c="dimmed" size="sm">
+                {formatSessionDate(item.startTime)}
+              </Text>
+            </Group>
+            <Group gap={6} wrap="nowrap">
+              <ThemeIcon color="gray" radius="xl" size="sm" variant="light">
+                <TimerIcon aria-hidden size={14} />
+              </ThemeIcon>
+              <Text ff="monospace" size="sm">
+                {formatDurationMs(item.totalDurationMs)}
+              </Text>
+            </Group>
+            <Group gap={6} wrap="nowrap">
+              <ThemeIcon color="gray" radius="xl" size="sm" variant="light">
+                <ListBulletsIcon aria-hidden size={14} />
+              </ThemeIcon>
+              <Text c="dimmed" size="sm">
+                {item.entryCount} {item.entryCount === 1 ? 'entry' : 'entries'}
+              </Text>
+            </Group>
+          </Group>
+        </Stack>
 
-        <Group gap="md">
-          <Text size="sm">{formatDurationMs(item.totalDurationMs)}</Text>
-          <Text c="dimmed" size="sm">
-            {item.entryCount} {item.entryCount === 1 ? 'entry' : 'entries'}
-          </Text>
-        </Group>
-      </Stack>
+        <ThemeIcon
+          aria-hidden
+          color="gray"
+          radius="xl"
+          size="md"
+          style={{ flexShrink: 0 }}
+          variant="subtle"
+        >
+          <CaretRightIcon size={16} />
+        </ThemeIcon>
+      </Group>
     </Paper>
   </Stack>
 );

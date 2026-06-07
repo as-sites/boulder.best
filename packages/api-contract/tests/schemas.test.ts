@@ -323,7 +323,7 @@ describe('session detail response schema', () => {
             type: 'climb',
             name: null,
             grade: null,
-            attempts: null,
+            climbAttempts: [],
           },
         ],
       }).success,

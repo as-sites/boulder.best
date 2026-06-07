@@ -33,4 +33,8 @@ export interface ApiContractHandlers<E extends Env = Env> {
     c: Context<E>,
     params: SessionIdParam,
   ) => MaybePromise<SessionDetailResponse | null>;
+  deleteSession: (
+    c: Context<E>,
+    params: SessionIdParam,
+  ) => MaybePromise<boolean>;
 }

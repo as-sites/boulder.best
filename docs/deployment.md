@@ -212,7 +212,9 @@ Browser → pr-<n>.preview.boulder.best (boulder-preview-gateway)
   /*      → https://pr-<n>-boulder-frontend.<subdomain>.workers.dev
 ```
 
-Each preview API version uses a dedicated Neon branch (`pr-<n>`) for `DATABASE_URL`. Other Worker secrets inherit from the production Worker account (v1).
+Each preview API version uses a dedicated Neon branch (`pr-<n>`) for `DATABASE_URL`. Other Worker secrets inherit from the previous Worker version.
+
+**Important:** `wrangler versions upload --secrets-file` sets `DATABASE_URL` on the uploaded version. The next `wrangler deploy` inherits unset secrets from the **latest uploaded version**, not necessarily the live production one. Without pinning production `DATABASE_URL` on deploy, merging a PR can promote the preview branch URL to production (then preview cleanup deletes that Neon branch and auth returns 500). Production deploy (`api:deploy`) passes `--secrets-file` with the production `DATABASE_URL` from CI / `.env` to prevent this.
 
 ### One-time gateway setup
 

@@ -81,16 +81,20 @@ export const mergeSessionHistory = (
   return merged;
 };
 
-/** Whether a local pending group separator should appear before this item. */
+/**
+ * Whether "On this device" should appear before this item within its render
+ * group (e.g. a date section). Shows before the first local-only row in each
+ * group, including when local-only sessions span multiple calendar days.
+ */
 export const shouldShowLocalPendingSeparator = (
-  items: MergedHistoryItem[],
-  index: number,
+  groupItems: MergedHistoryItem[],
+  indexInGroup: number,
 ): boolean => {
-  const item = items[index];
+  const item = groupItems[indexInGroup];
   if (!item?.isLocalOnly) {
     return false;
   }
 
-  const previous = items[index - 1];
-  return previous === undefined || !previous.isLocalOnly;
+  const previousInGroup = groupItems[indexInGroup - 1];
+  return previousInGroup === undefined || !previousInGroup.isLocalOnly;
 };

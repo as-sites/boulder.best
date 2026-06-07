@@ -16,8 +16,16 @@ const climbEntry: SessionDetailClimbEntry = {
   type: 'climb',
   name: 'Pink corner route',
   grade: 'V3',
-  attempts: 2,
   notes: '',
+  climbAttempts: [
+    {
+      sequenceOrder: 0,
+      durationMs: 20_000,
+      completed: false,
+      notes: 'Slipped on crux',
+    },
+    { sequenceOrder: 1, durationMs: 25_000, completed: true, notes: '' },
+  ],
   images: [
     {
       id: '223e4567-e89b-12d3-a456-426614174001',
@@ -78,9 +86,56 @@ describe('session detail view', () => {
       </MantineProvider>,
     );
 
-    const headings = screen.getAllByText(/pink corner route|break/i);
-    expect(headings[0]?.textContent).toMatch(/pink corner route/i);
+    expect(screen.getByText('Pink corner route')).toBeDefined();
+    expect(screen.getByText('Break')).toBeDefined();
     expect(screen.getByRole('img', { name: /climb photo 1/i })).toBeDefined();
+  });
+
+  it('shows send badges and attempt completion details', () => {
+    render(
+      <MantineProvider>
+        <SessionDetailView session={sessionFixture} source="server" />
+      </MantineProvider>,
+    );
+
+    expect(screen.getByText('1 send')).toBeDefined();
+    expect(screen.getByText('Sent')).toBeDefined();
+    expect(screen.getByText('Slipped on crux')).toBeDefined();
+    expect(screen.getByText('Attempt 2')).toBeDefined();
+  });
+
+  it('counts one send per climb even when multiple attempts are completed', () => {
+    render(
+      <MantineProvider>
+        <SessionDetailView
+          session={{
+            ...sessionFixture,
+            entries: [
+              {
+                ...climbEntry,
+                climbAttempts: [
+                  {
+                    sequenceOrder: 0,
+                    durationMs: 20_000,
+                    completed: true,
+                    notes: '',
+                  },
+                  {
+                    sequenceOrder: 1,
+                    durationMs: 25_000,
+                    completed: true,
+                    notes: '',
+                  },
+                ],
+              },
+            ],
+          }}
+          source="server"
+        />
+      </MantineProvider>,
+    );
+
+    expect(screen.getByText('1 send')).toBeDefined();
   });
 
   it('loads pending local images for a climb entry', async () => {

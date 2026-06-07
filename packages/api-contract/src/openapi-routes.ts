@@ -178,6 +178,30 @@ export const getSessionDetailRoute = createRoute({
   },
 });
 
+export const deleteSessionRoute = createRoute({
+  method: 'delete',
+  path: '/api/sessions/{id}',
+  tags: ['Sessions'],
+  summary: 'Delete a session',
+  description:
+    'Permanently deletes a session and all its entries for the authenticated user.',
+  security: authenticatedSecurity,
+  request: {
+    params: sessionIdParamSchema,
+  },
+  responses: {
+    204: {
+      description: 'Session deleted',
+    },
+    401: {
+      description: 'Unauthorized',
+    },
+    404: {
+      description: 'Session not found',
+    },
+  },
+});
+
 /** MVP OpenAPI route definitions registered on the shared contract app. */
 export const mvpOpenApiRoutes = [
   getGymsRoute,
@@ -185,4 +209,5 @@ export const mvpOpenApiRoutes = [
   syncSessionRoute,
   listSessionsRoute,
   getSessionDetailRoute,
+  deleteSessionRoute,
 ] as const;

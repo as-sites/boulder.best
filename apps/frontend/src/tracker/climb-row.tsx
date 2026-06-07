@@ -24,6 +24,7 @@ import {
   useWatch,
   type Control,
 } from 'react-hook-form';
+import { formatClimbSummary } from '../history/format-climb-summary.js';
 import { useTimerDisplayMilliseconds } from '../lib/settings/index.js';
 import type { SessionFormValues } from '../offline/db/types.js';
 import { ClimbAttemptRow } from './climb-attempt-row.js';
@@ -148,13 +149,6 @@ export interface ClimbRowProps {
   onAttemptStop?: () => void;
 }
 
-const formatClimbSummary = (grade: string, attemptCount: number): string => {
-  const attemptsLabel =
-    attemptCount === 1 ? '1 attempt' : `${attemptCount} attempts`;
-  const trimmedGrade = grade.trim();
-  return trimmedGrade ? `${trimmedGrade} · ${attemptsLabel}` : attemptsLabel;
-};
-
 const hasDirtyField = (dirty: unknown): boolean => {
   if (dirty === true) {
     return true;
@@ -249,12 +243,25 @@ export const ClimbRow = ({
     climb.grade,
     climb.climbAttempts.length,
   );
+  const hasCompletedAttempt = climb.climbAttempts.some(
+    (attempt) => attempt.completed,
+  );
   const expandToggleLabel = isExpanded
     ? `Collapse ${defaultName}`
     : `Expand ${defaultName}`;
 
   return (
-    <Paper p="md" withBorder>
+    <Paper
+      p="md"
+      withBorder
+      {...(hasCompletedAttempt
+        ? {
+            style: {
+              borderColor: 'var(--mantine-color-green-6)',
+            },
+          }
+        : {})}
+    >
       <Stack gap="sm">
         <Group justify="space-between" align="flex-start" wrap="nowrap">
           <Box style={{ flex: 1, minWidth: 0 }}>
