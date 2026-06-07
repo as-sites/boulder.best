@@ -816,6 +816,41 @@ exports[`OpenAPI document > serves OpenAPI JSON at /openapi.json > openapi-docum
       },
     },
     "/api/sessions/{id}": {
+      "delete": {
+        "description": "Permanently deletes a session and all its entries for the authenticated user.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "example": "987fcdeb-51a2-43d7-9012-345678901234",
+              "format": "uuid",
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "204": {
+            "description": "Session deleted",
+          },
+          "401": {
+            "description": "Unauthorized",
+          },
+          "404": {
+            "description": "Session not found",
+          },
+        },
+        "security": [
+          {
+            "sessionCookie": [],
+          },
+        ],
+        "summary": "Delete a session",
+        "tags": [
+          "Sessions",
+        ],
+      },
       "get": {
         "description": "Returns a single session with entries ordered by sequenceOrder and climb images ordered by index.",
         "parameters": [

@@ -9,6 +9,7 @@ import {
   withResolvedGymName,
 } from '../history/load-session-detail.js';
 import { SessionDetailView } from '../history/session-detail-view.js';
+import { useDeleteSessionMutation } from '../history/use-delete-session-mutation.js';
 import { useCachedGymsQuery } from '../tracker/use-cached-gyms-query.js';
 
 export const SessionDetailPage = () => {
@@ -35,6 +36,8 @@ export const SessionDetailPage = () => {
         : null,
     [detailQuery.data, gymNamesById],
   );
+
+  const deleteMutation = useDeleteSessionMutation();
 
   if (detailQuery.isPending || gymsQuery.isPending) {
     return <PageLoading message="Loading session..." />;
@@ -65,6 +68,12 @@ export const SessionDetailPage = () => {
       <SessionDetailView
         session={resolvedDetail.session}
         source={resolvedDetail.source}
+        onDelete={() => {
+          deleteMutation.mutate({
+            sessionId: resolvedDetail.session.id,
+            source: resolvedDetail.source,
+          });
+        }}
       />
     </Container>
   );
