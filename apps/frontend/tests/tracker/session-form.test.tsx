@@ -3,12 +3,10 @@ import type { Gym } from '@boulder/api-contract';
 import { MantineProvider } from '@mantine/core';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import type { SessionFormValues } from '../../src/offline/db/types.js';
 import {
   createBreakEntry,
   createClimbEntry,
 } from '../../src/tracker/entry-factory.js';
-import { importSessionFormFromGarminFit } from '../../src/tracker/import-garmin-fit.js';
 import { createEmptySessionForm } from '../../src/tracker/session-form-state.js';
 import { SessionForm } from '../../src/tracker/session-form.js';
 
@@ -48,10 +46,6 @@ vi.mock(
   }),
 );
 
-vi.mock(import('../../src/tracker/import-garmin-fit.js'), () => ({
-  importSessionFormFromGarminFit: vi.fn(),
-}));
-
 const renderSessionForm = () => {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
@@ -74,7 +68,6 @@ describe(SessionForm, () => {
       lastSavedAt: Date.now(),
       formData: createEmptySessionForm(),
     });
-    vi.mocked(importSessionFormFromGarminFit).mockReset();
   });
 
   it('disables start until a gym is selected', async () => {
@@ -245,81 +238,6 @@ describe(SessionForm, () => {
     expect(
       screen.queryByRole('button', { name: /stop session/i }),
     ).not.toBeInTheDocument();
-  });
-
-  it('imports a Garmin FIT file and finalizes the imported session', async () => {
-    expect.hasAssertions();
-    const onStopped = vi.fn<(values: SessionFormValues) => void>();
-    const queryClient = new QueryClient({
-      defaultOptions: { queries: { retry: false } },
-    });
-    const importedSession = {
-      ...createEmptySessionForm(),
-      gymId: gymFixture[0].id,
-      location: 'Main Wall',
-      status: 'stopped' as const,
-      startTime: '2026-05-20T10:00:00.000Z',
-      endTime: '2026-05-20T10:30:00.000Z',
-      totalDurationMs: 1_800_000,
-      entries: [createClimbEntry(0, 'Climb 1')],
-    };
-
-    vi.mocked(importSessionFormFromGarminFit).mockResolvedValue(
-      importedSession,
-    );
-
-    render(
-      <QueryClientProvider client={queryClient}>
-        <MantineProvider>
-          <SessionForm
-            initialValues={{
-              ...createEmptySessionForm(),
-              gymId: gymFixture[0].id,
-              location: 'Main Wall',
-            }}
-            onStopped={onStopped}
-          />
-        </MantineProvider>
-      </QueryClientProvider>,
-    );
-
-    await waitFor(() =>
-      expect(
-        screen.getByRole('button', { name: /import \.fit/i }),
-      ).toBeDefined(),
-    );
-
-    const file = new File(
-      [new Uint8Array([0x2e, 0x46, 0x49, 0x54])],
-      'session.fit',
-      {
-        type: 'application/octet-stream',
-      },
-    );
-    const item = vi.fn<(index: number) => File | null>().mockReturnValue(file);
-    const fileList = {
-      0: file,
-      length: 1,
-      item,
-    };
-
-    fireEvent.change(screen.getByLabelText('Choose Garmin FIT file'), {
-      target: { files: fileList },
-    });
-
-    await waitFor(() => {
-      expect(importSessionFormFromGarminFit).toHaveBeenCalledWith(
-        file,
-        expect.objectContaining({
-          gymId: gymFixture[0].id,
-          location: 'Main Wall',
-        }),
-      );
-    });
-    await waitFor(() => {
-      expect(onStopped).toHaveBeenCalledWith(importedSession);
-    });
-    expect(onStopped).toHaveBeenCalledOnce();
   });
 
   // oxlint-disable-next-line typescript/require-await

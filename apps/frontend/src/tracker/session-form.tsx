@@ -9,11 +9,7 @@ import {
   Text,
   Title,
 } from '@mantine/core';
-import {
-  ArrowSquareInIcon,
-  CoffeeIcon,
-  MountainsIcon,
-} from '@phosphor-icons/react';
+import { CoffeeIcon, MountainsIcon } from '@phosphor-icons/react';
 import { Select } from '@trendcapital/react-hook-form-mantine/Select';
 import { Textarea } from '@trendcapital/react-hook-form-mantine/Textarea';
 import {
@@ -35,7 +31,6 @@ import {
   defaultClimbName,
   resequenceEntries,
 } from './entry-factory.js';
-import { importSessionFormFromGarminFit } from './import-garmin-fit.js';
 import { TRACKER_FOOTER_PB } from './layout-constants.js';
 import { sessionFormSchema } from './session-form-schema.js';
 import { startSession, stopSession } from './session-form-state.js';
@@ -91,7 +86,6 @@ export const SessionForm = ({ initialValues, onStopped }: SessionFormProps) => {
     status === 'not_started' &&
     gymId !== null &&
     (!requiresLocation || location !== null);
-  const canImportFit = canStart;
   const canStop = status === 'active';
   const isFinalized = status === 'stopped';
   const canEditEntries = status === 'active';
@@ -101,7 +95,6 @@ export const SessionForm = ({ initialValues, onStopped }: SessionFormProps) => {
     name: 'entries',
   });
   const pendingScrollEntryIdRef = useRef<string | null>(null);
-  const fitInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     let timeoutId: number;
@@ -239,32 +232,6 @@ export const SessionForm = ({ initialValues, onStopped }: SessionFormProps) => {
     form.setValue('entries', applyBreakEnd(currentEntries, breakIndex), {
       shouldDirty: true,
     });
-  };
-
-  const handleImportFit = async (files: FileList | null) => {
-    const file = files?.item(0);
-    if (!file) {
-      return;
-    }
-
-    form.clearErrors('root');
-
-    try {
-      const next = await importSessionFormFromGarminFit(file, form.getValues());
-      form.reset(next);
-      onStopped?.(next);
-    } catch (error) {
-      form.setError('root', {
-        message:
-          error instanceof Error
-            ? error.message
-            : 'Unable to import Garmin .fit file',
-      });
-    } finally {
-      if (fitInputRef.current) {
-        fitInputRef.current.value = '';
-      }
-    }
   };
 
   const handleRemoveEntry = (index: number) => {
@@ -427,31 +394,10 @@ export const SessionForm = ({ initialValues, onStopped }: SessionFormProps) => {
   return (
     <FormProvider {...form}>
       <Stack gap="md" {...(isActive ? { pb: stopFooterPadding } : {})}>
-        <input
-          ref={fitInputRef}
-          type="file"
-          accept=".fit,application/octet-stream,application/vnd.ant.fit"
-          hidden
-          aria-label="Choose Garmin FIT file"
-          onChange={(event) => {
-            void handleImportFit(event.currentTarget.files);
-          }}
-        />
         {sessionFields}
         {rootError}
         {status === 'not_started' ? (
-          <Group grow gap="xs">
-            <Button
-              leftSection={<ArrowSquareInIcon aria-hidden size={20} />}
-              variant="light"
-              color="blue"
-              disabled={!canImportFit}
-              onClick={() => {
-                fitInputRef.current?.click();
-              }}
-            >
-              Import .fit
-            </Button>
+          <Group gap="xs">
             <Button fullWidth disabled={!canStart} onClick={handleStart}>
               Start session
             </Button>

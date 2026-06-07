@@ -97,6 +97,7 @@ export const buildSyncSessionPayload = (
 export const finalizeStoppedSession = async (
   form: SessionFormValues,
   now?: TimerNow,
+  options: { clearActiveDraft?: boolean } = {},
 ): Promise<SyncQueueItem> => {
   const payload = buildSyncSessionPayload(form, now);
   const timestamp = Date.now();
@@ -110,10 +111,14 @@ export const finalizeStoppedSession = async (
     updatedAt: timestamp,
   };
 
-  await db.transaction('rw', [db.syncQueue, db.draftSession], async () => {
-    await syncQueueRepository.put(queueItem);
-    await draftSessionRepository.clearActive();
-  });
+  await ((options.clearActiveDraft ?? true)
+    ? db.transaction('rw', [db.syncQueue, db.draftSession], async () => {
+        await syncQueueRepository.put(queueItem);
+        await draftSessionRepository.clearActive();
+      })
+    : db.transaction('rw', [db.syncQueue], async () => {
+        await syncQueueRepository.put(queueItem);
+      }));
 
   return queueItem;
 };

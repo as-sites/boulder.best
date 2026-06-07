@@ -10,6 +10,7 @@ import {
   Title,
 } from '@mantine/core';
 import { ArrowsClockwiseIcon } from '@phosphor-icons/react';
+import { Link } from '@tanstack/react-router';
 import { SyncQueuePanel } from '../components/sync-queue-panel.js';
 import { ThemeSwitcher } from '../components/theme-switcher.js';
 import {
@@ -182,6 +183,23 @@ export const SettingsPage = () => {
                   : 'Automatic sync is blocked while your browser is offline.'
               : 'Automatic sync is allowed when you are signed in and sessions are queued.'}
           </Text>
+
+          <Stack gap="xs">
+            <Text fw={600}>Session import</Text>
+            <Text c="dimmed" size="sm">
+              Import one or more Garmin .fit activities into your local session
+              history.
+            </Text>
+            <Group>
+              <Button
+                component={Link}
+                to="/settings/import-garmin-fit"
+                variant="light"
+              >
+                Import Garmin .fit files
+              </Button>
+            </Group>
+          </Stack>
 
           <SyncQueuePanel />
         </Stack>
