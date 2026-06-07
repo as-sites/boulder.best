@@ -120,6 +120,27 @@ describe('app Drizzle migrations', () => {
     );
   });
 
+  it('includes a migration that updates Sydney gym colours to V-scale labels', () => {
+    const sql = readFileSync(
+      join(migrationsDir, '0009_gym_colour_v_scale.sql'),
+      'utf8',
+    );
+
+    expect(sql).toContain("'b10c4a01-0001-4000-8000-000000000001'");
+    expect(sql).toContain("'Basic Blue (VB)'");
+    expect(sql).toContain("'Hard Yellow (V9)'");
+    expect(sql).toContain("'0e0ad003-0003-4000-8000-000000000003'");
+    expect(sql).toContain("'Hard Red (V10)'");
+    expect(sql).toContain("'900d9e02-0002-4000-8000-000000000002'");
+    expect(sql).toContain("'Hard White (V11)'");
+  });
+
+  it('registers the gym colour V-scale migration in the drizzle journal', () => {
+    expect(migrationJournal.entries.map((entry) => entry.tag)).toContain(
+      '0009_gym_colour_v_scale',
+    );
+  });
+
   it('seeds the Sydney gym catalog with locations in migration 0003', () => {
     const sql = readFileSync(
       join(migrationsDir, '0003_omniscient_landau.sql'),
