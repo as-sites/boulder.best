@@ -418,9 +418,11 @@ export const SessionForm = ({ initialValues, onStopped }: SessionFormProps) => {
         {sessionFields}
         {rootError}
         {status === 'not_started' ? (
-          <Button fullWidth disabled={!canStart} onClick={handleStart}>
-            Start session
-          </Button>
+          <Group gap="xs">
+            <Button fullWidth disabled={!canStart} onClick={handleStart}>
+              Start session
+            </Button>
+          </Group>
         ) : null}
       </Stack>
 
