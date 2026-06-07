@@ -232,3 +232,16 @@ export const getSessionDetail = async (
     }),
   };
 };
+
+export const deleteSession = async (
+  db: AppDb,
+  userId: string,
+  sessionId: string,
+): Promise<boolean> => {
+  const [deleted] = await db
+    .delete(sessions)
+    .where(and(eq(sessions.id, sessionId), eq(sessions.userId, userId)))
+    .returning({ id: sessions.id });
+
+  return deleted !== undefined;
+};

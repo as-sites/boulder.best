@@ -7,6 +7,7 @@ import type * as SessionHistoryModule from '../src/sessions/session-history.js';
 const historyMocks = vi.hoisted(() => ({
   listSessions: vi.fn(),
   getSessionDetail: vi.fn(),
+  deleteSession: vi.fn(),
   restoreImplementations: (() => {
     /* empty */
   }) as () => void,
@@ -21,12 +22,14 @@ vi.mock(
     const restore = () => {
       historyMocks.listSessions.mockImplementation(actual.listSessions);
       historyMocks.getSessionDetail.mockImplementation(actual.getSessionDetail);
+      historyMocks.deleteSession.mockImplementation(actual.deleteSession);
     };
     historyMocks.restoreImplementations = restore;
     restore();
     return {
       listSessions: historyMocks.listSessions,
       getSessionDetail: historyMocks.getSessionDetail,
+      deleteSession: historyMocks.deleteSession,
     };
   },
 );
@@ -497,6 +500,108 @@ describe('session history routes', () => {
     expect(historyMocks.getSessionDetail).toHaveBeenCalledWith(
       expect.anything(),
       otherUserId,
+      sessionId,
+    );
+  });
+});
+
+describe('delete session persistence', () => {
+  beforeEach(() => {
+    historyMocks.restoreImplementations();
+    historyMocks.deleteSession.mockClear();
+  });
+
+  it('returns true when the session belongs to the user and is deleted', async () => {
+    const db = {
+      delete: vi.fn(() => ({
+        where: vi.fn(() => ({
+          returning: vi.fn().mockResolvedValue([{ id: sessionId }]),
+        })),
+      })),
+    };
+
+    const result = await historyMocks.deleteSession(
+      db as never,
+      userId,
+      sessionId,
+    );
+
+    expect(result).toBe(true);
+  });
+
+  it('returns false when no matching session is found', async () => {
+    const db = {
+      delete: vi.fn(() => ({
+        where: vi.fn(() => ({
+          returning: vi.fn().mockResolvedValue([]),
+        })),
+      })),
+    };
+
+    const result = await historyMocks.deleteSession(
+      db as never,
+      userId,
+      sessionId,
+    );
+
+    expect(result).toBe(false);
+  });
+});
+
+describe('delete session route', () => {
+  beforeEach(() => {
+    historyMocks.deleteSession.mockClear();
+    mockCreateDb.mockClear();
+    historyMocks.restoreImplementations();
+  });
+
+  afterEach(() => {
+    historyMocks.restoreImplementations();
+  });
+
+  it('returns 401 without an authenticated session', async () => {
+    const app = createAuthedApp(null);
+
+    const response = await app.request(`/api/sessions/${sessionId}`, {
+      method: 'DELETE',
+    });
+
+    expect(response.status).toBe(401);
+    expect(historyMocks.deleteSession).not.toHaveBeenCalled();
+  });
+
+  it('returns 204 when the session is successfully deleted', async () => {
+    historyMocks.deleteSession.mockResolvedValue(true);
+
+    const app = createAuthedApp(userId);
+    const response = await app.request(
+      `/api/sessions/${sessionId}`,
+      { method: 'DELETE' },
+      env,
+    );
+
+    expect(response.status).toBe(204);
+    expect(historyMocks.deleteSession).toHaveBeenCalledWith(
+      expect.anything(),
+      userId,
+      sessionId,
+    );
+  });
+
+  it('returns 404 when the session does not belong to the user', async () => {
+    historyMocks.deleteSession.mockResolvedValue(false);
+
+    const app = createAuthedApp(userId);
+    const response = await app.request(
+      `/api/sessions/${sessionId}`,
+      { method: 'DELETE' },
+      env,
+    );
+
+    expect(response.status).toBe(404);
+    expect(historyMocks.deleteSession).toHaveBeenCalledWith(
+      expect.anything(),
+      userId,
       sessionId,
     );
   });

@@ -3,8 +3,14 @@ import type {
   SessionDetailClimbEntry,
   SessionDetailResponse,
 } from '@boulder/api-contract';
-import { Badge, Group, Paper, Stack, Text, Title } from '@mantine/core';
-import { ClockIcon, MountainsIcon, TimerIcon } from '@phosphor-icons/react';
+import { Badge, Button, Group, Paper, Stack, Text, Title } from '@mantine/core';
+import { modals } from '@mantine/modals';
+import {
+  ClockIcon,
+  MountainsIcon,
+  TimerIcon,
+  TrashIcon,
+} from '@phosphor-icons/react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { formatDurationMs } from '../lib/timer/index.js';
 import type { OfflineImage } from '../offline/db/types.js';
@@ -18,11 +24,13 @@ import { sortSessionDetailEntries } from './sort-session-detail.js';
 export interface SessionDetailViewProps {
   session: SessionDetailResponse;
   source: SessionDetailSource;
+  onDelete?: () => void;
 }
 
 export const SessionDetailView = ({
   session,
   source,
+  onDelete,
 }: SessionDetailViewProps) => {
   const { entries, climbCount, breakCount, sendCount } = useMemo(() => {
     const sorted = sortSessionDetailEntries(session.entries);
@@ -66,6 +74,19 @@ export const SessionDetailView = ({
     }
     return map;
   }, [allPendingImages]);
+
+  const handleDelete = onDelete
+    ? () => {
+        modals.openConfirmModal({
+          title: 'Delete session?',
+          children:
+            'This will permanently delete this session and all its entries. This cannot be undone.',
+          labels: { confirm: 'Delete session', cancel: 'Cancel' },
+          confirmProps: { color: 'red' },
+          onConfirm: onDelete,
+        });
+      }
+    : undefined;
 
   return (
     <Stack gap="lg">
@@ -140,6 +161,17 @@ export const SessionDetailView = ({
           ),
         )}
       </Stack>
+
+      {handleDelete ? (
+        <Button
+          color="red"
+          leftSection={<TrashIcon aria-hidden size={16} />}
+          onClick={handleDelete}
+          variant="subtle"
+        >
+          Delete session
+        </Button>
+      ) : null}
     </Stack>
   );
 };

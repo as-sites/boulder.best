@@ -38,6 +38,8 @@ const stubHandlers: ApiContractHandlers = {
   // oxlint-disable-next-line typescript/require-await
   getSessionDetail: async () =>
     sessionDetailResponseSchema.parse(sessionDetailResponseFixture),
+  // oxlint-disable-next-line typescript/require-await
+  deleteSession: async () => true,
 };
 
 describe('MVP OpenAPI route definitions', () => {
@@ -49,12 +51,14 @@ describe('MVP OpenAPI route definitions', () => {
         ['post', '/api/sessions/sync'],
         ['get', '/api/sessions'],
         ['get', '/api/sessions/{id}'],
+        ['delete', '/api/sessions/{id}'],
       ],
     );
   });
 
   it('wires request and response schemas for each route', () => {
-    const [getGyms, presign, sync, list, detail] = mvpOpenApiRoutes;
+    const [getGyms, presign, sync, list, detail, deleteRoute] =
+      mvpOpenApiRoutes;
     const { 200: getGymsResponse } = getGyms.responses;
     const { 429: getGymsRateLimitResponse } = getGyms.responses;
     const { 200: presignResponse } = presign.responses;
@@ -80,6 +84,8 @@ describe('MVP OpenAPI route definitions', () => {
     expect(listResponse.content['application/json'].schema).toBeDefined();
     expect(detail.request.params).toBeDefined();
     expect(detailResponse.content['application/json'].schema).toBeDefined();
+    expect(deleteRoute.request.params).toBeDefined();
+    expect(deleteRoute.responses[204]).toBeDefined();
   });
 });
 
@@ -129,6 +135,7 @@ describe('OpenAPI document', () => {
     expect(paths['/api/sessions/sync']?.post).toBeDefined();
     expect(paths['/api/sessions']?.get).toBeDefined();
     expect(paths['/api/sessions/{id}']?.get).toBeDefined();
+    expect(paths['/api/sessions/{id}']?.delete).toBeDefined();
   });
 });
 
