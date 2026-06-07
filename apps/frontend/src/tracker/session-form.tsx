@@ -19,7 +19,7 @@ import {
   useWatch,
 } from 'react-hook-form';
 import { useAutoRestTiming } from '../lib/settings/index.js';
-import type { SessionFormValues } from '../offline/db/types.js';
+import type { SessionFormValues, TimerState } from '../offline/db/types.js';
 import { autosaveActiveDraft } from '../offline/draft/draft-autosave.js';
 import { BreakRow } from './break-row.js';
 import { ClimbRow } from './climb-row.js';
@@ -234,6 +234,21 @@ export const SessionForm = ({ initialValues, onStopped }: SessionFormProps) => {
     });
   };
 
+  const handleBreakTimerChange = (breakIndex: number, timer: TimerState) => {
+    form.setValue(`entries.${breakIndex}.timer`, timer, {
+      shouldDirty: true,
+    });
+  };
+
+  const handleBreakDurationMsChange = (
+    breakIndex: number,
+    durationMs: number,
+  ) => {
+    form.setValue(`entries.${breakIndex}.durationMs`, durationMs, {
+      shouldDirty: true,
+    });
+  };
+
   const handleRemoveEntry = (index: number) => {
     const currentEntries = form.getValues('entries');
     const entry = currentEntries[index];
@@ -325,6 +340,12 @@ export const SessionForm = ({ initialValues, onStopped }: SessionFormProps) => {
                   isFinalized={isFinalized}
                   onEndBreak={() => {
                     handleEndBreak(index);
+                  }}
+                  onTimerChange={(timer) => {
+                    handleBreakTimerChange(index, timer);
+                  }}
+                  onDurationMsChange={(durationMs) => {
+                    handleBreakDurationMsChange(index, durationMs);
                   }}
                   onRemove={() => {
                     handleRemoveEntry(index);
