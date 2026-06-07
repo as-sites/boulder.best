@@ -243,12 +243,25 @@ export const ClimbRow = ({
     climb.grade,
     climb.climbAttempts.length,
   );
+  const hasCompletedAttempt = climb.climbAttempts.some(
+    (attempt) => attempt.completed,
+  );
   const expandToggleLabel = isExpanded
     ? `Collapse ${defaultName}`
     : `Expand ${defaultName}`;
 
   return (
-    <Paper p="md" withBorder>
+    <Paper
+      p="md"
+      withBorder
+      {...(hasCompletedAttempt
+        ? {
+            style: {
+              borderColor: 'var(--mantine-color-green-6)',
+            },
+          }
+        : {})}
+    >
       <Stack gap="sm">
         <Group justify="space-between" align="flex-start" wrap="nowrap">
           <Box style={{ flex: 1, minWidth: 0 }}>
