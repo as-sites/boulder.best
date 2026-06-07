@@ -24,7 +24,7 @@ export interface AuthEnvBindings {
 
 // Minimal surface exposed to apps — only what the API auth boundary needs.
 // Hiding the full betterAuth return type keeps declaration emit free of
-// non-portable pnpm store paths (zod internals, @simplewebauthn, etc.).
+// non-portable aube store paths (zod internals, @simplewebauthn, etc.).
 export interface AuthServer {
   handler(request: Request): Response | Promise<Response>;
   api: {

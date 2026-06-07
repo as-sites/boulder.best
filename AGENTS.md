@@ -6,9 +6,9 @@ Before generating any code or suggesting architectural changes, you MUST read an
 
 ## **1\. Tooling & Monorepo Rules (CRITICAL)**
 
-- **Use mise tasks:** This monorepo uses mise for task management. **ALWAYS** use mise run \<task\> or mise \<task\> instead of raw npm, yarn, or pnpm run commands.
+- **Use mise tasks:** This monorepo uses mise for task management. **ALWAYS** use mise run \<task\> instead of raw npm, yarn, pnpm or aube run commands.
 - **Mise MCP Server Preference:** Agents should prefer using the mise MCP server for task execution if available, and only resort to the CLI if the MCP server is not accessible.
-- **Package Manager:** We use pnpm workspaces for package linking under the hood, but mise acts as the primary orchestrator. Do not suggest Nx or Turborepo.
+- **Package Manager:** We use aube workspaces for package linking under the hood, but mise acts as the primary orchestrator. Do not suggest Nx or Turborepo.
 - **Linting & Formatting:** Use oxlint and oxfmt exclusively. Do not install ESLint or Prettier unless specifically requested for a fallback edge-case.
 
 ## **2\. Tech Stack Boundaries**
@@ -72,7 +72,8 @@ See additional info in the `plans` directory:
 
 ### Environment setup
 
-- **mise** is the task runner. Activate it with `eval "$(mise activate bash)"` in any new shell. The update script handles `mise install` and `pnpm install`.
+- **mise** is the task runner. Use `mise run` / `mise x` / `mise deps` directly. The update script handles `mise install` and dependency installs via aube.
+  - First try commands without activating the shell, but ONLY if it doesn't work, activate mise with `eval "$(mise activate bash)"` or `eval "$(mise activate zsh)"` in any new shell.
 - Copy `.env.example` to `.env` and fill in `DATABASE_URL` (Neon connection string) and `BETTER_AUTH_SECRET` (any random hex string). OAuth and Resend keys are optional.
 - The `mise.toml` auto-loads `.env` (`_.file = ".env"`), so all mise tasks inherit these vars.
 

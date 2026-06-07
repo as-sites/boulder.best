@@ -128,7 +128,7 @@ depends = ["r2:domain:ensure", "r2:cors:apply"]
 [tasks."auth:generate-schema"]
 alias = ["api:auth:generate-schema"]
 description = "Regenerate better-auth Drizzle schema (re-run after adding plugins)"
-run = "pnpm dlx @better-auth/cli generate --output ../../packages/auth/src/schema.ts"
+run = "better-auth generate --output ../../packages/auth/src/schema.ts"
 
 [tasks."preview:upload"]
 alias = ["api:preview:upload"]

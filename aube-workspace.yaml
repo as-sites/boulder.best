@@ -50,7 +50,7 @@ allowBuilds:
   sharp: true
   workerd: true
 patchedDependencies:
-  '@trendcapital/react-hook-form-mantine': patches/@trendcapital__react-hook-form-mantine.patch
+  '@trendcapital/react-hook-form-mantine@4.1.16': patches/@trendcapital__react-hook-form-mantine.patch
 
 overrides:
   wrangler: 'catalog:'

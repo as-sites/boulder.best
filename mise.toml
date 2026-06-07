@@ -27,11 +27,11 @@ task_output = "quiet"
 
 [tools]
 node = "24.16.0"
-pnpm = "11.4.0"
+aube = "1.18.0"
 # Graphite stacked PRs (`gt` via mise tool alias)
 gt = "1.8.6"
 # this is needed for tab completions of mise tasks and some other binaries
-usage = "3.3.0"
+usage = "3.4.0"
 hk = "1.46.0"
 pkl = "0.31.1"
 
@@ -41,19 +41,19 @@ gt = "npm:@withgraphite/graphite-cli"
 [monorepo]
 config_roots = ["apps/*", "packages/*"]
 
-# this doesn't use the builtin pnpm provider because it doesn't allow overriding `sources`
-[deps.pnpm-custom]
+# this doesn't use the builtin aube provider because it doesn't allow overriding `sources`
+[deps.aube-custom]
 auto = true
 sources = [
   "package.json",
   "apps/*/package.json",
   "packages/*/package.json",
-  "pnpm-lock.yaml",
-  "pnpm-workspace.yaml",
+  "aube-lock.yaml",
+  "aube-workspace.yaml",
 ]
 outputs = ["node_modules/"]
-description = "Install dependencies with pnpm"
-run = 'pnpm install'
+description = "Install dependencies with aube"
+run = 'aube install'
 
 [env]
 HK_MISE = "1"
