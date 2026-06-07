@@ -8,7 +8,9 @@ import {
   createRoute,
   RouterProvider,
 } from '@tanstack/react-router';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { downloadHistoryExport } from '../../src/history/export-history.js';
+import type * as historyExportModule from '../../src/history/export-history.js';
 import { HistoryListItem } from '../../src/history/history-list-item.js';
 import type { MergedHistoryItem } from '../../src/history/merge-session-history.js';
 import type * as mergedSessionHistoryModule from '../../src/history/use-merged-session-history.js';
@@ -60,6 +62,15 @@ vi.mock(
     }) as unknown as typeof mergedSessionHistoryModule,
 );
 
+vi.mock(
+  import('../../src/history/export-history.js'),
+  () =>
+    ({
+      downloadHistoryExport:
+        vi.fn<typeof historyExportModule.downloadHistoryExport>(),
+    }) as unknown as typeof historyExportModule,
+);
+
 const renderWithRouter = async (ui: ReactNode) => {
   const rootRoute = createRootRoute();
   const indexRoute = createRoute({
@@ -94,6 +105,24 @@ describe('history page', () => {
     expect(screen.getByText('Server Gym')).toBeDefined();
     expect(screen.getByText(/pending sync/i)).toBeDefined();
     expect(screen.getByText('On this device')).toBeDefined();
+  });
+
+  it('exports history data as JSON and CSV', async () => {
+    await renderWithRouter(<HistoryPage />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Export JSON' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Export CSV' }));
+
+    expect(downloadHistoryExport).toHaveBeenNthCalledWith(
+      1,
+      mergedItems,
+      'json',
+    );
+    expect(downloadHistoryExport).toHaveBeenNthCalledWith(
+      2,
+      mergedItems,
+      'csv',
+    );
   });
 });
 
