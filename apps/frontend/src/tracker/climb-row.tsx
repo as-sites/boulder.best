@@ -170,8 +170,7 @@ export const ClimbRow = ({
   onAttemptStop,
 }: ClimbRowProps) => {
   const [isExpanded, setIsExpanded] = useState(!isFinalized);
-  const { setValue, getValues, formState } =
-    useFormContext<SessionFormValues>();
+  const { setValue, formState } = useFormContext<SessionFormValues>();
   const { enabled: showTimerMilliseconds } = useTimerDisplayMilliseconds();
   const entryPath = `entries.${index}` as const;
   const climb = useWatch({ control, name: entryPath });
@@ -220,9 +219,9 @@ export const ClimbRow = ({
 
     const removeAttempt = () => {
       attemptsField.remove(attemptIndex);
-      const reordered = getValues(`${entryPath}.climbAttempts`).map(
-        (item, sequenceOrder) => ({ ...item, sequenceOrder }),
-      );
+      const reordered = climb.climbAttempts
+        .filter((_, i) => i !== attemptIndex)
+        .map((item, sequenceOrder) => ({ ...item, sequenceOrder }));
       setValue(`${entryPath}.climbAttempts`, reordered, { shouldDirty: true });
     };
 

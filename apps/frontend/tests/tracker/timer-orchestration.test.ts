@@ -3,6 +3,7 @@ import {
   createIdleTimer,
   pauseTimer,
   startTimer,
+  stopTimer,
   type TimerNow,
 } from '../../src/lib/timer/index.js';
 import type {
@@ -11,12 +12,14 @@ import type {
 } from '../../src/offline/db/types.js';
 import {
   createBreakEntry,
+  createClimbAttempt,
   createClimbEntry,
 } from '../../src/tracker/entry-factory.js';
 import {
   applyBreakEnd,
   applyBreakRemove,
   applyBreakStart,
+  finalizeEntryTimers,
   pauseAllRunningClimbs,
 } from '../../src/tracker/timer-orchestration.js';
 
@@ -24,6 +27,13 @@ const fixedNow =
   (epochMs: number): TimerNow =>
   () =>
     Temporal.Instant.fromEpochMilliseconds(epochMs);
+
+const expectClimb = (
+  entry: Parameters<typeof finalizeEntryTimers>[0][number] | undefined,
+): ClimbFormEntry => {
+  expect(entry?.type).toBe('climb');
+  return entry as ClimbFormEntry;
+};
 
 /** A climb whose first attempt is running. */
 const climbWithRunningAttempt = (): ClimbFormEntry => {
@@ -132,5 +142,37 @@ describe('timer orchestration', () => {
     const next = applyBreakEnd(entries, 1);
 
     expect(next[0]).toEqual(climb);
+  });
+
+  it('finalizeEntryTimers stops all running attempt timers and preserves stopped ones', () => {
+    const runningAttempt = {
+      ...createClimbAttempt(0),
+      timer: startTimer(createIdleTimer(), fixedNow(0)),
+    };
+    const stoppedAttempt = {
+      ...createClimbAttempt(1),
+      timer: stopTimer(
+        startTimer(createIdleTimer(), fixedNow(0)),
+        fixedNow(500),
+      ),
+    };
+    const climbEntry = {
+      ...createClimbEntry(0, 'Climb 1'),
+      climbAttempts: [runningAttempt, stoppedAttempt],
+    };
+    const breakEntry = {
+      ...createBreakEntry(1),
+      timer: startTimer(createIdleTimer(), fixedNow(0)),
+    };
+
+    const next = finalizeEntryTimers([climbEntry, breakEntry]);
+
+    const climbResult = expectClimb(next[0]);
+    expect(climbResult.climbAttempts[0]?.timer.status).toBe('stopped');
+    expect(climbResult.climbAttempts[1]?.timer.status).toBe('stopped');
+
+    expect(next[1]?.type).toBe('break');
+    const breakResult = next[1] as BreakFormEntry | undefined;
+    expect(breakResult?.timer.status).toBe('stopped');
   });
 });
