@@ -29,12 +29,6 @@ export default defineConfig({
       },
     },
     {
-      files: ['tailwind.config.js', 'postcss.config.js'],
-      rules: {
-        'import/no-anonymous-default-export': 'off',
-      },
-    },
-    {
       files: ['**/*.d.ts'],
       rules: {
         'import/unambiguous': 'off',
@@ -50,8 +44,10 @@ export default defineConfig({
         'oxfmt.config.ts',
         'vite.config.ts',
         'vitest.config.ts',
+        'neon.ts',
       ],
       rules: {
+        'import/no-anonymous-default-export': 'off',
         'import/no-default-export': 'off',
       },
     },

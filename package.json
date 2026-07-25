@@ -16,6 +16,7 @@
     "happy-dom": "20.10.1",
     "jsonc-parser": "3.3.1",
     "libsodium-wrappers": "0.8.4",
+    "@neon/config": "0.9.5",
     "octokit": "5.0.5",
     "oxfmt": "0.53.0",
     "oxlint": "1.68.0",

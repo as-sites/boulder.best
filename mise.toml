@@ -34,6 +34,7 @@ gt = "1.8.6"
 usage = "3.4.0"
 hk = "1.46.0"
 pkl = "0.31.1"
+"npm:neon" = "2.35.1"
 
 [tool_alias]
 gt = "npm:@withgraphite/graphite-cli"
