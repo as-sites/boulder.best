@@ -100,6 +100,7 @@ describe('session detail view', () => {
 
     expect(screen.getByText('V3 · 2 attempts · 1 completed')).toBeDefined();
     expect(screen.getByText('1 send')).toBeDefined();
+    expect(screen.getByText('2 attempts')).toBeDefined();
     expect(screen.getByText('Sent')).toBeDefined();
     expect(screen.getByText('Slipped on crux')).toBeDefined();
     expect(screen.getByText('Attempt 2')).toBeDefined();
@@ -139,7 +140,7 @@ describe('session detail view', () => {
     expect(screen.getByText('V3 · 2 attempts · 0 completed')).toBeDefined();
   });
 
-  it('counts one send per climb even when multiple attempts are completed', () => {
+  it('counts one send and multiple attempts per climb even when multiple attempts are completed', () => {
     render(
       <MantineProvider>
         <SessionDetailView
@@ -171,6 +172,7 @@ describe('session detail view', () => {
     );
 
     expect(screen.getByText('1 send')).toBeDefined();
+    expect(screen.getByText('2 attempts')).toBeDefined();
   });
 
   it('loads pending local images for a climb entry', async () => {
