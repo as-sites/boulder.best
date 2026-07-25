@@ -25,7 +25,7 @@ describe(formatHistoryDateLabel, () => {
     const now = new Date('2026-05-22T15:00:00.000Z');
 
     expect(formatHistoryDateLabel('2026-05-20T12:00:00.000Z', now)).toBe(
-      'May 20, 2026',
+      '20 May 2026',
     );
   });
 

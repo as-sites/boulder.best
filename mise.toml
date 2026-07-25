@@ -109,6 +109,9 @@ run = 'oxfmt {% if usage.check %}--check {% endif %} {% if usage.list_different 
 [tasks.unit]
 alias = ["test:unit", "test"]
 description = "Run Vitest for this workspace"
+# enforces consistent locale for tests. cannot be set with `vi.stubEnv`
+# https://github.com/vitest-dev/vitest/issues/9539
+env.LC_ALL = "en_AU.UTF-8"
 usage = '''
 arg "[filters]" var=#true help="Test file filters"
 

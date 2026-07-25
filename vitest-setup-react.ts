@@ -1,4 +1,4 @@
-import { afterEach } from 'vitest';
+import { afterEach, vi } from 'vitest';
 import '@testing-library/jest-dom/vitest';
 // Side-effect polyfill for Dexie tests in happy-dom.
 // oxlint-disable-next-line import/no-unassigned-import -- IndexedDB polyfill registers globally
@@ -33,3 +33,10 @@ globalThis.Temporal ??= Temporal as unknown as typeof globalThis.Temporal;
 afterEach(() => {
   cleanup();
 });
+
+// stops annoying ECONNREFUSED errors from the service worker
+vi.mock(import('./apps/frontend/src/lib/app-version.js'), () => ({
+  useLatestVersion: () => null,
+  formatVersion: (sha: string) => sha,
+  LOADED_VERSION: 'test',
+}));
