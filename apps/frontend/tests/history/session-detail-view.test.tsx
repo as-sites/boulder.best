@@ -100,12 +100,13 @@ describe('session detail view', () => {
 
     expect(screen.getByText('V3 · 2 attempts · 1 completed')).toBeDefined();
     expect(screen.getByText('1 send')).toBeDefined();
+    expect(screen.getByText('2 attempts')).toBeDefined();
     expect(screen.getByText('Sent')).toBeDefined();
     expect(screen.getByText('Slipped on crux')).toBeDefined();
     expect(screen.getByText('Attempt 2')).toBeDefined();
   });
 
-  it('shows zero completed attempts in climb summaries', () => {
+  it('shows multiple attempts and zero sends in climb summaries', () => {
     render(
       <MantineProvider>
         <SessionDetailView
@@ -139,7 +140,76 @@ describe('session detail view', () => {
     expect(screen.getByText('V3 · 2 attempts · 0 completed')).toBeDefined();
   });
 
-  it('counts one send per climb even when multiple attempts are completed', () => {
+  it('counts just one send and attempt if one attempt is made and completed', () => {
+    render(
+      <MantineProvider>
+        <SessionDetailView
+          session={{
+            ...sessionFixture,
+            entries: [
+              {
+                ...climbEntry,
+                climbAttempts: [
+                  {
+                    sequenceOrder: 0,
+                    durationMs: 20_000,
+                    completed: true,
+                    notes: '',
+                  },
+                ],
+              },
+            ],
+          }}
+          source="server"
+        />
+      </MantineProvider>,
+    );
+
+    expect(screen.getByText('1 send')).toBeDefined();
+    expect(screen.getByText('1 attempt')).toBeDefined();
+  });
+
+  it('counts two sends and attempts if one attempt is made and completed per each of two climbs', () => {
+    render(
+      <MantineProvider>
+        <SessionDetailView
+          session={{
+            ...sessionFixture,
+            entries: [
+              {
+                ...climbEntry,
+                climbAttempts: [
+                  {
+                    sequenceOrder: 0,
+                    durationMs: 20_000,
+                    completed: true,
+                    notes: '',
+                  },
+                ],
+              },
+              {
+                ...climbEntry,
+                climbAttempts: [
+                  {
+                    sequenceOrder: 0,
+                    durationMs: 20_000,
+                    completed: true,
+                    notes: '',
+                  },
+                ],
+              },
+            ],
+          }}
+          source="server"
+        />
+      </MantineProvider>,
+    );
+
+    expect(screen.getByText('2 sends')).toBeDefined();
+    expect(screen.getByText('2 attempts')).toBeDefined();
+  });
+
+  it('counts one send and multiple attempts per climb even when multiple attempts are completed', () => {
     render(
       <MantineProvider>
         <SessionDetailView
@@ -171,6 +241,59 @@ describe('session detail view', () => {
     );
 
     expect(screen.getByText('1 send')).toBeDefined();
+    expect(screen.getByText('2 attempts')).toBeDefined();
+  });
+
+  it('counts one send and multiple attempts per climb when only one out of two climbs are sent', () => {
+    render(
+      <MantineProvider>
+        <SessionDetailView
+          session={{
+            ...sessionFixture,
+            entries: [
+              {
+                ...climbEntry,
+                climbAttempts: [
+                  {
+                    sequenceOrder: 0,
+                    durationMs: 20_000,
+                    completed: false,
+                    notes: '',
+                  },
+                  {
+                    sequenceOrder: 1,
+                    durationMs: 25_000,
+                    completed: false,
+                    notes: '',
+                  },
+                ],
+              },
+              {
+                ...climbEntry,
+                climbAttempts: [
+                  {
+                    sequenceOrder: 0,
+                    durationMs: 20_000,
+                    completed: true,
+                    notes: '',
+                  },
+                  {
+                    sequenceOrder: 1,
+                    durationMs: 25_000,
+                    completed: true,
+                    notes: '',
+                  },
+                ],
+              },
+            ],
+          }}
+          source="server"
+        />
+      </MantineProvider>,
+    );
+
+    expect(screen.getByText('1 send')).toBeDefined();
+    expect(screen.getByText('4 attempts')).toBeDefined();
   });
 
   it('loads pending local images for a climb entry', async () => {

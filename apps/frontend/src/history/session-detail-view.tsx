@@ -32,22 +32,27 @@ export const SessionDetailView = ({
   source,
   onDelete,
 }: SessionDetailViewProps) => {
-  const { entries, climbCount, breakCount, sendCount } = useMemo(() => {
-    const sorted = sortSessionDetailEntries(session.entries);
-    const byType = Object.groupBy(sorted, (entry) => entry.type);
-    const climbs = (byType.climb ?? []).filter(
-      (entry): entry is SessionDetailClimbEntry => entry.type === 'climb',
-    );
+  const { entries, climbCount, breakCount, sendCount, attemptCount } =
+    useMemo(() => {
+      const sorted = sortSessionDetailEntries(session.entries);
+      const byType = Object.groupBy(sorted, (entry) => entry.type);
+      const climbs = (byType.climb ?? []).filter(
+        (entry): entry is SessionDetailClimbEntry => entry.type === 'climb',
+      );
 
-    return {
-      entries: sorted,
-      climbCount: climbs.length,
-      breakCount: byType.break?.length ?? 0,
-      sendCount: climbs.filter((climb) =>
-        climb.climbAttempts.some((attempt) => attempt.completed === true),
-      ).length,
-    };
-  }, [session.entries]);
+      return {
+        entries: sorted,
+        climbCount: climbs.length,
+        breakCount: byType.break?.length ?? 0,
+        sendCount: climbs.filter((climb) =>
+          climb.climbAttempts.some((attempt) => attempt.completed === true),
+        ).length,
+        attemptCount: climbs.reduce(
+          (acc, climb) => acc + climb.climbAttempts.length,
+          0,
+        ),
+      };
+    }, [session.entries]);
   const sessionNotes = session.notes.trim();
 
   const allPendingImages = useLiveQuery(
@@ -126,6 +131,11 @@ export const SessionDetailView = ({
           {sendCount > 0 ? (
             <Badge color="green" variant="light">
               {sendCount} {sendCount === 1 ? 'send' : 'sends'}
+            </Badge>
+          ) : null}
+          {attemptCount > 0 ? (
+            <Badge variant="outline">
+              {attemptCount} {attemptCount === 1 ? 'attempt' : 'attempts'}
             </Badge>
           ) : null}
           {breakCount > 0 ? (
