@@ -1,5 +1,5 @@
-min_version = "2026.5.0"
-experimental_monorepo_root = true
+min_version = "2026.7.10"
+monorepo_root = true
 
 # Redact sensitive values from `mise run` output (see https://mise.jdx.dev/environments/#redactions).
 redactions = [
@@ -34,6 +34,7 @@ gt = "1.8.6"
 usage = "3.4.0"
 hk = "1.46.0"
 pkl = "0.31.1"
+"npm:neon" = "2.35.1"
 
 [tool_alias]
 gt = "npm:@withgraphite/graphite-cli"
