@@ -76,7 +76,7 @@ describe(SessionForm, () => {
     await waitFor(() =>
       expect(
         screen.getByRole('button', { name: /start session/i }),
-      ).toBeDefined(),
+      ).toBeVisible(),
     );
 
     expect(
@@ -109,7 +109,7 @@ describe(SessionForm, () => {
     const startButton = screen.getByRole('button', { name: /start session/i });
 
     await waitFor(() => {
-      expect(screen.getByRole('combobox', { name: /location/i })).toBeDefined();
+      expect(screen.getByRole('combobox', { name: /location/i })).toBeVisible();
       expect(startButton).toBeDisabled();
     });
 
@@ -153,7 +153,7 @@ describe(SessionForm, () => {
     renderSessionForm();
 
     await waitFor(() =>
-      expect(screen.getByRole('combobox', { name: /gym/i })).toBeDefined(),
+      expect(screen.getByRole('combobox', { name: /gym/i })).toBeVisible(),
     );
 
     autosaveMocks.autosaveActiveDraft.mockClear();
