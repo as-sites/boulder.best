@@ -95,9 +95,7 @@ export const SessionForm = ({ initialValues, onStopped }: SessionFormProps) => {
     name: 'entries',
   });
   const pendingScrollEntryIdRef = useRef<string | null>(null);
-  // Climbs restored from a persisted draft (e.g. after the page was reloaded)
-  // should start collapsed; only climbs added during this in-memory session
-  // should auto-expand.
+  // IDs present on mount; used to tell restored entries from newly-added ones.
   const restoredEntryIdsRef = useRef(
     new Set(initialValues.entries.map((entry) => entry.id)),
   );
