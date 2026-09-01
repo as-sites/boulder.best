@@ -145,6 +145,7 @@ export interface ClimbRowProps {
   grades: string[];
   isFinalized: boolean;
   defaultName: string;
+  isNewEntry?: boolean;
   onRemove: () => void;
   onAttemptStop?: () => void;
 }
@@ -166,10 +167,11 @@ export const ClimbRow = ({
   grades,
   isFinalized,
   defaultName,
+  isNewEntry = true,
   onRemove,
   onAttemptStop,
 }: ClimbRowProps) => {
-  const [isExpanded, setIsExpanded] = useState(!isFinalized);
+  const [isExpanded, setIsExpanded] = useState(!isFinalized && isNewEntry);
   const { setValue, getValues, formState } =
     useFormContext<SessionFormValues>();
   const { enabled: showTimerMilliseconds } = useTimerDisplayMilliseconds();

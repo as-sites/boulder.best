@@ -240,7 +240,6 @@ describe(SessionForm, () => {
     ).not.toBeInTheDocument();
   });
 
-  // oxlint-disable-next-line typescript/require-await
   it('renders attempt timers without climb-level timer controls', async () => {
     const queryClient = new QueryClient({
       defaultOptions: { queries: { retry: false } },
@@ -263,7 +262,11 @@ describe(SessionForm, () => {
       </QueryClientProvider>,
     );
 
-    expect(screen.getByText('Attempt 1')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Expand Climb 1' }));
+
+    await waitFor(() => {
+      expect(screen.getByText('Attempt 1')).toBeInTheDocument();
+    });
     expect(screen.getAllByRole('button', { name: 'Start' })).toHaveLength(1);
 
     fireEvent.click(screen.getByRole('button', { name: 'Start' }));
@@ -271,6 +274,40 @@ describe(SessionForm, () => {
       screen.getByRole('button', { name: 'Pause timer' }),
     ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Stop' })).toBeInTheDocument();
+  });
+
+  // oxlint-disable-next-line typescript/require-await
+  it('starts restored climbs collapsed but expands newly-added climbs', async () => {
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MantineProvider>
+          <SessionForm
+            initialValues={{
+              ...createEmptySessionForm(),
+              gymId: gymFixture[0].id,
+              location: 'Main Wall',
+              status: 'active',
+              startTime: Temporal.Now.instant().toString(),
+              entries: [createClimbEntry(0, 'Climb 1')],
+            }}
+          />
+        </MantineProvider>
+      </QueryClientProvider>,
+    );
+
+    expect(
+      screen.getByRole('button', { name: 'Expand Climb 1' }),
+    ).toHaveAttribute('aria-expanded', 'false');
+
+    fireEvent.click(screen.getByRole('button', { name: /add climb/i }));
+
+    expect(
+      screen.getByRole('button', { name: 'Collapse Climb 2' }),
+    ).toHaveAttribute('aria-expanded', 'true');
   });
 
   it('ends a running break when a new climb is added', async () => {
@@ -352,6 +389,9 @@ describe(SessionForm, () => {
         </MantineProvider>
       </QueryClientProvider>,
     );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Expand Climb 1' }));
+    await vi.advanceTimersByTimeAsync(300);
 
     fireEvent.click(screen.getByRole('button', { name: 'Start' }));
     fireEvent.click(screen.getByRole('button', { name: 'Stop' }));
@@ -472,6 +512,9 @@ describe(SessionForm, () => {
         </MantineProvider>
       </QueryClientProvider>,
     );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Expand Climb 1' }));
+    await vi.advanceTimersByTimeAsync(300);
 
     fireEvent.click(screen.getByRole('button', { name: 'Start' }));
     fireEvent.click(screen.getByRole('button', { name: 'Stop' }));

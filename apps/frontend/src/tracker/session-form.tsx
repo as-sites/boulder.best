@@ -95,6 +95,12 @@ export const SessionForm = ({ initialValues, onStopped }: SessionFormProps) => {
     name: 'entries',
   });
   const pendingScrollEntryIdRef = useRef<string | null>(null);
+  // Climbs restored from a persisted draft (e.g. after the page was reloaded)
+  // should start collapsed; only climbs added during this in-memory session
+  // should auto-expand.
+  const restoredEntryIdsRef = useRef(
+    new Set(initialValues.entries.map((entry) => entry.id)),
+  );
 
   useEffect(() => {
     let timeoutId: number;
@@ -371,6 +377,7 @@ export const SessionForm = ({ initialValues, onStopped }: SessionFormProps) => {
                 grades={grades}
                 isFinalized={isFinalized}
                 defaultName={defaultName}
+                isNewEntry={!restoredEntryIdsRef.current.has(entry.id)}
                 onRemove={() => {
                   handleRemoveEntry(index);
                 }}

@@ -15,9 +15,11 @@ import { createEmptySessionForm } from '../../src/tracker/session-form-state.js'
 
 const ClimbRowWrapper = ({
   isFinalized = false,
+  isNewEntry = true,
   climbEntry = createClimbEntry(0, 'Test Climb'),
 }: {
   isFinalized?: boolean;
+  isNewEntry?: boolean;
   climbEntry?: ClimbFormEntry;
 }) => {
   const form = useForm<SessionFormValues>({
@@ -36,6 +38,7 @@ const ClimbRowWrapper = ({
         grades={['V0', 'V1']}
         isFinalized={isFinalized}
         defaultName="Climb 1"
+        isNewEntry={isNewEntry}
         onRemove={vi.fn()}
       />
     </FormProvider>
@@ -55,6 +58,18 @@ describe(ClimbRow, () => {
     expect(
       screen.getByRole('button', { name: 'Collapse Climb 1' }),
     ).toHaveAttribute('aria-expanded', 'true');
+  });
+
+  it('starts collapsed for restored (non-new) climbs even when active', () => {
+    render(
+      <MantineProvider>
+        <ClimbRowWrapper isNewEntry={false} />
+      </MantineProvider>,
+    );
+
+    expect(
+      screen.getByRole('button', { name: 'Expand Climb 1' }),
+    ).toHaveAttribute('aria-expanded', 'false');
   });
 
   it('starts collapsed in finalized sessions with a summary line', () => {
