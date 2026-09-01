@@ -95,6 +95,10 @@ export const SessionForm = ({ initialValues, onStopped }: SessionFormProps) => {
     name: 'entries',
   });
   const pendingScrollEntryIdRef = useRef<string | null>(null);
+  // IDs present on mount; used to tell restored entries from newly-added ones.
+  const restoredEntryIdsRef = useRef(
+    new Set(initialValues.entries.map((entry) => entry.id)),
+  );
 
   useEffect(() => {
     let timeoutId: number;
@@ -371,6 +375,7 @@ export const SessionForm = ({ initialValues, onStopped }: SessionFormProps) => {
                 grades={grades}
                 isFinalized={isFinalized}
                 defaultName={defaultName}
+                isNewEntry={!restoredEntryIdsRef.current.has(entry.id)}
                 onRemove={() => {
                   handleRemoveEntry(index);
                 }}
