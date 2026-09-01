@@ -23,7 +23,7 @@ redactions = [
 
 [settings]
 experimental = true
-task_output = "quiet"
+task.output = "quiet"
 
 [tools]
 node = "24.16.0"
