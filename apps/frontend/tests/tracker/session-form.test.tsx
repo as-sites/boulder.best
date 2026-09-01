@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import {
   createBreakEntry,
+  createClimbAttempt,
   createClimbEntry,
 } from '../../src/tracker/entry-factory.js';
 import { createEmptySessionForm } from '../../src/tracker/session-form-state.js';
@@ -238,6 +239,54 @@ describe(SessionForm, () => {
     expect(
       screen.queryByRole('button', { name: /stop session/i }),
     ).not.toBeInTheDocument();
+  });
+
+  it('stops session after removing an attempt without losing timer state', async () => {
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+    const onStopped = vi.fn();
+    const climbEntry = {
+      ...createClimbEntry(0, 'Climb 1'),
+      climbAttempts: [createClimbAttempt(0), createClimbAttempt(1)],
+    };
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MantineProvider>
+          <SessionForm
+            initialValues={{
+              ...createEmptySessionForm(),
+              gymId: gymFixture[0].id,
+              location: 'Main Wall',
+              status: 'active',
+              startTime: Temporal.Instant.fromEpochMilliseconds(0).toString(),
+              entries: [climbEntry],
+            }}
+            onStopped={onStopped}
+          />
+        </MantineProvider>
+      </QueryClientProvider>,
+    );
+
+    // Remove the first attempt — this is where timers were being dropped
+    const removeButtons = screen.getAllByRole('button', {
+      name: /remove attempt/i,
+    });
+    // oxlint-disable-next-line typescript/no-non-null-assertion
+    fireEvent.click(removeButtons[0]!);
+
+    // Stop the session — should not crash with missing timer fields
+    const stopButton = screen.getByRole('button', { name: /stop session/i });
+    await waitFor(() => expect(stopButton).not.toBeDisabled());
+    fireEvent.click(stopButton);
+
+    await waitFor(() =>
+      expect(onStopped).toHaveBeenCalledWith(
+        expect.objectContaining({ status: 'stopped' }),
+      ),
+    );
+    expect(screen.queryByText(/unable to stop session/i)).toBeNull();
   });
 
   // oxlint-disable-next-line typescript/require-await
