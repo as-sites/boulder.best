@@ -129,7 +129,7 @@ describe(AuthActions, () => {
     fireEvent.click(screen.getByTestId('auth-submit'));
 
     await waitFor(() => screen.getByText('Invalid credentials'));
-    expect(screen.getByText('Invalid credentials')).toBeDefined();
+    expect(screen.getByText('Invalid credentials')).toBeVisible();
   });
 
   it('signs out authenticated user', async () => {

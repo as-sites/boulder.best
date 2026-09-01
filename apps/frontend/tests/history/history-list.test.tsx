@@ -89,11 +89,11 @@ describe('history page', () => {
   it('renders merged items with pending badge and local separator', async () => {
     await renderWithRouter(<HistoryPage />);
 
-    expect(screen.getByText('Local Gym')).toBeDefined();
-    expect(screen.getByText('Main Wall')).toBeDefined();
-    expect(screen.getByText('Server Gym')).toBeDefined();
-    expect(screen.getByText(/pending sync/i)).toBeDefined();
-    expect(screen.getByText('On this device')).toBeDefined();
+    expect(screen.getByText('Local Gym')).toBeVisible();
+    expect(screen.getByText('Main Wall')).toBeVisible();
+    expect(screen.getByText('Server Gym')).toBeVisible();
+    expect(screen.getByText(/pending sync/i)).toBeVisible();
+    expect(screen.getByText('On this device')).toBeVisible();
   });
 });
 

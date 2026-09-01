@@ -38,10 +38,10 @@ describe('sync queue panel', () => {
       </MantineProvider>,
     );
 
-    expect(screen.getByText(/2 pending/i)).toBeDefined();
-    expect(screen.getByText(/1 failed/i)).toBeDefined();
-    expect(screen.getByText(/last error: network error/i)).toBeDefined();
-    expect(screen.getByText(/turn off manual offline mode/i)).toBeDefined();
+    expect(screen.getByText(/2 pending/i)).toBeVisible();
+    expect(screen.getByText(/1 failed/i)).toBeVisible();
+    expect(screen.getByText(/last error: network error/i)).toBeVisible();
+    expect(screen.getByText(/turn off manual offline mode/i)).toBeVisible();
     expect(screen.getByRole('button', { name: /sync now/i })).toBeDisabled();
   });
 });

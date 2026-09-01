@@ -76,7 +76,7 @@ describe('climb photo attachments', () => {
     await waitFor(() => {
       expect(
         screen.getByRole('button', { name: /delete photo/i }),
-      ).toBeDefined();
+      ).toBeVisible();
     });
 
     fireEvent.click(screen.getByRole('button', { name: /delete photo/i }));

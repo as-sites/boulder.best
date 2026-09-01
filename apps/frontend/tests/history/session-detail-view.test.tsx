@@ -70,7 +70,7 @@ describe('session detail view', () => {
       </MantineProvider>,
     );
 
-    expect(screen.getByText('Main Wall')).toBeDefined();
+    expect(screen.getByText('Main Wall')).toBeVisible();
   });
 
   it('renders server entries and images in sequence order', () => {
@@ -86,9 +86,9 @@ describe('session detail view', () => {
       </MantineProvider>,
     );
 
-    expect(screen.getByText('Pink corner route')).toBeDefined();
-    expect(screen.getByText('Break')).toBeDefined();
-    expect(screen.getByRole('img', { name: /climb photo 1/i })).toBeDefined();
+    expect(screen.getByText('Pink corner route')).toBeVisible();
+    expect(screen.getByText('Break')).toBeVisible();
+    expect(screen.getByRole('img', { name: /climb photo 1/i })).toBeVisible();
   });
 
   it('shows send badges and attempt completion details', () => {
@@ -98,12 +98,12 @@ describe('session detail view', () => {
       </MantineProvider>,
     );
 
-    expect(screen.getByText('V3 · 2 attempts · 1 completed')).toBeDefined();
-    expect(screen.getByText('1 send')).toBeDefined();
-    expect(screen.getByText('2 attempts')).toBeDefined();
-    expect(screen.getByText('Sent')).toBeDefined();
-    expect(screen.getByText('Slipped on crux')).toBeDefined();
-    expect(screen.getByText('Attempt 2')).toBeDefined();
+    expect(screen.getByText('V3 · 2 attempts · 1 completed')).toBeVisible();
+    expect(screen.getByText('1 send')).toBeVisible();
+    expect(screen.getByText('2 attempts')).toBeVisible();
+    expect(screen.getByText('Sent')).toBeVisible();
+    expect(screen.getByText('Slipped on crux')).toBeVisible();
+    expect(screen.getByText('Attempt 2')).toBeVisible();
   });
 
   it('shows multiple attempts and zero sends in climb summaries', () => {
@@ -137,7 +137,7 @@ describe('session detail view', () => {
       </MantineProvider>,
     );
 
-    expect(screen.getByText('V3 · 2 attempts · 0 completed')).toBeDefined();
+    expect(screen.getByText('V3 · 2 attempts · 0 completed')).toBeVisible();
   });
 
   it('counts just one send and attempt if one attempt is made and completed', () => {
@@ -165,8 +165,8 @@ describe('session detail view', () => {
       </MantineProvider>,
     );
 
-    expect(screen.getByText('1 send')).toBeDefined();
-    expect(screen.getByText('1 attempt')).toBeDefined();
+    expect(screen.getByText('1 send')).toBeVisible();
+    expect(screen.getByText('1 attempt')).toBeVisible();
   });
 
   it('counts two sends and attempts if one attempt is made and completed per each of two climbs', () => {
@@ -205,8 +205,8 @@ describe('session detail view', () => {
       </MantineProvider>,
     );
 
-    expect(screen.getByText('2 sends')).toBeDefined();
-    expect(screen.getByText('2 attempts')).toBeDefined();
+    expect(screen.getByText('2 sends')).toBeVisible();
+    expect(screen.getByText('2 attempts')).toBeVisible();
   });
 
   it('counts one send and multiple attempts per climb even when multiple attempts are completed', () => {
@@ -240,8 +240,8 @@ describe('session detail view', () => {
       </MantineProvider>,
     );
 
-    expect(screen.getByText('1 send')).toBeDefined();
-    expect(screen.getByText('2 attempts')).toBeDefined();
+    expect(screen.getByText('1 send')).toBeVisible();
+    expect(screen.getByText('2 attempts')).toBeVisible();
   });
 
   it('counts one send and multiple attempts per climb when only one out of two climbs are sent', () => {
@@ -292,8 +292,8 @@ describe('session detail view', () => {
       </MantineProvider>,
     );
 
-    expect(screen.getByText('1 send')).toBeDefined();
-    expect(screen.getByText('4 attempts')).toBeDefined();
+    expect(screen.getByText('1 send')).toBeVisible();
+    expect(screen.getByText('4 attempts')).toBeVisible();
   });
 
   it('loads pending local images for a climb entry', async () => {
@@ -318,7 +318,7 @@ describe('session detail view', () => {
       </MantineProvider>,
     );
 
-    expect(screen.getByText(/pink corner route/i)).toBeDefined();
+    expect(screen.getByText(/pink corner route/i)).toBeVisible();
     await expect(
       offlineImagesRepository.listByEntry(sessionFixture.id, climbEntry.id),
     ).resolves.toHaveLength(1);
