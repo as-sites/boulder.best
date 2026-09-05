@@ -1,7 +1,11 @@
-import { Container, Stack, Text, Title } from '@mantine/core';
-import { ClockCounterClockwiseIcon } from '@phosphor-icons/react';
+import { Button, Container, Group, Stack, Text, Title } from '@mantine/core';
+import {
+  ClockCounterClockwiseIcon,
+  DownloadSimpleIcon,
+} from '@phosphor-icons/react';
 import { PageError } from '../components/page-error.js';
 import { PageLoading } from '../components/page-loading.js';
+import { downloadHistoryExport } from '../history/export-history.js';
 import { groupHistoryByDate } from '../history/group-history-by-date.js';
 import { HistoryListItem } from '../history/history-list-item.js';
 import { shouldShowLocalPendingSeparator } from '../history/merge-session-history.js';
@@ -31,14 +35,40 @@ export const HistoryPage = () => {
   return (
     <Container size="sm">
       <Stack gap="lg">
-        <Stack gap={4}>
-          <Title order={1}>History</Title>
-          <Text c="dimmed" size="sm">
-            {isAuthenticated
-              ? 'Past sessions from your account and anything still waiting to sync on this device.'
-              : 'Sessions saved on this device only. Sign in to sync them and see your cloud history.'}
-          </Text>
-        </Stack>
+        <Group align="flex-start" justify="space-between">
+          <Stack gap={4}>
+            <Title order={1}>History</Title>
+            <Text c="dimmed" size="sm">
+              {isAuthenticated
+                ? 'Past sessions from your account and anything still waiting to sync on this device.'
+                : 'Sessions saved on this device only. Sign in to sync them and see your cloud history.'}
+            </Text>
+          </Stack>
+          <Group gap="xs">
+            <Button
+              disabled={items.length === 0}
+              leftSection={<DownloadSimpleIcon aria-hidden size={16} />}
+              size="compact-sm"
+              variant="light"
+              onClick={() => {
+                downloadHistoryExport(items, 'json');
+              }}
+            >
+              Export JSON
+            </Button>
+            <Button
+              disabled={items.length === 0}
+              leftSection={<DownloadSimpleIcon aria-hidden size={16} />}
+              size="compact-sm"
+              variant="light"
+              onClick={() => {
+                downloadHistoryExport(items, 'csv');
+              }}
+            >
+              Export CSV
+            </Button>
+          </Group>
+        </Group>
 
         {items.length === 0 ? (
           <Stack align="center" gap="xs" py="xl">
