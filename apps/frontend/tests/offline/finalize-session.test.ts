@@ -81,4 +81,30 @@ describe('finalize stopped session', () => {
       queueItem,
     );
   });
+
+  it('can enqueue a payload without clearing the active draft', async () => {
+    const activeDraft = {
+      ...stoppedSessionFixture(),
+      id: 'active-draft',
+      status: 'not_started' as const,
+      startTime: null,
+      endTime: null,
+      totalDurationMs: 0,
+    };
+    const form = stoppedSessionFixture();
+    await autosaveActiveDraft(activeDraft);
+
+    const queueItem = await finalizeStoppedSession(form, undefined, {
+      clearActiveDraft: false,
+    });
+
+    await expect(restoreActiveDraft()).resolves.toMatchObject({
+      formData: {
+        id: activeDraft.id,
+      },
+    });
+    await expect(syncQueueRepository.get(queueItem.id)).resolves.toEqual(
+      queueItem,
+    );
+  });
 });
