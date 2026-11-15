@@ -23,7 +23,8 @@ redactions = [
 
 [settings]
 experimental = true
-task.output = "quiet"
+task.output = "interleave"
+task.quiet = true
 
 [tools]
 node = "24.16.0"
